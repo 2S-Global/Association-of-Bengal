@@ -1,75 +1,12 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
-
-const periodKeys = ["nomination", "withdrawal", "voting"] as const;
-
-function isValidPeriod(period: unknown): period is {
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-} {
-  if (!period || typeof period !== "object") return false;
-
-  const value = period as Record<string, unknown>;
-  return ["startDate", "startTime", "endDate", "endTime"].every(
-    (key) => typeof value[key] === "string" && value[key].trim().length > 0
-  );
-}
-
-function timeToMinutes(time: string) {
-  const twelveHourMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-
-  if (twelveHourMatch) {
-    const [, hourText, minuteText, meridiem] = twelveHourMatch;
-    const hour = Number(hourText);
-    const minute = Number(minuteText);
-
-    if (hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59) {
-      return (hour % 12) * 60 + minute + (meridiem.toUpperCase() === "PM" ? 720 : 0);
-    }
-  }
-
-  const twentyFourHourMatch = time.match(/^(\d{2}):(\d{2})$/);
-
-  if (twentyFourHourMatch) {
-    const [, hourText, minuteText] = twentyFourHourMatch;
-    const hour = Number(hourText);
-    const minute = Number(minuteText);
-
-    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-      return hour * 60 + minute;
-    }
-  }
-
-  return null;
-}
-
-function isChronological(period: {
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-}) {
-  const startTime = timeToMinutes(period.startTime);
-  const endTime = timeToMinutes(period.endTime);
-
-  if (startTime === null || endTime === null) return false;
-
-  if (period.startDate !== period.endDate) {
-    return period.startDate < period.endDate;
-  }
-
-  return startTime <= endTime;
-}
+import { validateElectionTimeline } from "@/lib/election-timeline-validation";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const hasValidPeriods = periodKeys.every(
-      (key) => isValidPeriod(body[key]) && isChronological(body[key])
-    );
+    const timelineValidation = validateElectionTimeline(body);
     const postDesignations = Array.isArray(body.postDesignations)
       ? body.postDesignations.filter(
           (designation: unknown) => typeof designation === "string" && designation.trim()
@@ -86,10 +23,15 @@ export async function POST(request: Request) {
       !body.location.trim() ||
       !postDesignations.length ||
       !wings.length ||
-      !hasValidPeriods
+      !timelineValidation.valid
     ) {
       return NextResponse.json(
-        { success: false, message: "Please complete all required election details." },
+        {
+          success: false,
+          message: !timelineValidation.valid
+            ? timelineValidation.message
+            : "Please complete all required election details.",
+        },
         { status: 400 }
       );
     }

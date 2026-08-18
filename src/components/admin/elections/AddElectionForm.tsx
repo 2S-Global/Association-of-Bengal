@@ -3,6 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import DatePicker from "@/components/admin/ui/DatePicker";
+import {
+  ElectionPeriod,
+  validateElectionTimeline,
+} from "@/lib/election-timeline-validation";
 
 const rulesAndRegulations = [
   "Only eligible members of the selected wings may submit nominations and vote.",
@@ -11,12 +15,7 @@ const rulesAndRegulations = [
   "The Election Committee's decision on election matters will be final.",
 ];
 
-type Period = {
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-};
+type Period = ElectionPeriod;
 
 export type ElectionFormData = {
   _id?: string;
@@ -47,6 +46,43 @@ const capitalizeSentences = (value: string) =>
     /(^|[.!?]\s+)([a-z])/g,
     (_, prefix: string, letter: string) => `${prefix}${letter.toUpperCase()}`
   );
+
+const getNextCalendarDate = (dateValue: string) => {
+  const match = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return undefined;
+
+  const [, yearText, monthText, dayText] = match;
+  const date = new Date(
+    Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText) + 1)
+  );
+
+  return date.toISOString().slice(0, 10);
+};
+
+const getStrictlyLaterTime = (
+  startDate: string,
+  startTime: string,
+  endDate: string
+) => {
+  if (!startDate || startDate !== endDate || !startTime) return undefined;
+
+  const match = startTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return undefined;
+
+  const [, hourText, minuteText, meridiem] = match;
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  if (hour < 1 || hour > 12 || minute < 0 || minute > 59) return undefined;
+
+  const startMinutes =
+    (hour % 12) * 60 + minute + (meridiem.toUpperCase() === "PM" ? 720 : 0);
+  const minimumMinutes = startMinutes + 5;
+  if (minimumMinutes >= 24 * 60) return undefined;
+
+  return `${String(Math.floor(minimumMinutes / 60)).padStart(2, "0")}:${String(
+    minimumMinutes % 60
+  ).padStart(2, "0")}`;
+};
 
 export default function AddElectionForm({
   initialElection,
@@ -163,6 +199,17 @@ export default function AddElectionForm({
     event.preventDefault();
     if (isSaving) return;
 
+    const timelineValidation = validateElectionTimeline({
+      nomination,
+      withdrawal,
+      voting,
+    });
+
+    if (!timelineValidation.valid) {
+      toast.error(timelineValidation.message);
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -225,7 +272,8 @@ export default function AddElectionForm({
   const renderPeriod = (
     title: string,
     period: Period,
-    setter: React.Dispatch<React.SetStateAction<Period>>
+    setter: React.Dispatch<React.SetStateAction<Period>>,
+    startDateMinimum?: string
   ) => (
     <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
@@ -251,6 +299,7 @@ export default function AddElectionForm({
                   id={getPickerId(title, "start")}
                   placeholder="Select start date"
                   defaultDate={period.startDate || undefined}
+                  minDate={startDateMinimum}
                   onChange={(_, dateStr) =>
                     updatePeriod(setter, "startDate", dateStr)
                   }
@@ -283,6 +332,7 @@ export default function AddElectionForm({
                   id={getPickerId(title, "end")}
                   placeholder="Select end date"
                   defaultDate={period.endDate || undefined}
+                  minDate={period.startDate || undefined}
                   onChange={(_, dateStr) =>
                     updatePeriod(setter, "endDate", dateStr)
                   }
@@ -295,6 +345,11 @@ export default function AddElectionForm({
                   mode="time"
                   placeholder="Select end time"
                   defaultDate={period.endTime || undefined}
+                  minTime={getStrictlyLaterTime(
+                    period.startDate,
+                    period.startTime,
+                    period.endDate
+                  )}
                   onChange={(_, time) =>
                     updatePeriod(setter, "endTime", time)
                   }
@@ -403,8 +458,18 @@ export default function AddElectionForm({
       {/* ELECTION PERIODS */}
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         {renderPeriod("Nomination period", nomination, setNomination)}
-        {renderPeriod("Withdraw nomination period", withdrawal, setWithdrawal)}
-        {renderPeriod("Voting period", voting, setVoting)}
+        {renderPeriod(
+          "Withdraw nomination period",
+          withdrawal,
+          setWithdrawal,
+          getNextCalendarDate(nomination.endDate)
+        )}
+        {renderPeriod(
+          "Voting period",
+          voting,
+          setVoting,
+          getNextCalendarDate(withdrawal.endDate)
+        )}
       </section>
 
       {/* LOCATION + WINGS */}

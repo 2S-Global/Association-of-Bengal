@@ -13,6 +13,10 @@ type PropsType = {
   mode?: "single" | "multiple" | "range" | "time";
   onChange?: Hook | Hook[];
   defaultDate?: DateOption;
+  minDate?: DateOption;
+  maxDate?: DateOption;
+  minTime?: string;
+  maxTime?: string;
   label?: string;
   placeholder?: string;
 };
@@ -23,6 +27,10 @@ export default function DatePicker({
   onChange,
   label,
   defaultDate,
+  minDate,
+  maxDate,
+  minTime,
+  maxTime,
   placeholder,
 }: PropsType) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,6 +91,18 @@ export default function DatePicker({
       pickerRef.current = null;
     };
   }, [mode]);
+
+  useEffect(() => {
+    const picker = pickerRef.current;
+
+    if (!picker) return;
+
+    const isTimePicker = mode === "time";
+    picker.set("minDate", isTimePicker ? undefined : minDate ?? "today");
+    picker.set("maxDate", isTimePicker ? undefined : maxDate);
+    picker.set("minTime", isTimePicker ? minTime : undefined);
+    picker.set("maxTime", isTimePicker ? maxTime : undefined);
+  }, [maxDate, maxTime, minDate, minTime, mode]);
 
   useEffect(() => {
     const picker = pickerRef.current;

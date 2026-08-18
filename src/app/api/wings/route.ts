@@ -7,7 +7,7 @@ export async function GET() {
     await connectDB();
     const wings = await mongoose.connection.db
       ?.collection("members")
-      .distinct("wing", { wing: { $type: "string", $ne: "" } });
+      .distinct("wings", { wings: { $type: "string", $ne: "" } });
     const data = [...new Set((wings ?? []).map((wing) => wing.trim()).filter(Boolean))]
       .sort((first, second) => first.localeCompare(second, undefined, { sensitivity: "base" }));
 
