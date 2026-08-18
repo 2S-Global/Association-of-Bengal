@@ -336,12 +336,12 @@ export default function MembersPage() {
                 </div>
               ))}
             </div>
-
+{/* 
             <div className="mt-10 sm:mt-12 text-center">
               <button className="px-8 sm:px-12 py-3 border-2 border-[#570013] text-[#570013] text-[12px] sm:text-[14px] leading-[20px] tracking-[0.05em] font-semibold rounded-full hover:bg-[#570013] hover:text-white transition-all duration-300 focus:ring-4 focus:ring-[#e0bfbf] outline-none">
                 View Full Directory
               </button>
-            </div>
+            </div> */}
           </section>
 
           {/* Join Us Form Section */}
