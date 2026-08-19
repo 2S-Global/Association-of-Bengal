@@ -238,7 +238,7 @@ export default function ElectionList() {
                   >
                     <td className="px-5 py-4 text-center sm:px-6">
                       <Link
-                        href={`/admin/manage-election/list-election/${election._id}`}
+                        href={`/admin/manage-election/list-election/${election._id}/nominations`}
                         className="font-medium text-gray-800 transition hover:text-[#570013] dark:text-white/90 dark:hover:text-[#e8b4b4]"
                       >
                         {election.name}

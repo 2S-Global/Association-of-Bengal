@@ -3,25 +3,31 @@ import React from "react";
 
 interface BreadcrumbProps {
   pageTitle: string;
+  previousPage?: string;
+  previousPageHref?: string;
 }
 
-const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
+const PageBreadcrumb: React.FC<BreadcrumbProps> = ({
+  pageTitle,
+  previousPage,
+  previousPageHref,
+}) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-      <h2
-        className="text-xl font-semibold text-gray-800 dark:text-white/90"
-        x-text="pageName"
-      >
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
         {pageTitle}
       </h2>
+
       <nav>
         <ol className="flex items-center gap-1.5">
+          {/* Home */}
           <li>
             <Link
-              className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-              href="/"
+              href="/admin/dashboard"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-[#8b1a1a] dark:text-gray-400 dark:hover:text-white"
             >
               Home
+
               <svg
                 className="stroke-current"
                 width="17"
@@ -32,7 +38,7 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
               >
                 <path
                   d="M6.0765 12.667L10.2432 8.50033L6.0765 4.33366"
-                  stroke=""
+                  stroke="currentColor"
                   strokeWidth="1.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -40,6 +46,37 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({ pageTitle }) => {
               </svg>
             </Link>
           </li>
+
+          {/* Previous Page */}
+          {previousPage && previousPageHref && (
+            <li>
+              <Link
+                href={previousPageHref}
+                className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition hover:text-[#8b1a1a] dark:text-gray-400 dark:hover:text-white"
+              >
+                {previousPage}
+
+                <svg
+                  className="stroke-current"
+                  width="17"
+                  height="16"
+                  viewBox="0 0 17 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M6.0765 12.667L10.2432 8.50033L6.0765 4.33366"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+            </li>
+          )}
+
+          {/* Current Page */}
           <li className="text-sm text-gray-800 dark:text-white/90">
             {pageTitle}
           </li>

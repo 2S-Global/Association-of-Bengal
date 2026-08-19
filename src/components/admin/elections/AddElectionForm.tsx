@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import DatePicker from "@/components/admin/ui/DatePicker";
 import {
@@ -44,7 +44,7 @@ const labelClass = "text-sm font-medium text-gray-700 dark:text-gray-300";
 const capitalizeSentences = (value: string) =>
   value.replace(
     /(^|[.!?]\s+)([a-z])/g,
-    (_, prefix: string, letter: string) => `${prefix}${letter.toUpperCase()}`
+    (_, prefix: string, letter: string) => `${prefix}${letter.toUpperCase()}`,
   );
 
 const getNextCalendarDate = (dateValue: string) => {
@@ -53,7 +53,7 @@ const getNextCalendarDate = (dateValue: string) => {
 
   const [, yearText, monthText, dayText] = match;
   const date = new Date(
-    Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText) + 1)
+    Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText) + 1),
   );
 
   return date.toISOString().slice(0, 10);
@@ -62,7 +62,7 @@ const getNextCalendarDate = (dateValue: string) => {
 const getStrictlyLaterTime = (
   startDate: string,
   startTime: string,
-  endDate: string
+  endDate: string,
 ) => {
   if (!startDate || startDate !== endDate || !startTime) return undefined;
 
@@ -80,7 +80,7 @@ const getStrictlyLaterTime = (
   if (minimumMinutes >= 24 * 60) return undefined;
 
   return `${String(Math.floor(minimumMinutes / 60)).padStart(2, "0")}:${String(
-    minimumMinutes % 60
+    minimumMinutes % 60,
   ).padStart(2, "0")}`;
 };
 
@@ -90,19 +90,21 @@ export default function AddElectionForm({
   initialElection?: ElectionFormData;
 }) {
   const [name, setName] = useState(initialElection?.name ?? "");
-  const [description, setDescription] = useState(initialElection?.description ?? "");
+  const [description, setDescription] = useState(
+    initialElection?.description ?? "",
+  );
   const [postDesignations, setPostDesignations] = useState(
-    initialElection?.postDesignations ?? [""]
+    initialElection?.postDesignations ?? [""],
   );
 
   const [nomination, setNomination] = useState<Period>(
-    initialElection?.nomination ?? emptyPeriod
+    initialElection?.nomination ?? emptyPeriod,
   );
   const [withdrawal, setWithdrawal] = useState<Period>(
-    initialElection?.withdrawal ?? emptyPeriod
+    initialElection?.withdrawal ?? emptyPeriod,
   );
   const [voting, setVoting] = useState<Period>(
-    initialElection?.voting ?? emptyPeriod
+    initialElection?.voting ?? emptyPeriod,
   );
 
   const [wings, setWings] = useState<string[]>(initialElection?.wings ?? []);
@@ -112,6 +114,7 @@ export default function AddElectionForm({
   const [location, setLocation] = useState(initialElection?.location ?? "");
 
   const [isSaving, setIsSaving] = useState(false);
+  const designationInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -119,7 +122,8 @@ export default function AddElectionForm({
     const loadWings = async () => {
       try {
         const response = await fetch("/api/wings");
-        const result: { data?: unknown; message?: string } = await response.json();
+        const result: { data?: unknown; message?: string } =
+          await response.json();
 
         if (!response.ok || !Array.isArray(result.data)) {
           throw new Error(result.message || "Unable to load member wings.");
@@ -127,13 +131,17 @@ export default function AddElectionForm({
 
         if (isMounted) {
           setWingOptions(
-            result.data.filter((wing): wing is string => typeof wing === "string")
+            result.data.filter(
+              (wing): wing is string => typeof wing === "string",
+            ),
           );
         }
       } catch (error) {
         if (isMounted) {
           setWingsError(
-            error instanceof Error ? error.message : "Unable to load member wings."
+            error instanceof Error
+              ? error.message
+              : "Unable to load member wings.",
           );
         }
       } finally {
@@ -150,7 +158,7 @@ export default function AddElectionForm({
   const updatePeriod = (
     setter: React.Dispatch<React.SetStateAction<Period>>,
     key: keyof Period,
-    value: string
+    value: string,
   ) => {
     setter((current) => ({
       ...current,
@@ -161,18 +169,24 @@ export default function AddElectionForm({
   const updateDesignation = (index: number, value: string) => {
     setPostDesignations((items) =>
       items.map((item, itemIndex) =>
-        itemIndex === index ? capitalizeSentences(value) : item
-      )
+        itemIndex === index ? capitalizeSentences(value) : item,
+      ),
     );
   };
 
   const addDesignation = () => {
     setPostDesignations((items) => [...items, ""]);
+
+    // Focus the newly added input after React renders it
+    setTimeout(() => {
+      const newIndex = postDesignations.length;
+      designationInputRefs.current[newIndex]?.focus();
+    }, 0);
   };
 
   const removeDesignation = (index: number) => {
     setPostDesignations((items) =>
-      items.filter((_, itemIndex) => itemIndex !== index)
+      items.filter((_, itemIndex) => itemIndex !== index),
     );
   };
 
@@ -180,7 +194,7 @@ export default function AddElectionForm({
     setWings((current) =>
       current.includes(wing)
         ? current.filter((item) => item !== wing)
-        : [...current, wing]
+        : [...current, wing],
     );
   };
 
@@ -231,7 +245,7 @@ export default function AddElectionForm({
             location,
             rulesAndRegulations,
           }),
-        }
+        },
       );
 
       let result: { message?: string; error?: string } = {};
@@ -243,7 +257,7 @@ export default function AddElectionForm({
 
       if (!response.ok) {
         throw new Error(
-          result.message || result.error || "Unable to save the election."
+          result.message || result.error || "Unable to save the election.",
         );
       }
 
@@ -251,7 +265,7 @@ export default function AddElectionForm({
         result.message ||
           (initialElection?._id
             ? "Election updated successfully"
-            : "Election created successfully")
+            : "Election created successfully"),
       );
 
       if (!initialElection?._id) resetForm();
@@ -259,7 +273,7 @@ export default function AddElectionForm({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Something went wrong while saving the election."
+          : "Something went wrong while saving the election.",
       );
     } finally {
       setIsSaving(false);
@@ -273,7 +287,7 @@ export default function AddElectionForm({
     title: string,
     period: Period,
     setter: React.Dispatch<React.SetStateAction<Period>>,
-    startDateMinimum?: string
+    startDateMinimum?: string,
   ) => (
     <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
@@ -348,11 +362,9 @@ export default function AddElectionForm({
                   minTime={getStrictlyLaterTime(
                     period.startDate,
                     period.startTime,
-                    period.endDate
+                    period.endDate,
                   )}
-                  onChange={(_, time) =>
-                    updatePeriod(setter, "endTime", time)
-                  }
+                  onChange={(_, time) => updatePeriod(setter, "endTime", time)}
                 />
               </div>
             </div>
@@ -418,11 +430,16 @@ export default function AddElectionForm({
                     </div>
 
                     <input
+                      ref={(element) => {
+                        designationInputRefs.current[index] = element;
+                      }}
                       className="h-11 w-full max-w-md rounded-lg border border-gray-300 bg-white px-3.5 text-sm text-gray-800 shadow-theme-xs outline-none transition-all placeholder:text-gray-400 focus:border-[#8b1a1a] focus:ring-3 focus:ring-[#8b1a1a]/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-gray-500"
                       value={designation}
                       onChange={(e) => updateDesignation(index, e.target.value)}
                       placeholder={
-                        index === 0 ? "e.g. President" : "Enter another designation"
+                        index === 0
+                          ? "e.g. President"
+                          : "Enter another designation"
                       }
                       required
                     />
@@ -462,13 +479,13 @@ export default function AddElectionForm({
           "Withdraw nomination period",
           withdrawal,
           setWithdrawal,
-          getNextCalendarDate(nomination.endDate)
+          getNextCalendarDate(nomination.endDate),
         )}
         {renderPeriod(
           "Voting period",
           voting,
           setVoting,
-          getNextCalendarDate(withdrawal.endDate)
+          getNextCalendarDate(withdrawal.endDate),
         )}
       </section>
 
