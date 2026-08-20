@@ -28,12 +28,19 @@ type Props = {
   electionId: string;
 };
 
+type NominationStatusChange = {
+  nomination: Nomination;
+  status: Nomination["status"];
+};
+
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 
 export default function NominationList({ electionId }: Props) {
   const [nominations, setNominations] = useState<Nomination[]>([]);
   const [loading, setLoading] = useState(true);
-  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [nominationStatusChange, setNominationStatusChange] =
+    useState<NominationStatusChange | null>(null);
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,23 +122,15 @@ export default function NominationList({ electionId }: Props) {
     return filteredNominations.slice(start, start + rowsPerPage);
   }, [filteredNominations, currentPage, rowsPerPage]);
 
-  const approveNomination = async (nomination: Nomination) => {
-    if (nomination.status === "approved") {
+  const updateNominationStatus = async (
+    nomination: Nomination,
+    status: Nomination["status"]
+  ) => {
+    if (nomination.status === status) {
       return;
     }
 
-    const candidateName =
-      nomination.member?.fullName || "this candidate";
-
-    const confirmed = window.confirm(
-      `Are you sure you want to approve ${candidateName} for ${nomination.position}?`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setApprovingId(nomination._id);
+    setUpdatingId(nomination._id);
 
     try {
       const response = await fetch(
@@ -142,7 +141,7 @@ export default function NominationList({ electionId }: Props) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: "approved",
+            status,
           }),
         }
       );
@@ -151,7 +150,7 @@ export default function NominationList({ electionId }: Props) {
 
       if (!response.ok) {
         throw new Error(
-          result.message || "Unable to approve nomination."
+          result.message || "Unable to update nomination."
         );
       }
 
@@ -160,23 +159,30 @@ export default function NominationList({ electionId }: Props) {
           item._id === nomination._id
             ? {
                 ...item,
-                status: "approved",
+                status,
               }
             : item
         )
       );
 
-      toast.success(
-        `${candidateName} approved successfully.`
-      );
+      toast.success(result.message || "Nomination updated successfully.");
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Unable to approve nomination."
+          : "Unable to update nomination."
       );
     } finally {
-      setApprovingId(null);
+      setUpdatingId(null);
+    }
+  };
+
+  const requestNominationStatusChange = (
+    nomination: Nomination,
+    status: Nomination["status"]
+  ) => {
+    if (nomination.status !== status) {
+      setNominationStatusChange({ nomination, status });
     }
   };
 
@@ -243,7 +249,8 @@ export default function NominationList({ electionId }: Props) {
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <>
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
         {/* Rows per page */}
@@ -327,6 +334,10 @@ export default function NominationList({ electionId }: Props) {
               <th className="px-5 py-4 text-center sm:px-6">
                 Approve
               </th>
+
+              <th className="px-5 py-4 text-center sm:px-6">
+                Reject
+              </th>
             </tr>
           </thead>
 
@@ -334,7 +345,7 @@ export default function NominationList({ electionId }: Props) {
             {loading ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -349,7 +360,7 @@ export default function NominationList({ electionId }: Props) {
             ) : paginatedNominations.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -493,20 +504,20 @@ export default function NominationList({ electionId }: Props) {
                         </span>
                       </td>
 
-                      {/* Approve checkbox */}
+                      {/* Approval toggle */}
                       <td className="px-5 py-4 text-center sm:px-6">
                         <div className="flex justify-center">
                           <label
                             className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition ${
                               nomination.status ===
                               "approved"
-                                ? "cursor-default bg-emerald-50 dark:bg-emerald-500/10"
+                                ? "cursor-pointer bg-emerald-50 dark:bg-emerald-500/10"
                                 : "cursor-pointer hover:bg-[#570013]/10 dark:hover:bg-[#570013]/20"
                             }`}
                             title={
                               nomination.status ===
                               "approved"
-                                ? "Candidate approved"
+                                ? "Move nomination to pending"
                                 : "Approve candidate"
                             }
                           >
@@ -517,20 +528,21 @@ export default function NominationList({ electionId }: Props) {
                                 "approved"
                               }
                               disabled={
-                                nomination.status ===
-                                  "approved" ||
-                                approvingId ===
+                                updatingId ===
                                   nomination._id
                               }
-                              onChange={() =>
-                                approveNomination(
-                                  nomination
+                              onChange={(event) =>
+                                requestNominationStatusChange(
+                                  nomination,
+                                  event.target.checked
+                                    ? "approved"
+                                    : "pending"
                                 )
                               }
                               className="sr-only"
                             />
 
-                            {approvingId ===
+                            {updatingId ===
                             nomination._id ? (
                               <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#570013] border-t-transparent" />
                             ) : (
@@ -560,6 +572,26 @@ export default function NominationList({ electionId }: Props) {
                             )}
                           </label>
                         </div>
+                      </td>
+
+                      {/* Reject action */}
+                      <td className="px-5 py-4 text-center sm:px-6">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            requestNominationStatusChange(
+                              nomination,
+                              "rejected"
+                            )
+                          }
+                          disabled={
+                            nomination.status === "rejected" ||
+                            updatingId === nomination._id
+                          }
+                          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/70 dark:text-red-400 dark:hover:bg-red-500/10"
+                        >
+                          Reject
+                        </button>
                       </td>
                     </tr>
                   );
@@ -669,5 +701,73 @@ export default function NominationList({ electionId }: Props) {
         </div>
       )}
     </section>
+
+      {nominationStatusChange && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="nomination-status-change-title"
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900">
+            <div className="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+              <h2
+                id="nomination-status-change-title"
+                className="text-lg font-semibold text-gray-800 dark:text-white/90"
+              >
+                {nominationStatusChange.status === "approved"
+                  ? "Approve candidate?"
+                  : nominationStatusChange.status === "rejected"
+                    ? "Reject candidate?"
+                    : "Move nomination to pending?"}
+              </h2>
+            </div>
+
+            <div className="px-6 py-5">
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                Are you sure you want to{" "}
+                {nominationStatusChange.status === "approved"
+                  ? "approve"
+                  : nominationStatusChange.status === "rejected"
+                    ? "reject"
+                    : "move to pending"}{" "}
+                <strong className="font-semibold text-gray-800 dark:text-white/90">
+                  {nominationStatusChange.nomination.member?.fullName ||
+                    "this candidate"}
+                </strong>{" "}
+                for {nominationStatusChange.nomination.position}?
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+              <button
+                type="button"
+                onClick={() => setNominationStatusChange(null)}
+                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  updateNominationStatus(
+                    nominationStatusChange.nomination,
+                    nominationStatusChange.status
+                  );
+                  setNominationStatusChange(null);
+                }}
+                className="rounded-xl bg-[#570013] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#450010]"
+              >
+                Yes, {nominationStatusChange.status === "approved"
+                  ? "approve"
+                  : nominationStatusChange.status === "rejected"
+                    ? "reject"
+                    : "move to pending"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

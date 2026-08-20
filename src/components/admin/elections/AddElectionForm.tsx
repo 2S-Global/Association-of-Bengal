@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import DatePicker from "@/components/admin/ui/DatePicker";
 import {
@@ -89,6 +90,7 @@ export default function AddElectionForm({
 }: {
   initialElection?: ElectionFormData;
 }) {
+  const router = useRouter();
   const [name, setName] = useState(initialElection?.name ?? "");
   const [description, setDescription] = useState(
     initialElection?.description ?? "",
@@ -198,17 +200,6 @@ export default function AddElectionForm({
     );
   };
 
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setPostDesignations([""]);
-    setNomination(emptyPeriod);
-    setWithdrawal(emptyPeriod);
-    setVoting(emptyPeriod);
-    setWings([]);
-    setLocation("");
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSaving) return;
@@ -267,8 +258,8 @@ export default function AddElectionForm({
             ? "Election updated successfully"
             : "Election created successfully"),
       );
-
-      if (!initialElection?._id) resetForm();
+      router.push("/admin/manage-election/list-election");
+      router.refresh();
     } catch (error) {
       toast.error(
         error instanceof Error
