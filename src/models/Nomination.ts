@@ -8,6 +8,10 @@ export interface INomination {
   manifesto: string;
   agreedToTerms: boolean;
   status: "pending" | "approved" | "rejected";
+
+  // Automatically created by Mongoose because timestamps: true
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const NominationSchema = new Schema<INomination>(
