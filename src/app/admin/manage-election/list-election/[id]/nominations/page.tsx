@@ -24,7 +24,7 @@ export default async function ElectionNominationsPage({ params }: Props) {
 
   return (
     <div>
-      <PageBreadcrumb 
+      <PageBreadcrumb
         pageTitle="Election nominations"
         previousPage="Elections List"
         previousPageHref="/admin/manage-election/list-election"
@@ -88,8 +88,9 @@ export default async function ElectionNominationsPage({ params }: Props) {
 
       {/* Election information */}
       <section className="mb-5 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        {/* Location */}
+        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#B88A44] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#B88A44] dark:bg-white/[0.03]">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Location
           </p>
 
@@ -98,8 +99,9 @@ export default async function ElectionNominationsPage({ params }: Props) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        {/* Eligible wings */}
+        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#8B1A1A] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#8B1A1A] dark:bg-white/[0.03]">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Eligible wings
           </p>
 
@@ -108,8 +110,9 @@ export default async function ElectionNominationsPage({ params }: Props) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        {/* Posts */}
+        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#B88A44] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#B88A44] dark:bg-white/[0.03]">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Posts
           </p>
 

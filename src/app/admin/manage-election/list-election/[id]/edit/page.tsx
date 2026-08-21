@@ -13,5 +13,5 @@ export default async function EditElectionPage({ params }: Props) {
   if (!election) notFound();
   const initialElection = JSON.parse(JSON.stringify(election)) as ElectionFormData;
 
-  return <div><PageBreadcrumb pageTitle="Edit Election" /><div className="mb-6"><p className="text-sm text-gray-500 dark:text-gray-400">Update the election details, key dates, and eligible wings.</p></div><AddElectionForm initialElection={initialElection} /></div>;
+  return <div><PageBreadcrumb pageTitle="Edit election" previousPage="Election list" previousPageHref="/admin/manage-election/list-election" /><div className="mb-6"><p className="text-sm text-gray-500 dark:text-gray-400">Update the election details, key dates, and eligible wings.</p></div><AddElectionForm initialElection={initialElection} /></div>;
 }
