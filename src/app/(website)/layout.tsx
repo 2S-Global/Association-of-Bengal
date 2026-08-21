@@ -20,16 +20,24 @@ import { ReactElement, ReactNode } from "react";
 import Header from "./component/header";
 import Footer from "./component/footer";
 import "../globals.css"
+
 interface WebsiteLayoutProps {
   children: ReactNode;
 }
 
 export default function WebsiteLayout({ children }: WebsiteLayoutProps): ReactElement {
   return (
-    <div className="light min-h-screen bg-[#fff8f5] text-on-surface">
-      <Header/>
-      {children}
-      <Footer/>
+    // 1. Added 'flex' and 'flex-col' to the main wrapper
+    <div className="light min-h-screen bg-[#fff8f5] text-on-surface flex flex-col">
+      <Header />
+      
+      {/* 2. Wrapped children in a main tag with 'flex-grow' */}
+      {/* This pushes the footer securely to the bottom of the page */}
+      <main className="flex-grow w-full flex flex-col">
+        {children}
+      </main>
+      
+      <Footer />
     </div>
   );
 }

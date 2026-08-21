@@ -1,4 +1,7 @@
 
+
+
+
 // "use client";
 
 // import React, { useRef, useState, useCallback, useEffect } from "react";
@@ -6,104 +9,7 @@
 // import Link from "next/link";
 // import useEmblaCarousel from "embla-carousel-react";
 // import Autoplay from "embla-carousel-autoplay";
-
-// const galleryImages = [
-//   {
-//     id: 1,
-//     src: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Book Fair Exhibition",
-//   },
-//   {
-//     id: 2,
-//     src: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Books and Literature",
-//   },
-//   {
-//     id: 3,
-//     src: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Library Books",
-//   },
-//   {
-//     id: 4,
-//     src: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Library Exhibition",
-//   },
-//   {
-//     id: 5,
-//     src: "https://images.unsplash.com/photo-1526243741027-444d633d7365?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Literary Event",
-//   },
-//   {
-//     id: 6,
-//     src: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Bookshelf",
-//   },
-//   {
-//     id: 7,
-//     src: "https://images.unsplash.com/photo-1511108690759-009324a90311?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Reading Event",
-//   },
-//   {
-//     id: 8,
-//     src: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Book Collection",
-//   },
-//   {
-//     id: 9,
-//     src: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Literary Books",
-//   },
-//   {
-//     id: 10,
-//     src: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Cultural Exhibition",
-//   },
-//   {
-//     id: 11,
-//     src: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Children's Books",
-//   },
-//   {
-//     id: 12,
-//     src: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Book Display",
-//   },
-//   {
-//     id: 13,
-//     src: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Open Book",
-//   },
-//   {
-//     id: 14,
-//     src: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Bookshelf Collection",
-//   },
-//   {
-//     id: 15,
-//     src: "https://images.unsplash.com/photo-1524578271613-d550eacf6090?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Literature Collection",
-//   },
-//   {
-//     id: 16,
-//     src: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Reading Space",
-//   },
-//   {
-//     id: 17,
-//     src: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Cultural Books",
-//   },
-//   {
-//     id: 19,
-//     src: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Book Reading",
-//   },
-//   {
-//     id: 20,
-//     src: "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&w=1200&q=85",
-//     alt: "Cultural Event",
-//   },
-// ];
+// import { GALLERY_ITEMS } from "@/data/galleryData";
 
 // export default function GallerySection() {
 //   const autoplay = useRef(
@@ -231,9 +137,9 @@
 //           className="overflow-hidden cursor-grab active:cursor-grabbing pb-2"
 //         >
 //           <div className="flex -ml-4">
-//             {galleryImages.map((image) => (
+//             {GALLERY_ITEMS.map((item, index) => (
 //               <div
-//                 key={image.id}
+//                 key={item.id}
 //                 className="
 //                   flex-[0_0_100%]
 //                   min-w-0
@@ -264,10 +170,10 @@
 //                     {/* IMAGE CONTAINER */}
 //                     <div className="relative w-full aspect-[4/3] bg-[#fcf8f6] overflow-hidden">
 //                       <Image
-//                         src={image.src}
-//                         alt={image.alt}
+//                         src={item.imageUrl}
+//                         alt={item.imageAlt}
 //                         fill
-//                         priority={image.id <= 4}
+//                         priority={index < 4}
 //                         className="
 //                           object-cover
 //                           transition-transform
@@ -288,7 +194,7 @@
 //                     <div className="p-4 sm:p-5 flex flex-col justify-between flex-grow bg-white border-t border-[#f4ebe6]">
 //                       <div className="space-y-1">
 //                         <span className="text-[#8a686b] text-[10px] font-semibold uppercase tracking-[0.08em]">
-//                           Bengal Literature &amp; Culture
+//                           {item.album}
 //                         </span>
 //                         <h3
 //                           className="
@@ -300,7 +206,7 @@
 //                             line-clamp-1
 //                           "
 //                         >
-//                           {image.alt}
+//                           {item.title}
 //                         </h3>
 //                       </div>
 //                     </div>
@@ -314,7 +220,6 @@
 //     </section>
 //   );
 // }
-
 
 
 "use client";
@@ -374,8 +279,9 @@ export default function GallerySection() {
     };
   }, [emblaApi, onSelect]);
 
+  // Split py into pt (top) and pb (bottom) to drastically reduce the top gap
   return (
-    <section className="bg-[#fff8f5] py-16 sm:py-20 lg:py-24 overflow-hidden font-['Libre_Franklin']">
+    <section className="bg-[#fff8f5] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pt-1 lg:pb-24 overflow-hidden font-['Libre_Franklin']">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-16">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 lg:mb-14">
