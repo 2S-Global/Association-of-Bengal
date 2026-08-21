@@ -27,13 +27,12 @@ interface WebsiteLayoutProps {
 
 export default function WebsiteLayout({ children }: WebsiteLayoutProps): ReactElement {
   return (
-    // 1. Added 'flex' and 'flex-col' to the main wrapper
-    <div className="light min-h-screen bg-[#fff8f5] text-on-surface flex flex-col">
+    // Removed 'min-h-screen' and 'flex-col' from here
+    <div className="light bg-[#fff8f5] text-on-surface">
       <Header />
       
-      {/* 2. Wrapped children in a main tag with 'flex-grow' */}
-      {/* This pushes the footer securely to the bottom of the page */}
-      <main className="flex-grow w-full flex flex-col">
+      {/* Removed 'flex-grow' from here so it simply wraps the content */}
+      <main className="w-full">
         {children}
       </main>
       
