@@ -30,8 +30,10 @@ export default function MembershipApplicationModal({ isOpen, onClose }: Membersh
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, photo: e.target.files[0] }));
+    // TypeScript safe check for files
+    const files = e.target.files;
+    if (files && files.length > 0 && files[0]) {
+      setFormData((prev) => ({ ...prev, photo: files[0] }));
     }
   };
 
@@ -70,7 +72,7 @@ export default function MembershipApplicationModal({ isOpen, onClose }: Membersh
             </div>
             <div>
               <h3 className="text-[18px] font-bold text-[#570013] font-['Playfair_Display',serif] tracking-tight">
-                Association of Bengal  For Literature & Culture
+                Association of Bengal For Literature & Culture
               </h3>
               <p className="text-[11px] text-[#775a19] uppercase tracking-wider font-semibold">
                 Membership Application Portal
