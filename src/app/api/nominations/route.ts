@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
-import Nomination from "@/models/Nomination";
+import Nomination, { type INomination } from "@/models/Nomination";
 import Member from "@/models/Member";
 
 export async function GET(request: Request) {
@@ -10,6 +10,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const electionId = searchParams.get("election");
+    const statusParam = searchParams.get("status");
 
     if (!electionId) {
       return NextResponse.json(
@@ -31,8 +32,24 @@ export async function GET(request: Request) {
       );
     }
 
+    const status = statusParam as INomination["status"] | null;
+
+    if (
+      statusParam &&
+      !["pending", "approved", "rejected"].includes(statusParam)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid nomination status.",
+        },
+        { status: 400 }
+      );
+    }
+
     const nominations = await Nomination.find({
       election: new mongoose.Types.ObjectId(electionId),
+      ...(status ? { status } : {}),
     })
       .populate({
         path: "member",

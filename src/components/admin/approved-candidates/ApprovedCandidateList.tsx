@@ -2,28 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-type Candidate = {
-  _id: string;
-  position: string;
-  wing: string;
-  manifesto: string;
-  member: { fullName: string; memberId: string; photoUrl: string } | null;
-};
+import type { Nomination } from "@/types/Nomination";
 
 export default function ApprovedCandidateList({
   electionId,
 }: {
   electionId: string;
 }) {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [nominations, setNominations] = useState<Nomination[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCandidates = async () => {
       try {
         const response = await fetch(
-          `/api/elections/${electionId}/approved-candidates`,
+          `/api/nominations?election=${encodeURIComponent(electionId)}&status=approved`,
           { cache: "no-store" },
         );
         const result = await response.json();
@@ -31,7 +24,7 @@ export default function ApprovedCandidateList({
           throw new Error(
             result.message || "Unable to load approved candidates.",
           );
-        setCandidates(result.data || []);
+        setNominations(result.data || []);
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -57,10 +50,10 @@ export default function ApprovedCandidateList({
     <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
         <h2 className="font-semibold text-gray-800 dark:text-white/90">
-          Approved candidates ({candidates.length})
+          Approved candidates ({nominations.length})
         </h2>
       </div>
-      {candidates.length === 0 ? (
+      {nominations.length === 0 ? (
         <p className="px-5 py-12 text-center text-sm text-gray-500">
           No approved candidates for this election.
         </p>
@@ -76,40 +69,40 @@ export default function ApprovedCandidateList({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {candidates.map((candidate) => (
-                <tr key={candidate._id}>
+              {nominations.map((nomination) => (
+                <tr key={nomination._id}>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      {candidate.member?.photoUrl ? (
+                      {nomination.member?.photoUrl ? (
                         <img
-                          src={candidate.member.photoUrl}
+                          src={nomination.member.photoUrl}
                           alt=""
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#570013]/10 font-semibold text-[#570013]">
-                          {candidate.member?.fullName.charAt(0) || "?"}
+                          {nomination.member?.fullName.charAt(0) || "?"}
                         </div>
                       )}
                       <div>
                         <p className="font-medium text-gray-800 dark:text-white">
-                          {candidate.member?.fullName || "Unknown candidate"}
+                          {nomination.member?.fullName || "Unknown candidate"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {candidate.member?.memberId ||
+                          {nomination.member?.memberId ||
                             "Member ID unavailable"}
                         </p>
                       </div>
                     </div>
                   </td>
                   <td className="px-5 py-4 text-gray-700 dark:text-gray-300">
-                    {candidate.position}
+                    {nomination.position}
                   </td>
                   <td className="px-5 py-4 text-gray-700 dark:text-gray-300">
-                    {candidate.wing}
+                    {nomination.wing}
                   </td>
                   <td className="max-w-md px-5 py-4 text-gray-600 dark:text-gray-400">
-                    {candidate.manifesto || "No manifesto provided."}
+                    {nomination.manifesto || "No manifesto provided."}
                   </td>
                 </tr>
               ))}

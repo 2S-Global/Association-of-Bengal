@@ -2,27 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-type Member = {
-  _id: string;
-  fullName: string;
-  memberId: string;
-  photoUrl: string;
-  wings: string[];
-};
-
-type Nomination = {
-  _id: string;
-  election: string;
-  member: Member | null;
-  position: string;
-  wing: string;
-  manifesto: string;
-  agreedToTerms: boolean;
-  status: "pending" | "approved" | "rejected";
-  createdAt: string;
-  updatedAt: string;
-};
+import type { Nomination } from "@/types/Nomination";
 
 type Props = {
   electionId: string;
