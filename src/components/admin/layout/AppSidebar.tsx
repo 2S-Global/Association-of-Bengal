@@ -211,9 +211,9 @@ const AppSidebar: React.FC = () => {
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-brand-500 border-brand-600 text-white h-screen transition-all duration-300 ease-in-out z-50 border-r ${
         isExpanded || isMobileOpen
-          ? "w-[290px]"
+          ? "w-[270px]"
           : isHovered
-          ? "w-[290px]"
+          ? "w-[270px]"
           : "w-[90px]"
       } ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
@@ -234,8 +234,8 @@ const AppSidebar: React.FC = () => {
                 <Image
                   src="/images/logo/balc_logo.png"
                   alt="Logo"
-                  width={40}
-                  height={40}
+                  width={30}
+                  height={30}
                 />
               </div>
               <div className="flex flex-col">
@@ -252,8 +252,8 @@ const AppSidebar: React.FC = () => {
               <Image
                 src="/images/logo/balc_logo.png"
                 alt="Logo"
-                width={40}
-                height={40}
+                width={30}
+                height={30}
               />
             </div>
           )}

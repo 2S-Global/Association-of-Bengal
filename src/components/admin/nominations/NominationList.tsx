@@ -243,8 +243,6 @@ export default function NominationList({ electionId }: Props) {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     }).format(date);
   };
 
@@ -304,7 +302,7 @@ export default function NominationList({ electionId }: Props) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-[1100px] w-full text-sm">
+        <table className="min-w-[900px] w-full text-sm">
           <thead>
             <tr className="bg-[#570013] text-xs font-semibold uppercase tracking-wider text-white">
               <th className="px-5 py-4 text-left sm:px-6">
@@ -332,11 +330,7 @@ export default function NominationList({ electionId }: Props) {
               </th>
 
               <th className="px-5 py-4 text-center sm:px-6">
-                Approve
-              </th>
-
-              <th className="px-5 py-4 text-center sm:px-6">
-                Reject
+                Action
               </th>
             </tr>
           </thead>
@@ -345,7 +339,7 @@ export default function NominationList({ electionId }: Props) {
             {loading ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -360,7 +354,7 @@ export default function NominationList({ electionId }: Props) {
             ) : paginatedNominations.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={7}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -504,9 +498,9 @@ export default function NominationList({ electionId }: Props) {
                         </span>
                       </td>
 
-                      {/* Approval toggle */}
+                      {/* Actions */}
                       <td className="px-5 py-4 text-center sm:px-6">
-                        <div className="flex justify-center">
+                        <div className="flex items-center justify-center gap-2">
                           <label
                             className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition ${
                               nomination.status ===
@@ -517,6 +511,12 @@ export default function NominationList({ electionId }: Props) {
                             title={
                               nomination.status ===
                               "approved"
+                                ? "Move nomination to pending"
+                                : "Approve candidate"
+                            }
+                            aria-label={
+                              nomination.status ===
+                                "approved"
                                 ? "Move nomination to pending"
                                 : "Approve candidate"
                             }
@@ -571,27 +571,38 @@ export default function NominationList({ electionId }: Props) {
                               </span>
                             )}
                           </label>
-                        </div>
-                      </td>
 
-                      {/* Reject action */}
-                      <td className="px-5 py-4 text-center sm:px-6">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            requestNominationStatusChange(
-                              nomination,
-                              "rejected"
-                            )
-                          }
-                          disabled={
-                            nomination.status === "rejected" ||
-                            updatingId === nomination._id
-                          }
-                          className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/70 dark:text-red-400 dark:hover:bg-red-500/10"
-                        >
-                          Reject
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              requestNominationStatusChange(
+                                nomination,
+                                "rejected"
+                              )
+                            }
+                            disabled={
+                              nomination.status === "rejected" ||
+                              updatingId === nomination._id
+                            }
+                            className="flex h-5 w-5 items-center justify-center rounded border-2 border-red-300 bg-white text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/70 dark:bg-gray-900 dark:text-red-400 dark:hover:bg-red-500/10"
+                            title="Reject candidate"
+                            aria-label="Reject candidate"
+                          >
+                            <svg
+                              className="h-3 w-3"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
