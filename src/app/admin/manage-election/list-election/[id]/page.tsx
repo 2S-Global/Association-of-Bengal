@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageBreadcrumb from "@/components/admin/ui/PageBreadcrumb";
 import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
+import ElectionActionLinks from "@/components/admin/elections/ElectionActionLinks";
+import { hasElectionPeriodEnded } from "@/lib/election-timeline-validation";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -21,6 +22,7 @@ export default async function ElectionDetailsPage({ params }: Props) {
   ];
 
   const isSuspended = item.status === "suspended";
+  const hasVotingEnded = hasElectionPeriodEnded(item.voting);
 
   return (
     <div>
@@ -37,25 +39,10 @@ export default async function ElectionDetailsPage({ params }: Props) {
           </p>
         </div>
 
-        <Link
-          href={`/admin/manage-election/list-election/${item._id}/edit`}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#8b1a1a] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#6d1414]"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.8}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-            />
-          </svg>
-          Edit election
-        </Link>
+        <ElectionActionLinks
+          electionId={item._id}
+          hasVotingEnded={hasVotingEnded}
+        />
       </div>
 
       {/* Periods */}

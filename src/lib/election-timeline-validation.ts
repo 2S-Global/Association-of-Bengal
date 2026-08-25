@@ -11,6 +11,11 @@ export type ElectionTimeline = {
   voting: ElectionPeriod;
 };
 
+export function hasElectionPeriodEnded(period: ElectionPeriod) {
+  const endTimestamp = getElectionTimestamp(period.endDate, period.endTime);
+  return endTimestamp !== null && Date.now() >= endTimestamp;
+}
+
 type ValidationResult = { valid: true } | { valid: false; message: string };
 
 const periodLabels = {
@@ -85,6 +90,10 @@ function toTimestamp(dateValue: string, timeValue: string) {
   if (!date || !time) return null;
 
   return Date.UTC(date.year, date.month - 1, date.day, time.hour, time.minute);
+}
+
+export function getElectionTimestamp(dateValue: string, timeValue: string) {
+  return toTimestamp(dateValue, timeValue);
 }
 
 function validatePeriod(period: unknown, label: string): ValidationResult {

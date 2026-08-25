@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { Nomination } from "@/types/Nomination";
 
 type Props = {
   electionId: string;
+  status?: Nomination["status"];
 };
 
 type NominationStatusChange = {
@@ -15,7 +17,7 @@ type NominationStatusChange = {
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 
-export default function NominationList({ electionId }: Props) {
+export default function NominationList({ electionId, status }: Props) {
   const [nominations, setNominations] = useState<Nomination[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -31,7 +33,9 @@ export default function NominationList({ electionId }: Props) {
 
     try {
       const response = await fetch(
-        `/api/nominations?election=${encodeURIComponent(electionId)}`,
+        `/api/nominations?election=${encodeURIComponent(electionId)}${
+          status ? `&status=${encodeURIComponent(status)}` : ""
+        }`,
         {
           cache: "no-store",
         }
@@ -57,7 +61,7 @@ export default function NominationList({ electionId }: Props) {
 
   useEffect(() => {
     loadNominations();
-  }, [electionId]);
+  }, [electionId, status]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -65,10 +69,6 @@ export default function NominationList({ electionId }: Props) {
 
   const filteredNominations = useMemo(() => {
     const term = search.trim().toLowerCase();
-
-    if (!term) {
-      return nominations;
-    }
 
     return nominations.filter((nomination) => {
       const candidateName =
@@ -79,17 +79,20 @@ export default function NominationList({ electionId }: Props) {
 
       const position = nomination.position?.toLowerCase() || "";
       const wing = nomination.wing?.toLowerCase() || "";
-      const status = nomination.status?.toLowerCase() || "";
+      const nominationStatus = nomination.status?.toLowerCase() || "";
 
-      return (
+      const matchesStatus = !status || nomination.status === status;
+      const matchesSearch =
+        !term ||
         candidateName.includes(term) ||
         memberId.includes(term) ||
         position.includes(term) ||
         wing.includes(term) ||
-        status.includes(term)
-      );
+        nominationStatus.includes(term);
+
+      return matchesStatus && matchesSearch;
     });
-  }, [nominations, search]);
+  }, [nominations, search, status]);
 
   const totalPages = Math.max(
     1,
@@ -400,10 +403,13 @@ export default function NominationList({ electionId }: Props) {
                           )}
 
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-800 dark:text-white/90">
+                            <Link
+                              href={`/admin/manage-election/list-election/${electionId}/nominations/${nomination._id}`}
+                              className="font-semibold text-gray-800 transition hover:text-[#570013] dark:text-white/90 dark:hover:text-[#e8b4b4]"
+                            >
                               {candidate?.fullName ||
                                 "Unknown candidate"}
-                            </p>
+                            </Link>
 
                             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                               {candidate?.memberId ||
@@ -481,6 +487,31 @@ export default function NominationList({ electionId }: Props) {
                       {/* Actions */}
                       <td className="px-5 py-4 text-center sm:px-6">
                         <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/admin/manage-election/list-election/${electionId}/nominations/${nomination._id}`}
+                            title="View candidate details"
+                            aria-label="View candidate details"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]"
+                          >
+                            <svg
+                              className="h-4.5 w-4.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={1.8}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                          </Link>
                           <label
                             className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition ${
                               nomination.status ===

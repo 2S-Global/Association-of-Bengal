@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { getElectionTimestamp } from "@/lib/election-timeline-validation";
+import ElectionActionLinks from "@/components/admin/elections/ElectionActionLinks";
 
 type Election = {
   _id: string;
@@ -25,6 +27,7 @@ export default function ElectionList() {
   const [electionToSuspend, setElectionToSuspend] = useState<Election | null>(
     null,
   );
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Table controls
   const [search, setSearch] = useState("");
@@ -49,6 +52,14 @@ export default function ElectionList() {
 
   useEffect(() => {
     loadElections();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
   // Reset to page 1 when search or rowsPerPage changes
@@ -151,20 +162,23 @@ export default function ElectionList() {
       return false;
     }
 
-    const datePart = new Date(election.voting.endDate)
-      .toISOString()
-      .split("T")[0];
+    const endTimestamp = getElectionTimestamp(
+      election.voting.endDate,
+      election.voting.endTime,
+    );
 
-    const endDateTime = new Date(`${datePart}T${election.voting.endTime}:00`);
+    if (endTimestamp === null) {
+      return false;
+    }
 
-    return Date.now() >= endDateTime.getTime();
+    return currentTime >= endTimestamp;
   };
 
   return (
     <>
       <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
         {/* Header: Rows per page + Search */}
-        <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
+        <div className="flex flex-col gap-4 border-b border-gray-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
           {/* Left → Rows per page */}
           <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
             <span className="whitespace-nowrap">Rows per page:</span>
@@ -273,7 +287,7 @@ export default function ElectionList() {
                   >
                     <td className="px-5 py-4 text-center sm:px-6">
                       <Link
-                        href={`/admin/manage-election/list-election/${election._id}/nominations`}
+                        href={`/admin/manage-election/list-election/${election._id}`}
                         className="font-medium text-gray-800 transition hover:text-[#570013] dark:text-white/90 dark:hover:text-[#e8b4b4]"
                       >
                         {election.name}
@@ -314,99 +328,11 @@ export default function ElectionList() {
 
                     <td className="px-5 py-4 text-center sm:px-6">
                       <div className="flex items-center justify-center gap-1.5">
-                        {/* View */}
-                        <Link
-                          href={`/admin/manage-election/list-election/${election._id}`}
-                          title="View"
-                          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]"
-                        >
-                          <svg
-                            className="h-4.5 w-4.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                        </Link>
-
-                        {/* Edit */}
-                        <Link
-                          href={`/admin/manage-election/list-election/${election._id}/edit`}
-                          title="Edit"
-                          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]"
-                        >
-                          <svg
-                            className="h-4.5 w-4.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.8}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                            />
-                          </svg>
-                        </Link>
-
-                        {/* Approved Candidates */}
-                        <Link
-                          href={`/admin/manage-election/list-election/${election._id}/approved-candidates`}
-                          title="Approved candidates"
-                          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]"
-                        >
-                          <svg
-                            className="h-5 w-5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
-                            <circle cx="9" cy="7" r="4" />
-                            <path d="M16 11l2 2 4-4" />
-                          </svg>
-                        </Link>
-
-                        {/* Voting Results */}
-                        {hasVotingEnded(election) && (
-                          <Link
-                            href={`/admin/manage-election/list-election/${election._id}/results`}
-                            title="Voting results"
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]"
-                          >
-                            <svg
-                              className="h-5 w-5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.8"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M4 19V5" />
-                              <path d="M4 19h17" />
-                              <path d="M8 16v-5" />
-                              <path d="M12 16V8" />
-                              <path d="M16 16V4" />
-                              <path d="M20 16v-2" />
-                            </svg>
-                          </Link>
-                        )}
+                        <ElectionActionLinks
+                          electionId={election._id}
+                          hasVotingEnded={hasVotingEnded(election)}
+                          includeView
+                        />
 
                         {/* Suspend / Activate */}
                         <button

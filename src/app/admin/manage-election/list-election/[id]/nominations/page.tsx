@@ -7,10 +7,15 @@ import Election from "@/models/Election";
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string }>;
 };
 
-export default async function ElectionNominationsPage({ params }: Props) {
+export default async function ElectionNominationsPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { status: statusParam } = await searchParams;
+  const status = ["pending", "approved", "rejected"].includes(statusParam || "")
+    ? (statusParam as "pending" | "approved" | "rejected")
+    : undefined;
 
   await connectDB();
 
@@ -125,7 +130,7 @@ export default async function ElectionNominationsPage({ params }: Props) {
       </section>
 
       {/* Nominations */}
-      <NominationList electionId={item._id} />
+      <NominationList electionId={item._id} status={status} />
     </div>
   );
 }
