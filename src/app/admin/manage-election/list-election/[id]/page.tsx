@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
 import ElectionActionLinks from "@/components/admin/elections/ElectionActionLinks";
 import { hasElectionPeriodEnded } from "@/lib/election-timeline-validation";
+import { synchronizeElectionStatus } from "@/lib/election-status";
+import type { ElectionStatus } from "@/types/Election";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -13,7 +15,8 @@ export default async function ElectionDetailsPage({ params }: Props) {
   const election = await Election.findById(id).lean();
   if (!election) notFound();
 
-  const item = JSON.parse(JSON.stringify(election));
+  const synchronizedElection = await synchronizeElectionStatus(election);
+  const item = JSON.parse(JSON.stringify(synchronizedElection));
 
   const periods = [
     { title: "Nomination period", data: item.nomination },
@@ -21,8 +24,30 @@ export default async function ElectionDetailsPage({ params }: Props) {
     { title: "Voting period", data: item.voting },
   ];
 
-  const isSuspended = item.status === "suspended";
   const hasVotingEnded = hasElectionPeriodEnded(item.voting);
+  const statusStyles = {
+    active: {
+      label: "Active",
+      badge: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
+      dot: "bg-emerald-500",
+    },
+    suspended: {
+      label: "Suspended",
+      badge: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+      dot: "bg-red-500",
+    },
+    completed: {
+      label: "Completed",
+      badge: "bg-gray-100 text-gray-700 dark:bg-gray-500/10 dark:text-gray-300",
+      dot: "bg-gray-500",
+    },
+    cancelled: {
+      label: "Cancelled",
+      badge: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+      dot: "bg-red-500",
+    },
+  } as const;
+  const status = statusStyles[item.status as ElectionStatus];
 
   return (
     <div>
@@ -114,17 +139,15 @@ export default async function ElectionDetailsPage({ params }: Props) {
             <div className="mt-1.5">
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                  isSuspended
-                    ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                    : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                  status.badge
                 }`}
               >
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
-                    isSuspended ? "bg-red-500" : "bg-emerald-500"
+                    status.dot
                   }`}
                 />
-                {isSuspended ? "Suspended" : "Active"}
+                {status.label}
               </span>
             </div>
           </div>

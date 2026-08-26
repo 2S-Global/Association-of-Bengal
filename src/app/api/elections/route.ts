@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
 import { validateElectionTimeline } from "@/lib/election-timeline-validation";
+import { synchronizeElectionStatus } from "@/lib/election-status";
 
 export async function POST(request: Request) {
   try {
@@ -66,8 +67,11 @@ export async function GET() {
   try {
     await connectDB();
     const elections = await Election.find().sort({ createdAt: -1 }).lean();
+    const synchronizedElections = await Promise.all(
+      elections.map(synchronizeElectionStatus),
+    );
 
-    return NextResponse.json({ success: true, data: elections });
+    return NextResponse.json({ success: true, data: synchronizedElections });
   } catch (error) {
     console.error("GET elections error:", error);
     return NextResponse.json(

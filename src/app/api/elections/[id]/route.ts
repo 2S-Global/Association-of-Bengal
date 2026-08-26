@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
 import { validateElectionTimeline } from "@/lib/election-timeline-validation";
+import { synchronizeElectionStatus } from "@/lib/election-status";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -15,7 +16,9 @@ export async function GET(_: Request, { params }: Context) {
       return NextResponse.json({ success: false, message: "Election not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: election });
+    const synchronizedElection = await synchronizeElectionStatus(election);
+
+    return NextResponse.json({ success: true, data: synchronizedElection });
   } catch {
     return NextResponse.json({ success: false, message: "Unable to load election." }, { status: 400 });
   }
@@ -60,7 +63,9 @@ export async function PATCH(request: Request, { params }: Context) {
       return NextResponse.json({ success: false, message: "Election not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: election, message: "Election updated successfully." });
+    const synchronizedElection = await synchronizeElectionStatus(election);
+
+    return NextResponse.json({ success: true, data: synchronizedElection, message: "Election updated successfully." });
   } catch {
     return NextResponse.json({ success: false, message: "Unable to update election." }, { status: 400 });
   }

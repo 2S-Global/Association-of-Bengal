@@ -87,9 +87,10 @@ export default function ElectionActionLinks({
         <CandidateIcon status="rejected" />
       </Link>
 
-      {/* {hasVotingEnded && (
+      {hasVotingEnded && (
         <Link
-          href={`/admin/manage-election/list-election/${electionId}/results`}
+          // href={`/admin/manage-election/list-election/${electionId}/results`}
+          href={`/admin/manage-election/list-election/${electionId}/result`}
           title="Voting results"
           className={`${actionClassName} text-gray-500 hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]`}
         >
@@ -110,36 +111,6 @@ export default function ElectionActionLinks({
             <path d="M20 16v-2" />
           </svg>
         </Link>
-      )} */}
-
-      {hasVotingEnded && (
-        <button
-          type="button"
-          title="Voting results"
-          className={`${actionClassName} text-gray-500 hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]`}
-          onClick={() => {
-            // Result page navigation temporarily disabled.
-            // Original:
-            // window.location.href = `/admin/manage-election/list-election/${electionId}/results`;
-          }}
-        >
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M4 19V5" />
-            <path d="M4 19h17" />
-            <path d="M8 16v-5" />
-            <path d="M12 16V8" />
-            <path d="M16 16V4" />
-            <path d="M20 16v-2" />
-          </svg>
-        </button>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import mongoose, { Model, Schema } from "mongoose";
+import type { ElectionStatus } from "@/types/Election";
 
 export interface IElection {
   name: string;
@@ -10,7 +11,7 @@ export interface IElection {
   wings: string[];
   location: string;
   rulesAndRegulations: string[];
-  status: "active" | "suspended";
+  status: ElectionStatus;
 }
 
 const electionPeriodSchema = new Schema(
@@ -36,7 +37,7 @@ const ElectionSchema = new Schema<IElection>(
     rulesAndRegulations: { type: [String], required: true },
     status: {
       type: String,
-      enum: ["active", "suspended"],
+      enum: ["active", "suspended", "completed", "cancelled"],
       default: "active",
     },
   },

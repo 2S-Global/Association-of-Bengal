@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getElectionTimestamp } from "@/lib/election-timeline-validation";
 import ElectionActionLinks from "@/components/admin/elections/ElectionActionLinks";
+import type { ElectionStatus } from "@/types/Election";
 
 type Election = {
   _id: string;
@@ -16,7 +17,33 @@ type Election = {
     endDate: string;
     endTime: string;
   };
-  status?: "active" | "suspended";
+  status: ElectionStatus;
+};
+
+const statusStyles: Record<
+  ElectionStatus,
+  { label: string; badge: string; dot: string }
+> = {
+  active: {
+    label: "Active",
+    badge: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  suspended: {
+    label: "Suspended",
+    badge: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+    dot: "bg-red-500",
+  },
+  completed: {
+    label: "Completed",
+    badge: "bg-gray-100 text-gray-700 dark:bg-gray-500/10 dark:text-gray-300",
+    dot: "bg-gray-500",
+  },
+  cancelled: {
+    label: "Cancelled",
+    badge: "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+    dot: "bg-red-500",
+  },
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
@@ -75,7 +102,7 @@ export default function ElectionList() {
       (e) =>
         e.name.toLowerCase().includes(term) ||
         e.location.toLowerCase().includes(term) ||
-        (e.status || "active").toLowerCase().includes(term),
+        e.status.toLowerCase().includes(term),
     );
   }, [elections, search]);
 
@@ -102,14 +129,17 @@ export default function ElectionList() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
+      const updatedStatus = result.data.status as ElectionStatus;
       setElections((items) =>
         items.map((item) =>
-          item._id === election._id ? { ...item, status } : item,
+          item._id === election._id ? { ...item, status: updatedStatus } : item,
         ),
       );
 
       toast.success(
-        status === "suspended"
+        updatedStatus === "completed"
+          ? "Election completed automatically"
+          : status === "suspended"
           ? "Election suspended successfully"
           : "Election activated successfully",
       );
@@ -280,7 +310,12 @@ export default function ElectionList() {
                   </td>
                 </tr>
               ) : (
-                paginatedElections.map((election) => (
+                paginatedElections.map((election) => {
+                  const status = statusStyles[election.status];
+                  const canToggleStatus =
+                    election.status === "active" || election.status === "suspended";
+
+                  return (
                   <tr
                     key={election._id}
                     className="group transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.02]"
@@ -308,21 +343,15 @@ export default function ElectionList() {
                     <td className="px-5 py-4 text-center">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                          election.status === "suspended"
-                            ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                          status.badge
                         }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            election.status === "suspended"
-                              ? "bg-red-500"
-                              : "bg-emerald-500"
+                            status.dot
                           }`}
                         />
-                        {election.status === "suspended"
-                          ? "Suspended"
-                          : "Active"}
+                        {status.label}
                       </span>
                     </td>
 
@@ -335,7 +364,7 @@ export default function ElectionList() {
                         />
 
                         {/* Suspend / Activate */}
-                        <button
+                        {canToggleStatus && <button
                           type="button"
                           onClick={() =>
                             election.status === "suspended"
@@ -407,11 +436,12 @@ export default function ElectionList() {
                               />
                             </svg>
                           )}
-                        </button>
+                        </button>}
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
