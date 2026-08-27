@@ -17,6 +17,7 @@ type PropsType = {
   maxDate?: DateOption;
   minTime?: string;
   maxTime?: string;
+  allowInvalidPreload?: boolean;
   label?: string;
   placeholder?: string;
 };
@@ -31,6 +32,7 @@ export default function DatePicker({
   maxDate,
   minTime,
   maxTime,
+  allowInvalidPreload = false,
   placeholder,
 }: PropsType) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,6 +69,9 @@ export default function DatePicker({
       minuteIncrement: 5,
       allowInput: false,
       disableMobile: true,
+      // Retain a stored historical date in edit forms even if it is now below
+      // minDate. Dates before minDate remain disabled for new selections.
+      allowInvalidPreload,
 
       // Prevent previous dates
       minDate: isTimePicker ? undefined : "today",
@@ -90,7 +95,7 @@ export default function DatePicker({
       flatPickr.destroy();
       pickerRef.current = null;
     };
-  }, [mode]);
+  }, [allowInvalidPreload, mode]);
 
   useEffect(() => {
     const picker = pickerRef.current;

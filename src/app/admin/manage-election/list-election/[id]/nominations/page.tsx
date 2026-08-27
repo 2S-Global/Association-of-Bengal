@@ -130,7 +130,11 @@ export default async function ElectionNominationsPage({ params, searchParams }: 
       </section>
 
       {/* Nominations */}
-      <NominationList electionId={item._id} status={status} />
+      <NominationList
+        electionId={item._id}
+        status={status}
+        voting={item.voting}
+      />
     </div>
   );
 }

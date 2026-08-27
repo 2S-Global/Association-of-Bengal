@@ -89,8 +89,7 @@ export default function ElectionActionLinks({
 
       {hasVotingEnded && (
         <Link
-          // href={`/admin/manage-election/list-election/${electionId}/results`}
-          href={`/admin/manage-election/list-election/${electionId}/result`}
+          href={`/admin/manage-election/list-election/${electionId}/results`}
           title="Voting results"
           className={`${actionClassName} text-gray-500 hover:bg-[#570013]/10 hover:text-[#570013] dark:hover:bg-[#570013]/20 dark:hover:text-[#e8b4b4]`}
         >

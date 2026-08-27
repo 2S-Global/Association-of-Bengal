@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import DatePicker from "@/components/admin/ui/DatePicker";
 import {
   ElectionPeriod,
+  getLocalCalendarDate,
+  validateChangedElectionDatesNotInPast,
   validateElectionTimeline,
 } from "@/lib/election-timeline-validation";
 
@@ -59,6 +61,9 @@ const getNextCalendarDate = (dateValue: string) => {
 
   return date.toISOString().slice(0, 10);
 };
+
+const getLatestCalendarDate = (...dates: Array<string | undefined>) =>
+  dates.filter((date): date is string => Boolean(date)).sort().at(-1);
 
 const getStrictlyLaterTime = (
   startDate: string,
@@ -117,6 +122,7 @@ export default function AddElectionForm({
 
   const [isSaving, setIsSaving] = useState(false);
   const designationInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const today = getLocalCalendarDate();
 
   useEffect(() => {
     let isMounted = true;
@@ -215,6 +221,22 @@ export default function AddElectionForm({
       return;
     }
 
+    const changedDateValidation = validateChangedElectionDatesNotInPast(
+      { nomination, withdrawal, voting },
+      initialElection
+        ? {
+            nomination: initialElection.nomination,
+            withdrawal: initialElection.withdrawal,
+            voting: initialElection.voting,
+          }
+        : undefined,
+    );
+
+    if (!changedDateValidation.valid) {
+      toast.error(changedDateValidation.message);
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -305,6 +327,7 @@ export default function AddElectionForm({
                   placeholder="Select start date"
                   defaultDate={period.startDate || undefined}
                   minDate={startDateMinimum}
+                  allowInvalidPreload={Boolean(initialElection)}
                   onChange={(_, dateStr) =>
                     updatePeriod(setter, "startDate", dateStr)
                   }
@@ -337,7 +360,8 @@ export default function AddElectionForm({
                   id={getPickerId(title, "end")}
                   placeholder="Select end date"
                   defaultDate={period.endDate || undefined}
-                  minDate={period.startDate || undefined}
+                  minDate={getLatestCalendarDate(today, period.startDate)}
+                  allowInvalidPreload={Boolean(initialElection)}
                   onChange={(_, dateStr) =>
                     updatePeriod(setter, "endDate", dateStr)
                   }
@@ -465,18 +489,18 @@ export default function AddElectionForm({
 
       {/* ELECTION PERIODS */}
       <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
-        {renderPeriod("Nomination period", nomination, setNomination)}
+        {renderPeriod("Nomination period", nomination, setNomination, today)}
         {renderPeriod(
           "Withdraw nomination period",
           withdrawal,
           setWithdrawal,
-          getNextCalendarDate(nomination.endDate),
+          getLatestCalendarDate(today, getNextCalendarDate(nomination.endDate)),
         )}
         {renderPeriod(
           "Voting period",
           voting,
           setVoting,
-          getNextCalendarDate(withdrawal.endDate),
+          getLatestCalendarDate(today, getNextCalendarDate(withdrawal.endDate)),
         )}
       </section>
 

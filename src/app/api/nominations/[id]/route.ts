@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
+import { hasElectionPeriodEnded } from "@/lib/election-timeline-validation";
+import Election from "@/models/Election";
 import Nomination from "@/models/Nomination";
 
 type Context = {
@@ -37,6 +39,44 @@ export async function PATCH(
           message: "Invalid nomination status.",
         },
         { status: 400 }
+      );
+    }
+
+    const existingNomination = await Nomination.findById(id)
+      .select("election")
+      .lean();
+
+    if (!existingNomination) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Nomination not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const election = await Election.findById(existingNomination.election)
+      .select("voting")
+      .lean();
+
+    if (!election) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Election for this nomination was not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (hasElectionPeriodEnded(election.voting)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Nomination status cannot be changed after the voting period has ended.",
+        },
+        { status: 403 }
       );
     }
 

@@ -3,11 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import {
+  hasElectionPeriodEnded,
+  type ElectionPeriod,
+} from "@/lib/election-timeline-validation";
 import type { Nomination } from "@/types/Nomination";
 
 type Props = {
   electionId: string;
   status?: Nomination["status"];
+  voting: ElectionPeriod;
 };
 
 type NominationStatusChange = {
@@ -17,12 +22,15 @@ type NominationStatusChange = {
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 
-export default function NominationList({ electionId, status }: Props) {
+export default function NominationList({ electionId, status, voting }: Props) {
   const [nominations, setNominations] = useState<Nomination[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [nominationStatusChange, setNominationStatusChange] =
     useState<NominationStatusChange | null>(null);
+  const [hasVotingEnded, setHasVotingEnded] = useState(() =>
+    hasElectionPeriodEnded(voting)
+  );
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,6 +70,14 @@ export default function NominationList({ electionId, status }: Props) {
   useEffect(() => {
     loadNominations();
   }, [electionId, status]);
+
+  useEffect(() => {
+    const updateVotingStatus = () => setHasVotingEnded(hasElectionPeriodEnded(voting));
+    updateVotingStatus();
+
+    const timer = setInterval(updateVotingStatus, 1000);
+    return () => clearInterval(timer);
+  }, [voting]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -109,6 +125,11 @@ export default function NominationList({ electionId, status }: Props) {
     nomination: Nomination,
     status: Nomination["status"]
   ) => {
+    if (hasVotingEnded) {
+      toast.error("Nomination status cannot be changed after the voting period has ended.");
+      return;
+    }
+
     if (nomination.status === status) {
       return;
     }
@@ -164,6 +185,11 @@ export default function NominationList({ electionId, status }: Props) {
     nomination: Nomination,
     status: Nomination["status"]
   ) => {
+    if (hasVotingEnded) {
+      toast.error("Nomination status cannot be changed after the voting period has ended.");
+      return;
+    }
+
     if (nomination.status !== status) {
       setNominationStatusChange({ nomination, status });
     }
@@ -232,6 +258,14 @@ export default function NominationList({ electionId, status }: Props) {
   return (
     <>
       <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      {hasVotingEnded && (
+        <div
+          role="status"
+          className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-500/10 dark:text-amber-300 sm:px-6"
+        >
+          Nomination status changes are locked because the voting period has ended.
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
         {/* Rows per page */}
@@ -518,18 +552,26 @@ export default function NominationList({ electionId, status }: Props) {
                               "approved"
                                 ? "cursor-pointer bg-emerald-50 dark:bg-emerald-500/10"
                                 : "cursor-pointer hover:bg-[#570013]/10 dark:hover:bg-[#570013]/20"
+                            } ${
+                              hasVotingEnded
+                                ? "cursor-not-allowed opacity-40"
+                                : ""
                             }`}
                             title={
-                              nomination.status ===
+                              hasVotingEnded
+                                ? "Nomination status changes are locked because voting has ended"
+                                : nomination.status ===
                               "approved"
                                 ? "Move nomination to pending"
                                 : "Approve candidate"
                             }
                             aria-label={
-                              nomination.status ===
+                              hasVotingEnded
+                                ? "Nomination status changes are locked because voting has ended"
+                                : nomination.status ===
                                 "approved"
-                                ? "Move nomination to pending"
-                                : "Approve candidate"
+                                  ? "Move nomination to pending"
+                                  : "Approve candidate"
                             }
                           >
                             <input
@@ -539,8 +581,8 @@ export default function NominationList({ electionId, status }: Props) {
                                 "approved"
                               }
                               disabled={
-                                updatingId ===
-                                  nomination._id
+                                hasVotingEnded ||
+                                updatingId === nomination._id
                               }
                               onChange={(event) =>
                                 requestNominationStatusChange(
@@ -592,12 +634,21 @@ export default function NominationList({ electionId, status }: Props) {
                               )
                             }
                             disabled={
+                              hasVotingEnded ||
                               nomination.status === "rejected" ||
                               updatingId === nomination._id
                             }
                             className="flex h-5 w-5 items-center justify-center rounded border-2 border-red-300 bg-white text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/70 dark:bg-gray-900 dark:text-red-400 dark:hover:bg-red-500/10"
-                            title="Reject candidate"
-                            aria-label="Reject candidate"
+                            title={
+                              hasVotingEnded
+                                ? "Nomination status changes are locked because voting has ended"
+                                : "Reject candidate"
+                            }
+                            aria-label={
+                              hasVotingEnded
+                                ? "Nomination status changes are locked because voting has ended"
+                                : "Reject candidate"
+                            }
                           >
                             <svg
                               className="h-3 w-3"

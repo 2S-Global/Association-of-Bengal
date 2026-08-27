@@ -11,6 +11,14 @@ export type ElectionTimeline = {
   voting: ElectionPeriod;
 };
 
+export function getLocalCalendarDate(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export function hasElectionPeriodEnded(period: ElectionPeriod) {
   const endTimestamp = getElectionTimestamp(period.endDate, period.endTime);
   return endTimestamp !== null && Date.now() >= endTimestamp;
@@ -142,6 +150,35 @@ export function validateElectionTimeline(timeline: unknown): ValidationResult {
       valid: false,
       message: "Voting start date must be after the withdrawal end date.",
     };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Prevents new date selections from moving an election into the past while
+ * allowing unchanged historical dates on existing elections to be preserved.
+ */
+export function validateChangedElectionDatesNotInPast(
+  timeline: ElectionTimeline,
+  existingTimeline?: ElectionTimeline,
+  today = getLocalCalendarDate(),
+): ValidationResult {
+  for (const periodName of Object.keys(periodLabels) as Array<keyof ElectionTimeline>) {
+    const period = timeline[periodName];
+    const existingPeriod = existingTimeline?.[periodName];
+
+    for (const field of ["startDate", "endDate"] as const) {
+      const date = period[field];
+      const dateWasChanged = !existingPeriod || date !== existingPeriod[field];
+
+      if (dateWasChanged && date < today) {
+        return {
+          valid: false,
+          message: `${periodLabels[periodName]} ${field === "startDate" ? "start" : "end"} date cannot be before today.`,
+        };
+      }
+    }
   }
 
   return { valid: true };

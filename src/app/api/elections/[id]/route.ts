@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Election from "@/models/Election";
-import { validateElectionTimeline } from "@/lib/election-timeline-validation";
+import {
+  validateChangedElectionDatesNotInPast,
+  validateElectionTimeline,
+} from "@/lib/election-timeline-validation";
 import { synchronizeElectionStatus } from "@/lib/election-status";
 
 type Context = { params: Promise<{ id: string }> };
@@ -50,6 +53,27 @@ export async function PATCH(request: Request, { params }: Context) {
         return NextResponse.json(
           { success: false, message: timelineValidation.message },
           { status: 400 }
+        );
+      }
+
+      const timeline = {
+        nomination: body.nomination ?? existingElection.nomination,
+        withdrawal: body.withdrawal ?? existingElection.withdrawal,
+        voting: body.voting ?? existingElection.voting,
+      };
+      const changedDateValidation = validateChangedElectionDatesNotInPast(
+        timeline,
+        {
+          nomination: existingElection.nomination,
+          withdrawal: existingElection.withdrawal,
+          voting: existingElection.voting,
+        },
+      );
+
+      if (!changedDateValidation.valid) {
+        return NextResponse.json(
+          { success: false, message: changedDateValidation.message },
+          { status: 400 },
         );
       }
     }
