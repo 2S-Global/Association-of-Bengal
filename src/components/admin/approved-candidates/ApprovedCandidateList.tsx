@@ -98,7 +98,7 @@ export default function ApprovedCandidateList({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+    <section className="admin-table-card overflow-hidden">
       <div className="border-b border-gray-100 px-3 py-3 dark:border-gray-800">
         <h2 className="font-semibold text-gray-800 dark:text-white/90">
           Approved candidates ({nominations.length})

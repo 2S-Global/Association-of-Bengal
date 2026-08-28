@@ -11,8 +11,8 @@ export default function AddElectionPage() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Add Election" />
-      <div className="mb-6">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="admin-page-header">
+        <p className="admin-page-description">
           Set the election details, key dates and eligible wings.
         </p>
       </div>

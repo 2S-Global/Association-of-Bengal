@@ -50,16 +50,17 @@ export default async function ElectionDetailsPage({ params }: Props) {
   const status = statusStyles[item.status as ElectionStatus];
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageBreadcrumb pageTitle="Election details" />
 
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="admin-card mb-5 flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+          <div className="mb-3"><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.badge}`}><span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />{status.label}</span></div>
+          <h1 className="admin-page-title">
             {item.name}
           </h1>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+          <p className="admin-page-description">
             {item.description || "No description provided."}
           </p>
         </div>
@@ -71,35 +72,34 @@ export default async function ElectionDetailsPage({ params }: Props) {
       </div>
 
       {/* Periods */}
-      <section className="grid gap-5 lg:grid-cols-3">
+      <section className="admin-timeline-card grid gap-6 lg:grid-cols-3">
         {periods.map((period) => (
           <div
             key={period.title}
-            className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]"
+            className="admin-timeline-step"
           >
-            <div className="mb-4 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#8b1a1a]" />
-              <h2 className="font-semibold text-gray-800 dark:text-white/90">
+            <div className="mb-4">
+              <h2 className="admin-section-title">
                 {period.title}
               </h2>
             </div>
 
             <dl className="space-y-4 text-sm">
               <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                <dt className="admin-detail-label">
                   Starts
                 </dt>
-                <dd className="mt-1 font-medium text-gray-800 dark:text-gray-200">
+                <dd className="admin-detail-value">
                   {period.data.startDate}
                   <span className="mx-1.5 text-gray-300">·</span>
                   {period.data.startTime}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                <dt className="admin-detail-label">
                   Ends
                 </dt>
-                <dd className="mt-1 font-medium text-gray-800 dark:text-gray-200">
+                <dd className="admin-detail-value">
                   {period.data.endDate}
                   <span className="mx-1.5 text-gray-300">·</span>
                   {period.data.endTime}
@@ -111,29 +111,29 @@ export default async function ElectionDetailsPage({ params }: Props) {
       </section>
 
       {/* Details card */}
-      <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-card overflow-hidden">
         {/* Top info grid */}
         <div className="grid gap-6 p-5 sm:grid-cols-3 sm:p-6">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            <p className="admin-detail-label">
               Location
             </p>
-            <p className="mt-1.5 font-medium text-gray-800 dark:text-gray-200">
+            <p className="admin-detail-value">
               {item.location}
             </p>
           </div>
 
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            <p className="admin-detail-label">
               Eligible wings
             </p>
-            <p className="mt-1.5 font-medium text-gray-800 dark:text-gray-200">
+            <p className="admin-detail-value">
               {item.wings?.length ? item.wings.join(", ") : "—"}
             </p>
           </div>
 
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            <p className="admin-detail-label">
               Status
             </p>
             <div className="mt-1.5">

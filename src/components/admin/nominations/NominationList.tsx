@@ -257,7 +257,7 @@ export default function NominationList({ electionId, status, voting }: Props) {
 
   return (
     <>
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-table-card overflow-hidden">
       {hasVotingEnded && (
         <div
           role="status"
