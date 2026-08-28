@@ -41,6 +41,18 @@ const navItems: NavItem[] = [
         name: "List Election",
         path: "/admin/manage-election/list-election",
       },
+      
+    ],
+    
+  },
+  {
+    icon: <GridIcon />,
+    name: "Stall Bookings",
+    subItems: [
+      {
+        name: "All Bookings",
+        path: "/admin/stall-bookings/list",
+      },
     ],
   },
 ];
