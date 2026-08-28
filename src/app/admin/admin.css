@@ -1090,6 +1090,189 @@ span.flatpickr-weekday,
   cursor: grabbing;
 }
 
+/* ========================================================================
+   ADMIN PANEL SURFACES
+   Scoped reusable presentation primitives. These are intentionally rooted
+   at .admin-panel so public website routes cannot inherit them.
+   ======================================================================== */
+
+.admin-panel {
+  background: #faf9f7;
+}
+
+.admin-panel .admin-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.admin-panel .admin-page-title {
+  color: #1a1c1b;
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.admin-panel .admin-page-description {
+  margin-top: 0.5rem;
+  max-width: 48rem;
+  color: #777671;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.admin-panel .admin-card {
+  border: 1px solid #e9e8e6;
+  border-radius: 0.875rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(26, 28, 27, 0.035);
+}
+
+.admin-panel .admin-card-header {
+  border-bottom: 1px solid #f0efed;
+  padding: 1.125rem 1.25rem;
+}
+
+.admin-panel .admin-section-title {
+  color: #2b2d2b;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.admin-panel .admin-section-description {
+  margin-top: 0.2rem;
+  color: #777671;
+  font-size: 0.8125rem;
+}
+
+.admin-panel .admin-detail-label {
+  color: #777671;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.admin-panel .admin-detail-value {
+  margin-top: 0.45rem;
+  color: #2b2d2b;
+  font-size: 0.9375rem;
+  font-weight: 550;
+  line-height: 1.45;
+}
+
+.admin-panel .admin-control {
+  border-color: #dfdeda;
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+.admin-panel .admin-table-card {
+  border: 1px solid #e9e8e6;
+  border-radius: 0.875rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(26, 28, 27, 0.035);
+}
+
+.admin-panel .admin-table-card tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.admin-panel .admin-table-card tbody tr:hover {
+  background: #fdfcfb;
+}
+
+.admin-panel .admin-timeline-card {
+  position: relative;
+  border: 1px solid #e9e8e6;
+  border-radius: 0.875rem;
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(26, 28, 27, 0.035);
+}
+
+.admin-panel .admin-timeline-card::before {
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  width: 2px;
+  background: #f2bdc5;
+  content: "";
+}
+
+.admin-panel .admin-timeline-step {
+  position: relative;
+  padding-left: 1.35rem;
+}
+
+.admin-panel .admin-timeline-step::before {
+  position: absolute;
+  top: 0.3rem;
+  left: -0.2rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #570013;
+  box-shadow: 0 0 0 1px #cf596c;
+  content: "";
+}
+
+.admin-panel .admin-result-winner {
+  border-color: rgba(87, 0, 19, 0.3);
+  background: #fff8f8;
+}
+
+.admin-panel .admin-interactive-card {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.admin-panel .admin-interactive-card:hover {
+  border-color: #e7b7c0;
+  box-shadow: 0 8px 18px rgba(26, 28, 27, 0.06);
+  transform: translateY(-1px);
+}
+
+.admin-panel .admin-icon-tile {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+}
+
+.admin-panel .admin-muted-surface {
+  background: #faf9f7;
+}
+
+.dark .admin-panel .admin-card,
+.dark .admin-panel .admin-table-card,
+.dark .admin-panel .admin-timeline-card {
+  border-color: #3f403d;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark .admin-panel .admin-card-header {
+  border-color: #3f403d;
+}
+
+.dark .admin-panel .admin-page-title,
+.dark .admin-panel .admin-section-title,
+.dark .admin-panel .admin-detail-value {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dark .admin-panel .admin-muted-surface {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.dark .admin-panel .admin-result-winner {
+  background: rgba(87, 0, 19, 0.16);
+}
+
 /* ==========================================================================
    PREMIUM THEME OVERRIDES
    ========================================================================== */

@@ -13,8 +13,8 @@ const PageBreadcrumb: React.FC<BreadcrumbProps> = ({
   previousPageHref,
 }) => {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
+    <div className="admin-page-header flex flex-wrap items-center justify-between gap-3">
+      <h2 className="admin-page-title text-xl">
         {pageTitle}
       </h2>
 

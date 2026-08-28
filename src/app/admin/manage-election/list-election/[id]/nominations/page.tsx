@@ -36,9 +36,9 @@ export default async function ElectionNominationsPage({ params, searchParams }: 
       />
 
       {/* Page header */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="admin-card mb-5 flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+          <h1 className="admin-page-title">
             {item.name}
           </h1>
 
@@ -94,7 +94,7 @@ export default async function ElectionNominationsPage({ params, searchParams }: 
       {/* Election information */}
       <section className="mb-5 grid gap-4 sm:grid-cols-3">
         {/* Location */}
-        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#B88A44] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#B88A44] dark:bg-white/[0.03]">
+        <div className="admin-card border-l-4 border-l-[#B88A44] p-5 dark:border-l-[#B88A44]">
           <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Location
           </p>
@@ -105,7 +105,7 @@ export default async function ElectionNominationsPage({ params, searchParams }: 
         </div>
 
         {/* Eligible wings */}
-        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#8B1A1A] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#8B1A1A] dark:bg-white/[0.03]">
+        <div className="admin-card border-l-4 border-l-[#8B1A1A] p-5 dark:border-l-[#8B1A1A]">
           <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Eligible wings
           </p>
@@ -116,7 +116,7 @@ export default async function ElectionNominationsPage({ params, searchParams }: 
         </div>
 
         {/* Posts */}
-        <div className="rounded-2xl border border-gray-200 border-l-4 border-l-[#B88A44] bg-white p-5 shadow-sm dark:border-gray-800 dark:border-l-[#B88A44] dark:bg-white/[0.03]">
+        <div className="admin-card border-l-4 border-l-[#B88A44] p-5 dark:border-l-[#B88A44]">
           <p className="text-xs font-medium uppercase tracking-wide text-[#8B1A1A] dark:text-[#C9A15A]">
             Posts
           </p>

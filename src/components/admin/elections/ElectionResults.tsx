@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  MapPin,
+  Medal,
+  ShieldCheck,
+  Trophy,
+  Vote,
+} from "lucide-react";
+import Link from "next/link";
+import { type ReactNode, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type CandidateResult = {
@@ -13,7 +22,6 @@ type CandidateResult = {
   votes: number;
   percentage: number;
 };
-
 type Results = {
   election: {
     _id: string;
@@ -38,22 +46,16 @@ export default function ElectionResults({
 }) {
   const [results, setResults] = useState<Results | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const loadResults = async () => {
+    const load = async () => {
       try {
         setLoading(true);
-
         const response = await fetch(`/api/elections/${electionId}/results`, {
           cache: "no-store",
         });
-
         const result = await response.json();
-
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(result.message || "Unable to load voting results.");
-        }
-
         setResults(result.data);
       } catch (error) {
         toast.error(
@@ -65,310 +67,247 @@ export default function ElectionResults({
         setLoading(false);
       }
     };
-
-    loadResults();
+    load();
   }, [electionId]);
-
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#570013] border-t-transparent" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Loading voting results…
-          </p>
-        </div>
+      <div className="admin-card flex min-h-[360px] items-center justify-center">
+        <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#570013] border-t-transparent" />
       </div>
     );
-  }
-
-  if (!results) {
+  if (!results)
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5">
-          <svg
-            className="h-7 w-7 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        </div>
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Voting results are unavailable
-        </p>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Please try again later or contact support.
+      <div className="admin-card px-6 py-16 text-center">
+        <Vote className="mx-auto h-7 w-7 text-gray-400" />
+        <p className="mt-3 text-sm text-gray-500">
+          Voting results are unavailable.
         </p>
       </div>
     );
-  }
-
-  // Determine winners per position
-  const winnerIds = new Set<string>();
-  const positionHighestVotes = new Map<string, number>();
-
-  for (const candidate of results.candidates) {
-    const currentHighest = positionHighestVotes.get(candidate.position) ?? -1;
-    if (candidate.votes > currentHighest) {
-      positionHighestVotes.set(candidate.position, candidate.votes);
-    }
-  }
-
-  for (const candidate of results.candidates) {
-    const highest = positionHighestVotes.get(candidate.position);
-    if (
-      highest !== undefined &&
-      candidate.votes === highest &&
-      candidate.votes > 0
-    ) {
-      winnerIds.add(candidate._id);
-    }
-  }
-
-  const formatDate = (date: string) => {
-    if (!date) return "—";
-    const parsedDate = new Date(date);
-    if (Number.isNaN(parsedDate.getTime())) return date;
-    return parsedDate.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
+  const topVotes = new Map<string, number>();
+  results.candidates.forEach((candidate) =>
+    topVotes.set(
+      candidate.position,
+      Math.max(topVotes.get(candidate.position) ?? -1, candidate.votes),
+    ),
+  );
+  const groups = results.candidates.reduce<Record<string, CandidateResult[]>>(
+    (all, candidate) => {
+      (all[candidate.position] ||= []).push(candidate);
+      return all;
+    },
+    {},
+  );
+  const date = (value: string) =>
+    value
+      ? new Date(value).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "—";
   return (
-    <div className="space-y-6">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#570013] via-[#6d1414] to-[#8d6412] px-6 py-8 text-white shadow-lg sm:px-8 sm:py-10">
-        {/* subtle pattern */}
-        <div className="pointer-events-none absolute inset-0 opacity-10">
-          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/20 blur-3xl" />
-          <div className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
-        </div>
-
-        <div className="relative">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Results Certified
-          </div>
-
-          <h1 className="max-w-3xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
-            {results.election.name}
-          </h1>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-white/90">
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-              </svg>
-              {results.election.location}
-            </span>
-
-            <span className="hidden text-white/40 sm:inline">•</span>
-
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {results.totalBallots} Total Ballots
-            </span>
-          </div>
-
-          <p className="mt-3 text-xs text-white/70">
-            Voting ended on {formatDate(results.election.voting.endDate)} at{" "}
-            {results.election.voting.endTime}
-          </p>
-        </div>
-      </section>
-
-      {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Total Ballots Cast
-              </p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-[#570013] dark:text-[#e8b4b4]">
-                {results.totalBallots.toLocaleString()}
-              </p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#570013]/10 text-[#570013] dark:bg-[#570013]/20 dark:text-[#e8b4b4]">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Audit Status
-              </p>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  {results.auditStatus}
-                </span>
-              </div>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tally Breakdown */}
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-        <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:px-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#570013]/10 text-[#570013] dark:bg-[#570013]/20 dark:text-[#e8b4b4]">
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 19V5" />
-              <path d="M4 19h16" />
-              <path d="M8 16v-5" />
-              <path d="M12 16V8" />
-              <path d="M16 16v-9" />
-              <path d="M20 16v-3" />
-            </svg>
-          </div>
+    <div className="space-y-5">
+      <section className="admin-card overflow-hidden">
+        <div className="flex flex-wrap items-start justify-between gap-5 p-5 sm:p-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Tally Breakdown
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Ranked results by position
+            <div className="mb-3 flex gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                {results.auditStatus}
+              </span>
+              <span className="admin-detail-label">Official results</span>
+            </div>
+            <h1 className="admin-page-title">{results.election.name}</h1>
+            <p className="admin-page-description">
+              Verified election tally and candidate outcome overview.
+            </p>
+          </div>
+          <div className="admin-muted-surface rounded-lg border border-gray-200 px-4 py-3 text-right">
+            <p className="admin-detail-label">Voting closed</p>
+            <p className="mt-1 text-sm font-semibold">
+              {date(results.election.voting.endDate)}
+            </p>
+            <p className="text-xs text-gray-500">
+              {results.election.voting.endTime}
             </p>
           </div>
         </div>
-
-        <div className="space-y-4 p-5 sm:p-6">
-          {results.candidates.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 px-5 py-12 text-center dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No approved candidates found for this election.
+        <div className="grid border-t border-gray-100 sm:grid-cols-2">
+          <div className="flex items-center gap-3 p-4 sm:border-r">
+            <span className="admin-icon-tile bg-[#570013]/10 text-[#570013]">
+              <MapPin className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="admin-detail-label">Location</p>
+              <p className="mt-1 text-sm font-medium">
+                {results.election.location || "—"}
               </p>
             </div>
-          ) : (
-            results.candidates.map((candidate, index) => {
-              const isWinner = winnerIds.has(candidate._id);
-
-              return (
-                <div
-                  key={candidate._id}
-                  className={`rounded-2xl border p-5 transition ${
-                    isWinner
-                      ? "border-[#570013]/40 bg-[#570013]/[0.04] shadow-sm dark:border-[#570013]/50 dark:bg-[#570013]/10"
-                      : "border-gray-200 bg-gray-50/40 dark:border-gray-700 dark:bg-white/[0.02]"
-                  }`}
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    {/* Left: Rank + Photo + Info */}
-                    <div className="flex min-w-0 items-center gap-4">
-                      {/* Rank */}
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          index === 0
-                            ? "bg-[#570013] text-white"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                        }`}
+          </div>
+          <div className="flex items-center gap-3 p-4">
+            <span className="admin-icon-tile bg-[#7b5800]/10 text-[#7b5800]">
+              <CalendarDays className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="admin-detail-label">Voting period</p>
+              <p className="mt-1 text-sm font-medium">
+                {date(results.election.voting.startDate)} –{" "}
+                {date(results.election.voting.endDate)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="grid gap-4 md:grid-cols-3">
+        <Metric
+          label="Total ballots"
+          value={results.totalBallots.toLocaleString()}
+          icon={<Vote className="h-5 w-5" />}
+          tone="maroon"
+        />
+        <Metric
+          label="Contested posts"
+          value={String(Object.keys(groups).length)}
+          icon={<Medal className="h-5 w-5" />}
+          tone="gold"
+        />
+        <Metric
+          label="Result status"
+          value={results.auditStatus}
+          icon={<ShieldCheck className="h-5 w-5" />}
+          tone="green"
+        />
+      </section>
+      <section className="admin-card overflow-hidden">
+        <div className="admin-card-header flex items-center gap-3">
+          <span className="admin-icon-tile bg-[#570013]/10 text-[#570013]">
+            <Trophy className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="admin-section-title">Results by designation</h2>
+            <p className="admin-section-description">
+              Candidate tallies grouped by contested post.
+            </p>
+          </div>
+        </div>
+        <div className="space-y-5 p-5">
+          {Object.entries(groups).map(([position, candidates]) => (
+            <div
+              key={position}
+              className="overflow-hidden rounded-xl border border-gray-200"
+            >
+              <div className="admin-muted-surface flex justify-between border-b border-gray-200 px-4 py-3">
+                <h3 className="text-sm font-semibold">{position}</h3>
+                <span className="text-xs text-gray-500">
+                  {candidates.length} candidates
+                </span>
+              </div>
+              {candidates.map((candidate, index) => {
+                const winner =
+                  candidate.votes > 0 &&
+                  candidate.votes === topVotes.get(position);
+                return (
+                  <div
+                    key={candidate._id}
+                    className={`grid gap-4 border-b border-gray-100 p-4 last:border-0 sm:grid-cols-[1fr_150px] sm:items-center ${winner ? "admin-result-winner" : "hover:bg-gray-50"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex h-8 w-8 items-center justify-center rounded-md text-xs font-bold ${winner ? "bg-[#570013] text-white" : "bg-gray-100"}`}
                       >
                         {index + 1}
-                      </div>
-
-                      {/* Photo */}
+                      </span>
                       {candidate.photoUrl ? (
                         <img
                           src={candidate.photoUrl}
                           alt={candidate.fullName}
-                          className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-white dark:ring-gray-900"
+                          className="h-11 w-11 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                          {candidate.fullName.charAt(0).toUpperCase()}
-                        </div>
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#570013]/10 font-semibold text-[#570013]">
+                          {candidate.fullName.charAt(0)}
+                        </span>
                       )}
-
-                      {/* Details */}
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate text-base font-semibold text-gray-800 dark:text-white">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/admin/manage-election/list-election/${electionId}/nominations/${candidate._id}`}
+                            className="text-sm font-semibold text-gray-800 hover:text-[#570013] hover:underline"
+                          >
                             {candidate.fullName}
-                          </h3>
-
-                          {isWinner && (
-                            <span className="inline-flex items-center rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                          </Link>
+                          {winner && (
+                            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
                               Elected
                             </span>
                           )}
                         </div>
-
-                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-                          {candidate.position}
-                          {candidate.wing ? ` · ${candidate.wing}` : ""}
+                        <p className="text-xs text-gray-500">
+                          {candidate.wing || "Wing unavailable"}
+                          {candidate.memberId ? ` · ${candidate.memberId}` : ""}
                         </p>
-
-                        {candidate.memberId && (
-                          <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
-                            ID: {candidate.memberId}
-                          </p>
-                        )}
                       </div>
                     </div>
-
-                    {/* Right: Votes */}
-                    <div className="shrink-0 text-left sm:text-right">
-                      <p className="text-xl font-bold text-[#570013] dark:text-[#e8b4b4]">
-                        {candidate.votes.toLocaleString()}
-                        <span className="ml-1 text-sm font-medium text-gray-500">
-                          {candidate.votes === 1 ? "vote" : "votes"}
+                    <div className="sm:text-right">
+                      <p className="text-lg font-bold text-[#570013]">
+                        {candidate.votes}{" "}
+                        <span className="text-xs font-medium text-gray-500">
+                          votes
                         </span>
                       </p>
-                      <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                        <div
+                          className={
+                            winner
+                              ? "h-full bg-[#570013]"
+                              : "h-full bg-[#8d6412]"
+                          }
+                          style={{
+                            width: `${Math.min(Math.max(candidate.percentage, 0), 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
                         {candidate.percentage.toFixed(1)}%
                       </p>
                     </div>
                   </div>
-
-                  {/* Progress bar */}
-                  <div className="mt-4">
-                    <div className="h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isWinner ? "bg-[#570013]" : "bg-[#8d6412]"
-                        }`}
-                        style={{
-                          width: `${Math.min(Math.max(candidate.percentage, 0), 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })}
+            </div>
+          ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  icon: ReactNode;
+  tone: "maroon" | "gold" | "green";
+}) {
+  const colors = {
+    maroon: "bg-[#570013]/10 text-[#570013]",
+    gold: "bg-[#7b5800]/10 text-[#7b5800]",
+    green: "bg-emerald-50 text-emerald-600",
+  };
+  return (
+    <div className="admin-card admin-interactive-card p-5">
+      <div className="flex justify-between">
+        <div>
+          <p className="admin-detail-label">{label}</p>
+          <p className="mt-2 text-2xl font-bold text-gray-800">{value}</p>
+        </div>
+        <span className={`admin-icon-tile ${colors[tone]}`}>{icon}</span>
+      </div>
     </div>
   );
 }

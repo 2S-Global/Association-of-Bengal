@@ -302,7 +302,7 @@ export default function AddElectionForm({
     setter: React.Dispatch<React.SetStateAction<Period>>,
     startDateMinimum?: string,
   ) => (
-    <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+    <section className="admin-card">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800">
         <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
           {title}
@@ -392,7 +392,7 @@ export default function AddElectionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* BASIC INFORMATION */}
-      <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-card">
         <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
           <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
             Election Information
@@ -505,7 +505,7 @@ export default function AddElectionForm({
       </section>
 
       {/* LOCATION + WINGS */}
-      <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-card">
         <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
           <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
             Election Venue & Wings
@@ -577,7 +577,7 @@ export default function AddElectionForm({
       </section>
 
       {/* RULES & REGULATIONS */}
-      <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-card">
         <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
           <h2 className="text-base font-semibold text-gray-800 dark:text-white/90">
             Rules and Regulations

@@ -26,7 +26,7 @@ function AdminShell({
     : "lg:ml-[90px]";
 
   return (
-    <div className="admin-shell min-h-screen xl:flex">
+    <div className="admin-panel admin-shell min-h-screen xl:flex">
       <AppSidebar />
       <Backdrop />
 

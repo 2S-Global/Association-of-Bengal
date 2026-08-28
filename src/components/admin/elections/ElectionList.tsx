@@ -206,7 +206,7 @@ export default function ElectionList() {
 
   return (
     <>
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
+      <section className="admin-table-card overflow-hidden">
         {/* Header: Rows per page + Search */}
         <div className="flex flex-col gap-4 border-b border-gray-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-gray-800">
           {/* Left → Rows per page */}
