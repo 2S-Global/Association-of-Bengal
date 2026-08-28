@@ -448,8 +448,6 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           colSpan: "half",
           validation: (val) => {
             if (!val || !val.trim()) return "Required";
-            const todayStr = new Date().toISOString().split("T")[0];
-            if (val < todayStr) return "Past dates are not allowed.";
             return "";
           },
         },
@@ -468,8 +466,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
 
   const allFieldIds = formSections.flatMap((sec) => sec.fields.map((f) => f.id));
 
+  const todayDateStr = new Date().toISOString().split("T")[0];
+
   const [formData, setFormData] = useState<Record<string, any>>({
     ...allFieldIds.reduce((acc, id) => ({ ...acc, [id]: "" }), {}),
+    declaration_date: todayDateStr,
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -986,7 +987,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             </div>
                             <button
                               type="button"
-                              onClick={() => setPreviewFile({ name: hasFile.name, url: URL.createObjectURL(hasFile) })}
+                              onClick={() => {
+                                const fileUrl = URL.createObjectURL(hasFile);
+                                setPreviewFile({ name: hasFile.name, url: fileUrl });
+                              }}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1 rounded-md inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer shrink-0"
                             >
                               <Eye className="w-3.5 h-3.5" /> Preview
@@ -1106,19 +1110,32 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-2">
                   {formSections[4].fields.map((field) => {
                     const err = getFieldError(field.id, formData[field.id]);
+                    const isReadOnlyDate = field.id === "declaration_date";
+
                     return (
                       <div key={field.id} className="space-y-1 w-full">
                         <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
                           {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
                         </label>
                         {field.type === "date" ? (
-                          <CustomDatePicker
-                            id={field.id}
-                            value={formData[field.id]}
-                            onChange={handleChange}
-                            onBlur={() => handleBlur(field.id)}
-                            className={getInputClassName(field.id)}
-                          />
+                          isReadOnlyDate ? (
+                            <input
+                              type="date"
+                              id={field.id}
+                              value={formData[field.id]}
+                              readOnly
+                              disabled
+                              className="w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm uppercase bg-gray-100 cursor-not-allowed border-[#e0bfbf]"
+                            />
+                          ) : (
+                            <CustomDatePicker
+                              id={field.id}
+                              value={formData[field.id]}
+                              onChange={handleChange}
+                              onBlur={() => handleBlur(field.id)}
+                              className={getInputClassName(field.id)}
+                            />
+                          )
                         ) : (
                           <input
                             type={field.type}
@@ -1182,6 +1199,49 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
         )}
       </main>
 
+      {/* Global Root-Level File Preview Modal Popup */}
+      {previewFile && (
+        <div className="fixed inset-0 z-[9999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border-2 border-[#e0bfbf] space-y-4 relative m-auto">
+            <div className="flex items-center justify-between border-b border-[#e0bfbf] pb-3">
+              <h4 className="font-bold text-[#570013] text-sm truncate flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#775a19]" />
+                Document Preview: {previewFile.name}
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  URL.revokeObjectURL(previewFile.url);
+                  setPreviewFile(null);
+                }}
+                className="p-1.5 bg-[#fbf2ed] hover:bg-[#e0bfbf] rounded-full text-[#570013] transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="w-full max-h-[60vh] overflow-auto flex items-center justify-center bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf]">
+              {previewFile.url.match(/\.(jpeg|jpg|png)$/i) || previewFile.url.startsWith("blob:") ? (
+                <img src={previewFile.url} alt="Uploaded Document Preview" className="max-h-[55vh] object-contain rounded-lg" />
+              ) : (
+                <iframe src={previewFile.url} className="w-full h-[55vh] rounded-lg border-0" title="Document Preview" />
+              )}
+            </div>
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  URL.revokeObjectURL(previewFile.url);
+                  setPreviewFile(null);
+                }}
+                className="bg-[#570013] text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-[#800020] transition-all cursor-pointer"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Global Root-Level Success Message Modal Popup */}
       <div
         className={`${
@@ -1214,11 +1274,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
             type="button"
             onClick={() => {
               setIsSubmitted(false);
-              window.location.reload();
+              window.location.href = "/"; // Automatically navigate to home page upon success
             }}
             className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl hover:opacity-95 transition-all shadow-lg shadow-emerald-900/20 cursor-pointer text-sm"
           >
-            Done / Submit Another Application
+            Done / Return to Home
           </button>
         </div>
       </div>
