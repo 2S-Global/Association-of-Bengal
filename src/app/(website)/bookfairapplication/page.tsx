@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -96,7 +95,7 @@ function CustomDatePicker({
 }: { 
   id: string; 
   value: string; 
-  onChange: (e: { target: { id: string; value: string } }) => void; 
+  onChange: (e: any) => void; 
   onBlur: () => void; 
   className: string; 
 }) {
@@ -152,7 +151,6 @@ function CustomDatePicker({
       </div>
 
       {isOpen && (
-        // Opens upwards (`bottom-full mb-2`) so it never overlaps or touches the footer below the form!
         <div className="absolute bottom-full mb-2 left-0 z-[99999] w-full sm:w-80 bg-white rounded-2xl shadow-2xl border-2 border-[#e0bfbf] p-4 animate-fadeIn">
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#e0bfbf]/60">
@@ -210,7 +208,7 @@ function CustomDatePicker({
                       ? "text-gray-300 cursor-not-allowed bg-transparent"
                       : isSelected
                       ? "bg-[#570013] text-white shadow-md cursor-pointer"
-                      : "hover:bg-[#fbf2ed] text-[#1e1b18] cursor-pointer"
+                      : "hover:bg-[#fbf2ed] text-[#1e1b18]"
                   }`}
                 >
                   {day}
@@ -665,9 +663,526 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
   };
 
   return (
-    <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-12 bg-[#fff8f5] text-[#1e1b18] font-['Libre_Franklin'] antialiased selection:bg-[#ffdada] selection:text-[#570013]">
-      
-      {/* Professional Clean Centered Popup Modal */}
+    <>
+      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-12 bg-[#fff8f5] text-[#1e1b18] font-['Libre_Franklin'] antialiased selection:bg-[#ffdada] selection:text-[#570013]">
+        
+        {/* Admin View Mode Rendering */}
+        {isAdminView ? (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0bfbf] shadow-sm">
+              <div>
+                <h1 className="text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
+                  <Store className="w-7 h-7 text-[#570013]" />
+                  Stall Applications (Admin View)
+                </h1>
+                <p className="text-xs sm:text-sm text-[#775a19] mt-1 font-medium">
+                  Manage and view all registered participant stall bookings for the International Kolkata Book Fair 2026.
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#fbf2ed] border border-[#e0bfbf] px-4 py-2 rounded-xl text-xs font-bold text-[#570013]">
+                  Total Bookings: {applications.length}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-[#e0bfbf] shadow-sm flex items-center gap-3">
+              <User className="w-5 h-5 text-[#8c7071] ml-2 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search by participant name, email, or mobile number..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent text-sm font-medium focus:outline-none text-[#1e1b18] placeholder:text-gray-400"
+              />
+            </div>
+
+            {adminLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e0bfbf] shadow-sm">
+                <Loader2 className="w-10 h-10 animate-spin text-[#570013] mb-3" />
+                <p className="text-sm font-bold text-[#584141]">Loading bookings...</p>
+              </div>
+            ) : adminError ? (
+              <div className="bg-red-50 border border-red-300 p-6 rounded-2xl text-center text-red-900">
+                <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                <p className="font-bold">{adminError}</p>
+              </div>
+            ) : filteredApplications.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-[#e0bfbf] p-12 text-center shadow-sm">
+                <FileText className="w-12 h-12 text-[#e0bfbf] mx-auto mb-3" />
+                <h3 className="font-bold text-base text-[#570013]">No Bookings Found</h3>
+                <p className="text-xs text-gray-500 mt-1">No applications match your search query.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[11px] font-bold text-[#570013] uppercase tracking-wider">
+                        <th className="py-4 px-6">Participant</th>
+                        <th className="py-4 px-6">Contact Info</th>
+                        <th className="py-4 px-6">Space Requirement</th>
+                        <th className="py-4 px-6">Status</th>
+                        <th className="py-4 px-6 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#e0bfbf]/50 text-sm">
+                      {filteredApplications.map((app) => (
+                        <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
+                          <td className="py-4 px-6 font-semibold text-[#1e1b18]">
+                            <div>{app.participant_name}</div>
+                            <div className="text-xs font-normal text-gray-500">{app.participant_bengali}</div>
+                          </td>
+                          <td className="py-4 px-6 text-xs text-[#584141] space-y-1">
+                            <div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_email}</div>
+                            <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_mobile}</div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-3 py-1 rounded-full text-xs font-bold">
+                              {app.space_requirement} sq. mt.
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider inline-block ${
+                              (app.status || 'PENDING') === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 
+                              (app.status || 'PENDING') === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-300' :
+                              'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}>
+                              {app.status || 'PENDING'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedApp(app);
+                                setActionMessage(null);
+                              }}
+                              className="bg-[#570013] text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#800020] transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* General Error Summary Banner */}
+            <div
+              className={`${
+                showErrorSummary ? "flex" : "hidden"
+              } mb-6 p-5 rounded-2xl bg-gradient-to-br from-red-50 via-red-50/40 to-white border border-red-300 text-red-950 text-sm font-medium items-start gap-3.5 shadow-lg shadow-red-900/5 transition-all duration-300`}
+            >
+              <div className="p-2 bg-red-100 rounded-xl text-red-700 shrink-0 shadow-inner">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5 flex-1">
+                <h5 className="font-bold text-red-950 text-sm uppercase tracking-wider">Action Required</h5>
+                <p className="text-red-900 leading-relaxed">
+                  Please correct the highlighted fields below, or verify if an application has already been registered with your email/mobile number.
+                </p>
+              </div>
+            </div>
+
+            {/* Top Header Card */}
+            <div className="bg-white rounded-t-3xl p-6 sm:p-8 shadow-sm border border-[#e0bfbf] mb-0 relative z-10">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#570013] via-[#800020] to-[#775a19]"></div>
+
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6 mb-6">
+                <div className="text-left space-y-1">
+                  <div className="text-base sm:text-lg lg:text-xl font-bold font-['Playfair_Display'] tracking-wide text-[#570013] whitespace-nowrap">
+                    {activeFair.fairTitle}
+                  </div>
+                  <div className="inline-block bg-[#fff0f0] text-[#570013] px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase border border-[#e0bfbf]">
+                    {activeFair.fairDates}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-4 justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-[#e0bfbf]/30">
+                  <div className="flex flex-col items-start lg:items-end justify-center">
+                    <strong className="block text-[#570013] font-['Playfair_Display'] text-[15px] sm:text-[18px] lg:text-[19px] tracking-wide uppercase font-bold leading-tight">
+                      {activeFair.organizerName}
+                    </strong>
+                    <span className="block text-[#9a7625] font-['Libre_Franklin'] text-[11px] sm:text-[12px] tracking-[0.08em] font-bold uppercase mt-0.5">
+                      {activeFair.organizerSubtext}
+                    </span>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-1.5 border border-[#e0bfbf]/60 shadow-sm shrink-0">
+                    <Image
+                      src={activeFair.logoSrc}
+                      alt="Organization Logo"
+                      width={70}
+                      height={70}
+                      className="h-14 w-14 sm:h-16 sm:w-16 object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-[#e0bfbf]/30">
+                <h2 className="text-[12px] sm:text-[13px] text-center font-bold uppercase tracking-wider text-[#584141] leading-relaxed">
+                  {activeFair.fairSubtitle}
+                </h2>
+              </div>
+            </div>
+
+            {/* Main Dynamic Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white rounded-b-3xl p-5 sm:p-8 lg:p-10 shadow-sm border border-[#e0bfbf] flex flex-col divide-y divide-[#e0bfbf]/60 border-t-0 relative z-0"
+              noValidate
+            >
+              {/* Section 1: Participant Details */}
+              <div className="pb-8 space-y-5 sm:space-y-6 mt-1">
+                <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
+                  {React.createElement(formSections[0].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {formSections[0].title}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {formSections[0].fields.map((field) => {
+                    const err = getFieldError(field.id, formData[field.id]);
+                    return (
+                      <div key={field.id} className={`space-y-1 ${field.colSpan === "full" ? "md:col-span-2" : "md:col-span-1"}`}>
+                        <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
+                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                        </label>
+                        {field.type === "textarea" ? (
+                          <textarea
+                            id={field.id}
+                            rows={2}
+                            value={formData[field.id]}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            placeholder={field.placeholder}
+                            className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
+                              field.id
+                            )}`}
+                          />
+                        ) : (
+                          <input
+                            type={field.type}
+                            id={field.id}
+                            value={formData[field.id]}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            placeholder={field.placeholder}
+                            maxLength={field.id === "participant_mobile" ? 10 : field.id === "participant_gst" ? 15 : undefined}
+                            className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
+                              field.id
+                            )}`}
+                          />
+                        )}
+                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 2: Space Required */}
+              <div className="py-8 space-y-5 sm:space-y-6">
+                <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
+                  {React.createElement(formSections[1].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {formSections[1].title}
+                </h3>
+
+                <div className="bg-[#fbf2ed] border border-[#e0bfbf] rounded-xl p-5 space-y-4">
+                  {formSections[1].fields.map((field) => {
+                    const err = getFieldError(field.id, formData[field.id]);
+                    return (
+                      <div key={field.id} className="space-y-2">
+                        <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider">
+                          {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
+                        </label>
+                        <div className="relative">
+                          <select
+                            id={field.id}
+                            value={formData[field.id]}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            className={`w-full border p-3 pr-10 rounded-lg font-bold text-sm sm:text-base text-[#1e1b18] shadow-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 cursor-pointer appearance-none ${getInputClassName(
+                              field.id
+                            )}`}
+                          >
+                            <option value="" disabled className="text-gray-400">
+                              -- Select Stall Area Requirement --
+                            </option>
+                            {field.options?.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7071] pointer-events-none" />
+                        </div>
+                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="bg-yellow-200 border border-yellow-400 p-4 rounded-lg text-center font-bold text-black text-sm shadow-sm leading-relaxed">
+                  STALL SELECTION :{" "}
+                  <span className="underline inline-block mx-1">{activeFair.stallSelectionText}</span> at the{" "}
+                  <u className="inline-block mt-1 sm:mt-0">{activeFair.stallSelectionVenue}</u>
+                </div>
+              </div>
+
+              {/* Section 3: Document Uploads */}
+              <div className="py-8 space-y-5 sm:space-y-6">
+                <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
+                  {React.createElement(formSections[2].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {formSections[2].title}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {formSections[2].fields.map((field) => {
+                    const err = getFieldError(field.id, formData[field.id]);
+                    const hasFile = formData[field.id];
+                    return (
+                      <div key={field.id} className="space-y-3 bg-[#fbf2ed] p-5 rounded-2xl border border-[#e0bfbf] flex flex-col justify-between shadow-xs">
+                        <div>
+                          <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-1">
+                            {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
+                          </label>
+                          <p className="text-[11px] text-[#775a19] font-medium">Supported formats: PDF, JPG, PNG (Max 100 KB)</p>
+                        </div>
+
+                        <div className="relative w-full overflow-hidden">
+                          <input
+                            type={field.type}
+                            id={field.id}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                          />
+                          <div className={`w-full bg-white p-3.5 border rounded-xl flex items-center justify-between transition-all ${getInputClassName(field.id)}`}>
+                            <div className="flex items-center gap-2.5 truncate">
+                              <CloudUpload className="w-5 h-5 text-[#570013] shrink-0" />
+                              <span className="text-xs font-semibold text-[#584141] truncate">
+                                {hasFile ? hasFile.name : "Choose file to upload..."}
+                              </span>
+                            </div>
+                            <span className="bg-[#570013] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shrink-0">
+                              Browse
+                            </span>
+                          </div>
+                        </div>
+
+                        {hasFile && (
+                          <div className="flex items-center justify-between bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+                            <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold truncate mr-2">
+                              <FileCheck className="w-4 h-4 shrink-0" />
+                              <span className="truncate">Ready: {hasFile.name}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewFile({ name: hasFile.name, url: URL.createObjectURL(hasFile) })}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1 rounded-md inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer shrink-0"
+                            >
+                              <Eye className="w-3.5 h-3.5" /> Preview
+                            </button>
+                          </div>
+                        )}
+
+                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 4: Publications & Requirements */}
+              <div className="py-8 space-y-5 sm:space-y-6">
+                <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
+                  {React.createElement(formSections[3].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {formSections[3].title}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                  {formSections[3].fields.map((field) => {
+                    const err = getFieldError(field.id, formData[field.id]);
+                    return (
+                      <div key={field.id} className="space-y-1 flex flex-col justify-between md:col-span-1">
+                        <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-2">
+                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                        </label>
+                        <input
+                          type={field.type}
+                          id={field.id}
+                          value={formData[field.id]}
+                          onChange={handleChange}
+                          onBlur={() => handleBlur(field.id)}
+                          placeholder={field.placeholder}
+                          className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
+                            field.id
+                          )}`}
+                        />
+                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="bg-[#570013]/5 border border-[#570013]/20 p-4 sm:p-5 rounded-xl">
+                  <p className="font-bold text-[#570013] text-sm mb-3">
+                    ** Production of the receipt is mandatory at the time of stall selection.
+                  </p>
+                  <ul className="list-disc pl-5 space-y-2 text-[13px] sm:text-sm text-[#584141]">
+                    <li>(Stock value must corroborate with Insurance Policy Certificate)</li>
+                    <li>Copy of the Fire Insurance policy must be submitted along with the Form</li>
+                    <li>
+                      Please enclose remittance within the last date of submission. Remittance may be made by{" "}
+                      <strong className="text-[#1e1b18]">Bank Draft</strong> drawn in favour of{" "}
+                      <strong className="text-[#1e1b18]">ASSOCIATION OF BENGAL</strong>{" "}
+                      and payable at Kolkata or by <strong className="text-[#1e1b18]">UPI</strong> at the Association office.
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-4 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] shadow-xs transition-transform hover:-translate-y-0.5">
+                    <div className="bg-[#fed488]/80 p-3 rounded-xl text-[#785a1a] shrink-0 shadow-xs">
+                      <Building2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Banker</span>
+                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">State Bank of India</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] shadow-xs transition-transform hover:-translate-y-0.5">
+                    <div className="bg-[#fed488]/80 p-3 rounded-xl text-[#785a1a] shrink-0 shadow-xs">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Insurer</span>
+                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">HDFC ERGO GIC Ltd</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 5: Terms & Declaration */}
+              <div className="pt-8 space-y-5 sm:space-y-6">
+                <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
+                  {React.createElement(formSections[4].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {formSections[4].title}
+                </h3>
+
+                <div className="flex items-start gap-3 p-3 sm:p-4 bg-[#fbf2ed] rounded-xl border border-[#e0bfbf] mt-4">
+                  <input
+                    type="checkbox"
+                    id="agree_terms"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    className="mt-0.5 sm:mt-1 w-5 h-5 text-[#570013] rounded border-[#e0bfbf] focus:ring-[#570013] focus:ring-offset-0 cursor-pointer shrink-0"
+                  />
+                  <label
+                    htmlFor="agree_terms"
+                    className="text-[13px] sm:text-sm font-semibold text-[#1e1b18] cursor-pointer select-none leading-relaxed"
+                  >
+                    I/ We undertake to abide by the above terms and conditions which are fully understood by me/us.
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(true)}
+                      className="text-[#570013] underline ml-0 sm:ml-1 mt-1 sm:mt-0 hover:text-[#ff828a] inline-flex items-center gap-1 font-bold bg-transparent border-none cursor-pointer p-0"
+                    >
+                      <ExternalLink className="w-4 h-4 inline" />
+                      Read Terms &amp; Conditions
+                    </button>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-2">
+                  {formSections[4].fields.map((field) => {
+                    const err = getFieldError(field.id, formData[field.id]);
+                    return (
+                      <div key={field.id} className="space-y-1 w-full">
+                        <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
+                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                        </label>
+                        {field.type === "date" ? (
+                          <CustomDatePicker
+                            id={field.id}
+                            value={formData[field.id]}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            className={getInputClassName(field.id)}
+                          />
+                        ) : (
+                          <input
+                            type={field.type}
+                            id={field.id}
+                            value={formData[field.id]}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur(field.id)}
+                            placeholder={field.placeholder}
+                            className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
+                              field.id
+                            )}`}
+                          />
+                        )}
+                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Form Submission Button Container with Cancel Option */}
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => window.history.back()}
+                    className="w-full sm:w-auto bg-[#fef2eb] hover:bg-[#fed488]/40 border border-[#e0bfbf] text-[#570013] py-3 sm:py-4 px-6 sm:px-8 text-sm font-bold transition-all rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={!agreeTerms || isSubmitting}
+                    className={`w-full sm:w-auto py-3 sm:py-4 px-6 sm:px-8 text-sm font-bold transition-all rounded-xl flex items-center justify-center gap-3 shadow-sm ${
+                      !agreeTerms
+                        ? "bg-[#570013] text-white opacity-50 cursor-not-allowed"
+                        : "bg-[#570013] text-white hover:bg-[#800020] hover:shadow-xl active:scale-95 cursor-pointer"
+                    }`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : isSubmitted ? (
+                      <>
+                        <CheckCircle2 className="w-5 h-5" />
+                        Application Received
+                      </>
+                    ) : (
+                      <>
+                        Submit Application
+                        <Send className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </>
+        )}
+      </main>
+
+      {/* Global Root-Level Success Message Modal Popup */}
       <div
         className={`${
           isSubmitted ? "flex" : "hidden"
@@ -691,6 +1206,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           <div className="w-full bg-emerald-50/80 border border-emerald-200/80 p-3.5 rounded-xl text-xs text-emerald-900 font-medium space-y-1 text-left">
             <div className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Notification Info</div>
             <div>Confirmation details sent to: <span className="font-bold text-emerald-950 break-all">{formData["participant_email"]}</span></div>
+            <div>Mobile Contact: <span className="font-bold text-emerald-950">{formData["participant_mobile"]}</span></div>
+            <div>Space Allotment Requested: <span className="font-bold text-emerald-950">{formData["space_requirement"]} sq. mt.</span></div>
           </div>
 
           <button
@@ -706,666 +1223,13 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
         </div>
       </div>
 
-      {/* File Preview Modal */}
-      {previewFile && (
-        <div className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-[#e0bfbf] space-y-4 relative">
-            <div className="flex items-center justify-between border-b border-[#e0bfbf] pb-3">
-              <h4 className="font-bold text-[#570013] text-sm truncate flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#775a19]" />
-                Preview: {previewFile.name}
-              </h4>
-              <button
-                type="button"
-                onClick={() => setPreviewFile(null)}
-                className="p-1.5 bg-[#fbf2ed] hover:bg-[#e0bfbf] rounded-full text-[#570013] transition-all cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="w-full max-h-[60vh] overflow-auto flex items-center justify-center bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf]">
-              {previewFile.url.match(/\.(jpeg|jpg|png)$/i) || previewFile.url.startsWith("blob:") ? (
-                <img src={previewFile.url} alt="Uploaded Document Preview" className="max-h-[55vh] object-contain rounded-lg" />
-              ) : (
-                <iframe src={previewFile.url} className="w-full h-[55vh] rounded-lg border-0" title="Document Preview" />
-              )}
-            </div>
-            <div className="flex justify-end pt-2">
-              <button
-                type="button"
-                onClick={() => setPreviewFile(null)}
-                className="bg-[#570013] text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-[#800020] transition-all cursor-pointer"
-              >
-                Close Preview
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin View Mode Rendering */}
-      {isAdminView ? (
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0bfbf] shadow-sm">
-            <div>
-              <h1 className="text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
-                <Store className="w-7 h-7 text-[#570013]" />
-                Stall Applications (Admin View)
-              </h1>
-              <p className="text-xs sm:text-sm text-[#775a19] mt-1 font-medium">
-                Manage and view all registered participant stall bookings for the International Kolkata Book Fair 2026.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-[#fbf2ed] border border-[#e0bfbf] px-4 py-2 rounded-xl text-xs font-bold text-[#570013]">
-                Total Bookings: {applications.length}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-[#e0bfbf] shadow-sm flex items-center gap-3">
-            <User className="w-5 h-5 text-[#8c7071] ml-2 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search by participant name, email, or mobile number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-sm font-medium focus:outline-none text-[#1e1b18] placeholder:text-gray-400"
-            />
-          </div>
-
-          {adminLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e0bfbf] shadow-sm">
-              <Loader2 className="w-10 h-10 animate-spin text-[#570013] mb-3" />
-              <p className="text-sm font-bold text-[#584141]">Loading bookings...</p>
-            </div>
-          ) : adminError ? (
-            <div className="bg-red-50 border border-red-300 p-6 rounded-2xl text-center text-red-900">
-              <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-              <p className="font-bold">{adminError}</p>
-            </div>
-          ) : filteredApplications.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-[#e0bfbf] p-12 text-center shadow-sm">
-              <FileText className="w-12 h-12 text-[#e0bfbf] mx-auto mb-3" />
-              <h3 className="font-bold text-base text-[#570013]">No Bookings Found</h3>
-              <p className="text-xs text-gray-500 mt-1">No applications match your search query.</p>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[11px] font-bold text-[#570013] uppercase tracking-wider">
-                      <th className="py-4 px-6">Participant</th>
-                      <th className="py-4 px-6">Contact Info</th>
-                      <th className="py-4 px-6">Space Requirement</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e0bfbf]/50 text-sm">
-                    {filteredApplications.map((app) => (
-                      <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
-                        <td className="py-4 px-6 font-semibold text-[#1e1b18]">
-                          <div>{app.participant_name}</div>
-                          <div className="text-xs font-normal text-gray-500">{app.participant_bengali}</div>
-                        </td>
-                        <td className="py-4 px-6 text-xs text-[#584141] space-y-1">
-                          <div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_email}</div>
-                          <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_mobile}</div>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-3 py-1 rounded-full text-xs font-bold">
-                            {app.space_requirement} sq. mt.
-                          </span>
-                        </td>
-                        <td className="py-4 px-6">
-                          <span className={`text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider inline-block ${
-                            (app.status || 'PENDING') === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 
-                            (app.status || 'PENDING') === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-300' :
-                            'bg-amber-100 text-amber-800 border border-amber-300'
-                          }`}>
-                            {app.status || 'PENDING'}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedApp(app);
-                              setActionMessage(null);
-                            }}
-                            className="bg-[#570013] text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#800020] transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Detailed View Modal */}
-          {selectedApp && (
-            <div className="fixed inset-0 z-[99999] bg-black/30 flex items-center justify-center p-4 overflow-y-auto">
-              <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[82vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf] relative overflow-y-auto">
-                <div className="sticky top-0 bg-white z-20 flex items-center justify-between border-b border-[#e0bfbf] px-6 py-4 shadow-xs">
-                  <div>
-                    <h3 className="font-['Playfair_Display'] text-xl font-bold text-[#570013] flex items-center gap-2">
-                      Application Details
-                      {selectedApp.status && (
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold tracking-wider ${
-                          selectedApp.status === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'
-                        }`}>
-                          {selectedApp.status}
-                        </span>
-                      )}
-                    </h3>
-                    <p className="text-xs text-[#775a19]">Submitted on {new Date(selectedApp.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedApp(null)}
-                    className="p-2 bg-[#fbf2ed] hover:bg-[#e0bfbf] rounded-full transition-all text-[#570013] cursor-pointer"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="p-6 space-y-4 text-xs sm:text-sm text-[#1e1b18]">
-                  {actionMessage && (
-                    <div className={`p-4 rounded-xl border flex items-center gap-2.5 text-xs font-bold ${
-                      actionMessage.type === 'success' ? 'bg-green-50 border-green-300 text-green-900' : 'bg-red-50 border-red-300 text-red-900'
-                    }`}>
-                      {actionMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
-                      <span>{actionMessage.text}</span>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Participant Name</span>
-                      <p className="font-bold text-[#570013]">{selectedApp.participant_name}</p>
-                      <p className="text-xs text-gray-600">{selectedApp.participant_bengali}</p>
-                    </div>
-
-                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Contact Details</span>
-                      <p className="font-bold">{selectedApp.participant_email}</p>
-                      <p className="font-bold">{selectedApp.participant_mobile}</p>
-                    </div>
-
-                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">GSTIN</span>
-                      <p className="font-bold text-[#1e1b18]">{selectedApp.participant_gst || "N/A"}</p>
-                    </div>
-
-                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-2">
-                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Address</span>
-                      <p className="font-medium">{selectedApp.participant_address}</p>
-                    </div>
-
-                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Declaration</span>
-                      <p><strong>Date:</strong> {selectedApp.declaration_date}</p>
-                      <p><strong>Place:</strong> {selectedApp.declaration_place}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="sticky bottom-0 bg-white z-20 border-t border-[#e0bfbf] px-6 py-4 shadow-inner flex flex-col sm:flex-row items-center gap-3">
-                  <div className="w-full grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      disabled={actionLoading}
-                      onClick={() => handleAppAction(selectedApp._id, 'ACCEPTED')}
-                      className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                      Accept & Mail Participant
-                    </button>
-                    <button
-                      type="button"
-                      disabled={actionLoading}
-                      onClick={() => handleAppAction(selectedApp._id, 'REJECTED')}
-                      className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                      Reject & Mail Participant
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedApp(null)}
-                    className="w-full sm:w-auto px-6 bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-sm"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* General Error Summary Banner */}
-          <div
-            className={`${
-              showErrorSummary ? "flex" : "hidden"
-            } mb-6 p-5 rounded-2xl bg-gradient-to-br from-red-50 via-red-50/40 to-white border border-red-300 text-red-950 text-sm font-medium items-start gap-3.5 shadow-lg shadow-red-900/5 transition-all duration-300`}
-          >
-            <div className="p-2 bg-red-100 rounded-xl text-red-700 shrink-0 shadow-inner">
-              <AlertCircle className="w-5 h-5" />
-            </div>
-            <div className="space-y-0.5 flex-1">
-              <h5 className="font-bold text-red-950 text-sm uppercase tracking-wider">Action Required</h5>
-              <p className="text-red-900 leading-relaxed">
-                Please correct the highlighted fields below, or verify if an application has already been registered with your email/mobile number.
-              </p>
-            </div>
-          </div>
-
-          {/* Top Header Card */}
-          <div className="bg-white rounded-t-3xl p-6 sm:p-8 shadow-sm border border-[#e0bfbf] mb-0 relative z-10">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#570013] via-[#800020] to-[#775a19]"></div>
-
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6 mb-6">
-              <div className="text-left space-y-1">
-                <div className="text-base sm:text-lg lg:text-xl font-bold font-['Playfair_Display'] tracking-wide text-[#570013] whitespace-nowrap">
-                  {activeFair.fairTitle}
-                </div>
-                <div className="inline-block bg-[#fff0f0] text-[#570013] px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase border border-[#e0bfbf]">
-                  {activeFair.fairDates}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 sm:gap-4 justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-[#e0bfbf]/30">
-                <div className="flex flex-col items-start lg:items-end justify-center">
-                  <strong className="block text-[#570013] font-['Playfair_Display'] text-[15px] sm:text-[18px] lg:text-[19px] tracking-wide uppercase font-bold leading-tight">
-                    {activeFair.organizerName}
-                  </strong>
-                  <span className="block text-[#9a7625] font-['Libre_Franklin'] text-[11px] sm:text-[12px] tracking-[0.08em] font-bold uppercase mt-0.5">
-                    {activeFair.organizerSubtext}
-                  </span>
-                </div>
-
-                <div className="bg-white rounded-xl p-1.5 border border-[#e0bfbf]/60 shadow-sm shrink-0">
-                  <Image
-                    src={activeFair.logoSrc}
-                    alt="Organization Logo"
-                    width={70}
-                    height={70}
-                    className="h-14 w-14 sm:h-16 sm:w-16 object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-[#e0bfbf]/30">
-              <h2 className="text-[12px] sm:text-[13px] text-center font-bold uppercase tracking-wider text-[#584141] leading-relaxed">
-                {activeFair.fairSubtitle}
-              </h2>
-            </div>
-          </div>
-
-          {/* Main Dynamic Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="bg-white rounded-b-3xl p-5 sm:p-8 lg:p-10 shadow-sm border border-[#e0bfbf] flex flex-col divide-y divide-[#e0bfbf]/60 border-t-0 relative z-0"
-            noValidate
-          >
-            {/* Section 1: Participant Details */}
-            <div className="pb-8 space-y-5 sm:space-y-6 mt-1">
-              <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                {React.createElement(formSections[0].icon, { className: "w-5 h-5 text-[#570013]" })}
-                {formSections[0].title}
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                {formSections[0].fields.map((field) => {
-                  const err = getFieldError(field.id, formData[field.id]);
-                  return (
-                    <div key={field.id} className={`space-y-1 ${field.colSpan === "full" ? "md:col-span-2" : "md:col-span-1"}`}>
-                      <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
-                        {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
-                      </label>
-                      {field.type === "textarea" ? (
-                        <textarea
-                          id={field.id}
-                          rows={2}
-                          value={formData[field.id]}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          placeholder={field.placeholder}
-                          className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                            field.id
-                          )}`}
-                        />
-                      ) : (
-                        <input
-                          type={field.type}
-                          id={field.id}
-                          value={formData[field.id]}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          placeholder={field.placeholder}
-                          maxLength={field.id === "participant_mobile" ? 10 : field.id === "participant_gst" ? 15 : undefined}
-                          className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                            field.id
-                          )}`}
-                        />
-                      )}
-                      {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Section 2: Space Required */}
-            <div className="py-8 space-y-5 sm:space-y-6">
-              <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                {React.createElement(formSections[1].icon, { className: "w-5 h-5 text-[#570013]" })}
-                {formSections[1].title}
-              </h3>
-
-              <div className="bg-[#fbf2ed] border border-[#e0bfbf] rounded-xl p-5 space-y-4">
-                {formSections[1].fields.map((field) => {
-                  const err = getFieldError(field.id, formData[field.id]);
-                  return (
-                    <div key={field.id} className="space-y-2">
-                      <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider">
-                        {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
-                      </label>
-                      <div className="relative">
-                        <select
-                          id={field.id}
-                          value={formData[field.id]}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          className={`w-full border p-3 pr-10 rounded-lg font-bold text-sm sm:text-base text-[#1e1b18] shadow-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 cursor-pointer appearance-none ${getInputClassName(
-                            field.id
-                          )}`}
-                        >
-                          <option value="" disabled className="text-gray-400">
-                            -- Select Stall Area Requirement --
-                          </option>
-                          {field.options?.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7071] pointer-events-none" />
-                      </div>
-                      {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="bg-yellow-200 border border-yellow-400 p-4 rounded-lg text-center font-bold text-black text-sm shadow-sm leading-relaxed">
-                STALL SELECTION :{" "}
-                <span className="underline inline-block mx-1">{activeFair.stallSelectionText}</span> at the{" "}
-                <u className="inline-block mt-1 sm:mt-0">{activeFair.stallSelectionVenue}</u>
-              </div>
-            </div>
-
-            {/* Section 3: Document Uploads */}
-            <div className="py-8 space-y-5 sm:space-y-6">
-              <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                {React.createElement(formSections[2].icon, { className: "w-5 h-5 text-[#570013]" })}
-                {formSections[2].title}
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                {formSections[2].fields.map((field) => {
-                  const err = getFieldError(field.id, formData[field.id]);
-                  const hasFile = formData[field.id];
-                  return (
-                    <div key={field.id} className="space-y-3 bg-[#fbf2ed] p-5 rounded-2xl border border-[#e0bfbf] flex flex-col justify-between shadow-xs">
-                      <div>
-                        <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-1">
-                          {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
-                        </label>
-                        <p className="text-[11px] text-[#775a19] font-medium">Supported formats: PDF, JPG, PNG (Max 100 KB)</p>
-                      </div>
-
-                      <div className="relative w-full overflow-hidden">
-                        <input
-                          type={field.type}
-                          id={field.id}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          accept=".pdf,.jpg,.jpeg,.png"
-                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                        />
-                        <div className={`w-full bg-white p-3.5 border rounded-xl flex items-center justify-between transition-all ${getInputClassName(field.id)}`}>
-                          <div className="flex items-center gap-2.5 truncate">
-                            <CloudUpload className="w-5 h-5 text-[#570013] shrink-0" />
-                            <span className="text-xs font-semibold text-[#584141] truncate">
-                              {hasFile ? hasFile.name : "Choose file to upload..."}
-                            </span>
-                          </div>
-                          <span className="bg-[#570013] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shrink-0">
-                            Browse
-                          </span>
-                        </div>
-                      </div>
-
-                      {hasFile && (
-                        <div className="flex items-center justify-between bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
-                          <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold truncate mr-2">
-                            <FileCheck className="w-4 h-4 shrink-0" />
-                            <span className="truncate">Ready: {hasFile.name}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setPreviewFile({ name: hasFile.name, url: URL.createObjectURL(hasFile) })}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1 rounded-md inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer shrink-0"
-                          >
-                            <Eye className="w-3.5 h-3.5" /> Preview
-                          </button>
-                        </div>
-                      )}
-
-                      {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Section 4: Publications & Requirements */}
-            <div className="py-8 space-y-5 sm:space-y-6">
-              <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                {React.createElement(formSections[3].icon, { className: "w-5 h-5 text-[#570013]" })}
-                {formSections[3].title}
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                {formSections[3].fields.map((field) => {
-                  const err = getFieldError(field.id, formData[field.id]);
-                  return (
-                    <div key={field.id} className="space-y-1 flex flex-col justify-between md:col-span-1">
-                      <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-2">
-                        {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
-                      </label>
-                      <input
-                        type={field.type}
-                        id={field.id}
-                        value={formData[field.id]}
-                        onChange={handleChange}
-                        onBlur={() => handleBlur(field.id)}
-                        placeholder={field.placeholder}
-                        className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                          field.id
-                        )}`}
-                      />
-                      {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="bg-[#570013]/5 border border-[#570013]/20 p-4 sm:p-5 rounded-xl">
-                <p className="font-bold text-[#570013] text-sm mb-3">
-                  ** Production of the receipt is mandatory at the time of stall selection.
-                </p>
-                <ul className="list-disc pl-5 space-y-2 text-[13px] sm:text-sm text-[#584141]">
-                  <li>(Stock value must corroborate with Insurance Policy Certificate)</li>
-                  <li>Copy of the Fire Insurance policy must be submitted along with the Form</li>
-                  <li>
-                    Please enclose remittance within the last date of submission. Remittance may be made by{" "}
-                    <strong className="text-[#1e1b18]">Bank Draft</strong> drawn in favour of{" "}
-                    <strong className="text-[#1e1b18]">ASSOCIATION OF BENGAL</strong>{" "}
-                    and payable at Kolkata or by <strong className="text-[#1e1b18]">UPI</strong> at the Association office.
-                  </li>
-                </ul>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] shadow-xs transition-transform hover:-translate-y-0.5">
-                  <div className="bg-[#fed488]/80 p-3 rounded-xl text-[#785a1a] shrink-0 shadow-xs">
-                    <Building2 className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Banker</span>
-                    <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">State Bank of India</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] shadow-xs transition-transform hover:-translate-y-0.5">
-                  <div className="bg-[#fed488]/80 p-3 rounded-xl text-[#785a1a] shrink-0 shadow-xs">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Insurer</span>
-                    <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">HDFC ERGO GIC Ltd</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 5: Terms & Declaration with Upwards-Opening Calendar Popup */}
-            <div className="pt-8 space-y-5 sm:space-y-6">
-              <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                {React.createElement(formSections[4].icon, { className: "w-5 h-5 text-[#570013]" })}
-                {formSections[4].title}
-              </h3>
-
-              <div className="flex items-start gap-3 p-3 sm:p-4 bg-[#fbf2ed] rounded-xl border border-[#e0bfbf] mt-4">
-                <input
-                  type="checkbox"
-                  id="agree_terms"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
-                  className="mt-0.5 sm:mt-1 w-5 h-5 text-[#570013] rounded border-[#e0bfbf] focus:ring-[#570013] focus:ring-offset-0 cursor-pointer shrink-0"
-                />
-                <label
-                  htmlFor="agree_terms"
-                  className="text-[13px] sm:text-sm font-semibold text-[#1e1b18] cursor-pointer select-none leading-relaxed"
-                >
-                  I/ We undertake to abide by the above terms and conditions which are fully understood by me/us.
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(true)}
-                    className="text-[#570013] underline ml-0 sm:ml-1 mt-1 sm:mt-0 hover:text-[#ff828a] inline-flex items-center gap-1 font-bold bg-transparent border-none cursor-pointer p-0"
-                  >
-                    <ExternalLink className="w-4 h-4 inline" />
-                    Read Terms &amp; Conditions
-                  </button>
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-2">
-                {formSections[4].fields.map((field) => {
-                  const err = getFieldError(field.id, formData[field.id]);
-                  return (
-                    <div key={field.id} className="space-y-1 w-full">
-                      <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
-                        {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
-                      </label>
-                      {field.type === "date" ? (
-                        <CustomDatePicker
-                          id={field.id}
-                          value={formData[field.id]}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          className={getInputClassName(field.id)}
-                        />
-                      ) : (
-                        <input
-                          type={field.type}
-                          id={field.id}
-                          value={formData[field.id]}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur(field.id)}
-                          placeholder={field.placeholder}
-                          className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                            field.id
-                          )}`}
-                        />
-                      )}
-                      {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Form Submission Button Container with Cancel Option */}
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6">
-                <button
-                  type="button"
-                  onClick={() => window.history.back()}
-                  className="w-full sm:w-auto bg-[#fef2eb] hover:bg-[#fed488]/40 border border-[#e0bfbf] text-[#570013] py-3 sm:py-4 px-6 sm:px-8 text-sm font-bold transition-all rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={!agreeTerms || isSubmitting}
-                  className={`w-full sm:w-auto py-3 sm:py-4 px-6 sm:px-8 text-sm font-bold transition-all rounded-xl flex items-center justify-center gap-3 shadow-sm ${
-                    !agreeTerms
-                      ? "bg-[#570013] text-white opacity-50 cursor-not-allowed"
-                      : "bg-[#570013] text-white hover:bg-[#800020] hover:shadow-xl active:scale-95 cursor-pointer"
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing...
-                    </>
-                  ) : isSubmitted ? (
-                    <>
-                      <CheckCircle2 className="w-5 h-5" />
-                      Application Received
-                    </>
-                  ) : (
-                    <>
-                      Submit Application
-                      <Send className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-        </>
-      )}
-
-      {/* Terms and Conditions Modal Card */}
+      {/* Global Root-Level Terms and Conditions Modal Popup */}
       <div
         className={`${
           isModalOpen ? "flex" : "hidden"
-        } fixed inset-0 z-[999] bg-black/60 backdrop-blur-md items-center justify-center pt-20 pb-6 px-3 sm:px-4 overflow-y-auto`}
+        } fixed inset-0 z-[999999] bg-black/60 backdrop-blur-md items-center justify-center p-4 overflow-y-auto`}
       >
-        <div className="bg-gradient-to-b from-white via-white to-[#fff8f5] rounded-3xl w-full max-w-3xl max-h-[82vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf]/60 overflow-hidden relative my-auto">
+        <div className="bg-gradient-to-b from-white via-white to-[#fff8f5] rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf]/60 overflow-hidden relative m-auto">
           <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#570013] via-[#800020] to-[#775a19] text-white shrink-0 shadow-md">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/15 rounded-xl backdrop-blur-sm border border-white/20">
@@ -1415,6 +1279,6 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           </div>
         </div>
       </div>
-    </main>
+    </>
   );
 }
