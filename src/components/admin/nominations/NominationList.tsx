@@ -319,7 +319,7 @@ export default function NominationList({ electionId, status, voting }: Props) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-[900px] w-full text-sm">
+        <table className="min-w-[780px] w-full text-sm">
           <thead>
             <tr className="bg-[#570013] text-xs font-semibold uppercase tracking-wider text-white">
               <th className="px-5 py-4 text-left sm:px-6">
@@ -328,10 +328,6 @@ export default function NominationList({ electionId, status, voting }: Props) {
 
               <th className="px-5 py-4 text-center">
                 Position
-              </th>
-
-              <th className="px-5 py-4 text-center">
-                Wing
               </th>
 
               <th className="px-5 py-4 text-left">
@@ -356,7 +352,7 @@ export default function NominationList({ electionId, status, voting }: Props) {
             {loading ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -371,7 +367,7 @@ export default function NominationList({ electionId, status, voting }: Props) {
             ) : paginatedNominations.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-5 py-16 text-center"
                 >
                   <div className="flex flex-col items-center gap-2">
@@ -439,7 +435,7 @@ export default function NominationList({ electionId, status, voting }: Props) {
                           <div className="min-w-0">
                             <Link
                               href={`/admin/manage-election/list-election/${electionId}/nominations/${nomination._id}`}
-                              className="font-semibold text-gray-800 transition hover:text-[#570013] dark:text-white/90 dark:hover:text-[#e8b4b4]"
+                              className="whitespace-nowrap font-semibold text-gray-800 transition hover:text-[#570013] dark:text-white/90 dark:hover:text-[#e8b4b4]"
                             >
                               {candidate?.fullName ||
                                 "Unknown candidate"}
@@ -456,13 +452,6 @@ export default function NominationList({ electionId, status, voting }: Props) {
                       {/* Position */}
                       <td className="px-5 py-4 text-center font-medium text-gray-700 dark:text-gray-300">
                         {nomination.position}
-                      </td>
-
-                      {/* Wing */}
-                      <td className="px-5 py-4 text-center">
-                        <span className="inline-flex rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-white/5 dark:text-gray-300">
-                          {nomination.wing}
-                        </span>
                       </td>
 
                       {/* Manifesto */}
