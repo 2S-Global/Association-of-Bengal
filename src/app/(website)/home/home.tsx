@@ -49,11 +49,11 @@ const heroData: HeroData = {
       variant: "primary",
     },
     {
-      id: 2,
-      label: "View Floor Plans",
-      href: "/services",
-      variant: "secondary",
-    },
+    id: 2,
+    label: "Apply Membership",
+    href: "/register",
+    variant: "secondary",
+  },
   ],
   stats: [
     {
