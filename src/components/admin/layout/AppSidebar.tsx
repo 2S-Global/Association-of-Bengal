@@ -11,6 +11,21 @@ import {
   HorizontaLDots,
 } from "@/icons";
 
+const BallotIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <path d="M7 4.75h10a1.5 1.5 0 0 1 1.5 1.5v11.5A1.5 1.5 0 0 1 17 19.25H7A1.5 1.5 0 0 1 5.5 17.75V6.25A1.5 1.5 0 0 1 7 4.75Z" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 8.5h6M9 12h6M9 15.5h4.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 3.75v2M16 3.75v2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const TicketIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+    <path d="M4.75 9.5V7.25A1.5 1.5 0 0 1 6.25 5.75h11.5a1.5 1.5 0 0 1 1.5 1.5v2.25a2.25 2.25 0 0 0 0 4.5v2.25a1.5 1.5 0 0 1-1.5 1.5H6.25a1.5 1.5 0 0 1-1.5-1.5v-2.25a2.25 2.25 0 0 0 0-4.5Z" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9 8.25v7.5M15 8.25v7.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -30,7 +45,7 @@ const navItems: NavItem[] = [
     path: "/admin/dashboard",
   },
   {
-    icon: <GridIcon />,
+    icon: <BallotIcon />,
     name: "Manage Election",
     subItems: [
       {
@@ -41,12 +56,10 @@ const navItems: NavItem[] = [
         name: "List Election",
         path: "/admin/manage-election/list-election",
       },
-      
     ],
-    
   },
   {
-    icon: <GridIcon />,
+    icon: <TicketIcon />,
     name: "Stall Bookings",
     subItems: [
       {
@@ -221,7 +234,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-brand-500 border-brand-600 text-white h-screen transition-all duration-300 ease-in-out z-50 border-r ${
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-brand-500 border-brand-600 text-white h-screen transition-all duration-300 ease-in-out z-50 border-r border-transparent ${
         isExpanded || isMobileOpen
           ? "w-[270px]"
           : isHovered

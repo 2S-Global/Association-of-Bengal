@@ -31,9 +31,26 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const mobile = typeof body.mobile === "string" ? body.mobile.trim() : "";
+    const password = typeof body.password === "string" ? body.password : "";
+
+    if (!fullName || !email || !mobile || password.length < 8) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Full name, email, mobile number, and a password of at least 8 characters are required.",
+        },
+        { status: 400 },
+      );
+    }
+
     const user = await User.create({
-      name: body.name,
-      email: body.email,
+      fullName,
+      email,
+      mobile,
+      password,
     });
 
     return NextResponse.json(

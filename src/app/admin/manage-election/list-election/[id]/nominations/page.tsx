@@ -13,8 +13,8 @@ type Props = {
 export default async function ElectionNominationsPage({ params, searchParams }: Props) {
   const { id } = await params;
   const { status: statusParam } = await searchParams;
-  const status = ["pending", "approved", "rejected"].includes(statusParam || "")
-    ? (statusParam as "pending" | "approved" | "rejected")
+  const status = ["pending", "approved", "rejected", "withdrawn"].includes(statusParam || "")
+    ? (statusParam as "pending" | "approved" | "rejected" | "withdrawn")
     : undefined;
 
   await connectDB();

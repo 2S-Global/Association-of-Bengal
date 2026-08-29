@@ -26,6 +26,11 @@ export default async function ElectionDetailsPage({ params }: Props) {
 
   const hasVotingEnded = hasElectionPeriodEnded(item.voting);
   const statusStyles = {
+    draft: {
+      label: "Draft",
+      badge: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
+      dot: "bg-amber-500",
+    },
     active: {
       label: "Active",
       badge: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",

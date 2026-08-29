@@ -1,12 +1,19 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+/**
+ * src/models/Vote.ts
+ * A single ballot cast by a member in a specific election.
+ * DO NOT ADD Anything in this model
+ */
 
-export interface IVote extends Document {
+import mongoose, { Model, Schema } from "mongoose";
+
+export interface IVote {
   election: mongoose.Types.ObjectId;
   voter: mongoose.Types.ObjectId;
+
+  /** The nomination(s) / candidate(s) voted for */
   nominations: mongoose.Types.ObjectId[];
-  castAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+
+  castAt: Date;
 }
 
 const VoteSchema = new Schema<IVote>(
@@ -15,27 +22,42 @@ const VoteSchema = new Schema<IVote>(
       type: Schema.Types.ObjectId,
       ref: "Election",
       required: true,
-      index: true,
     },
 
     voter: {
       type: Schema.Types.ObjectId,
       ref: "Member",
       required: true,
-      index: true,
     },
 
+    /** The nomination(s) / candidate(s) voted for */
     nominations: [
       {
         type: Schema.Types.ObjectId,
         ref: "Nomination",
       },
     ],
+
+    castAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
-    timestamps: true,
+    timestamps: false,
+
+    toJSON: {
+      virtuals: true,
+    },
+
+    toObject: {
+      virtuals: true,
+    },
   },
 );
+
+// One member, one vote per election
+VoteSchema.index({ election: 1, voter: 1 }, { unique: true });
 
 const Vote: Model<IVote> =
   mongoose.models.Vote || mongoose.model<IVote>("Vote", VoteSchema);

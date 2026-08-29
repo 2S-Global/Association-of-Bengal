@@ -47,7 +47,6 @@ export async function POST(request: Request) {
       voting: body.voting,
       wings,
       location: body.location.trim(),
-      status: "active",
       rulesAndRegulations: Array.isArray(body.rulesAndRegulations)
         ? body.rulesAndRegulations.filter((rule: unknown) => typeof rule === "string")
         : [],
