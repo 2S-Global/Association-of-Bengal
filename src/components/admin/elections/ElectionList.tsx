@@ -318,7 +318,12 @@ export default function ElectionList() {
                 paginatedElections.map((election) => {
                   const status = statusStyles[election.status];
                   const canToggleStatus =
-                    election.status === "active" || election.status === "suspended";
+                    election.status === "draft" ||
+                    election.status === "active" ||
+                    election.status === "suspended";
+
+                  const isActivateAction =
+                    election.status === "draft" || election.status === "suspended";
 
                   return (
                   <tr
@@ -369,79 +374,81 @@ export default function ElectionList() {
                         />
 
                         {/* Suspend / Activate */}
-                        {canToggleStatus && <button
-                          type="button"
-                          onClick={() =>
-                            election.status === "suspended"
-                              ? updateStatus(election, "active")
-                              : setElectionToSuspend(election)
-                          }
-                          title={
-                            election.status === "suspended"
-                              ? "Activate election"
-                              : "Suspend election"
-                          }
-                          className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
-                            election.status === "suspended"
-                              ? "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
-                              : "text-[#570013] hover:bg-red-50 dark:hover:bg-red-500/10"
-                          }`}
-                        >
-                          {election.status === "suspended" ? (
-                            <svg
-                              className="h-5 w-5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.7"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle
-                                cx="12"
-                                cy="12"
-                                r="9"
-                                strokeDasharray="3 2.5"
-                              />
-                              <path
-                                d="M9 12.5l2.2 2.2 4.3-4.3"
-                                strokeWidth="2"
-                              />
-                              <rect
-                                x="10.8"
-                                y="2.8"
-                                width="2.4"
-                                height="2.4"
-                                rx="0.4"
-                              />
-                              <circle cx="19.5" cy="12" r="1.3" />
-                              <path d="M4.8 16.8l1.6 1.1 1.6-1.1-1.6-1.1z" />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="h-5 w-5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                            >
-                              <circle
-                                cx="12"
-                                cy="12"
-                                r="9"
+                        {canToggleStatus && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              isActivateAction
+                                ? updateStatus(election, "active")
+                                : setElectionToSuspend(election)
+                            }
+                            title={
+                              isActivateAction
+                                ? "Activate election"
+                                : "Suspend election"
+                            }
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${
+                              isActivateAction
+                                ? "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                : "text-[#570013] hover:bg-red-50 dark:hover:bg-red-500/10"
+                            }`}
+                          >
+                            {isActivateAction ? (
+                              <svg
+                                className="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
                                 stroke="currentColor"
-                                strokeWidth="2"
-                              />
-                              <line
-                                x1="6.5"
-                                y1="6.5"
-                                x2="17.5"
-                                y2="17.5"
-                                stroke="currentColor"
-                                strokeWidth="2"
+                                strokeWidth="1.7"
                                 strokeLinecap="round"
-                              />
-                            </svg>
-                          )}
-                        </button>}
+                                strokeLinejoin="round"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="9"
+                                  strokeDasharray="3 2.5"
+                                />
+                                <path
+                                  d="M9 12.5l2.2 2.2 4.3-4.3"
+                                  strokeWidth="2"
+                                />
+                                <rect
+                                  x="10.8"
+                                  y="2.8"
+                                  width="2.4"
+                                  height="2.4"
+                                  rx="0.4"
+                                />
+                                <circle cx="19.5" cy="12" r="1.3" />
+                                <path d="M4.8 16.8l1.6 1.1 1.6-1.1-1.6-1.1z" />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="h-5 w-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="9"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                />
+                                <line
+                                  x1="6.5"
+                                  y1="6.5"
+                                  x2="17.5"
+                                  y2="17.5"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
