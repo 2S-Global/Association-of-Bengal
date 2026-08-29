@@ -32,7 +32,7 @@ export async function PATCH(
 
     const status = body.status;
 
-    if (!["pending", "approved", "rejected"].includes(status)) {
+    if (!["pending", "approved", "rejected", "withdrawn"].includes(status)) {
       return NextResponse.json(
         {
           success: false,
@@ -114,7 +114,9 @@ export async function PATCH(
           ? "Candidate approved successfully."
           : status === "rejected"
             ? "Candidate rejected successfully."
-            : "Nomination moved back to pending.",
+            : status === "withdrawn"
+              ? "Nomination marked as withdrawn."
+              : "Nomination moved back to pending.",
     });
   } catch (error) {
     console.error("PATCH nomination error:", error);

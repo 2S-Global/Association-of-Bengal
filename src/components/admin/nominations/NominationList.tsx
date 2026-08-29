@@ -490,10 +490,11 @@ export default function NominationList({ electionId, status, voting }: Props) {
                             nomination.status ===
                             "approved"
                               ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                              : nomination.status ===
-                                  "rejected"
+                              : nomination.status === "rejected"
                                 ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                                : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                                : nomination.status === "withdrawn"
+                                  ? "bg-gray-100 text-gray-700 dark:bg-gray-500/10 dark:text-gray-300"
+                                  : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                           }`}
                         >
                           <span
@@ -501,20 +502,22 @@ export default function NominationList({ electionId, status, voting }: Props) {
                               nomination.status ===
                               "approved"
                                 ? "bg-emerald-500"
-                                : nomination.status ===
-                                    "rejected"
+                                : nomination.status === "rejected"
                                   ? "bg-red-500"
-                                  : "bg-amber-500"
+                                  : nomination.status === "withdrawn"
+                                    ? "bg-gray-500"
+                                    : "bg-amber-500"
                             }`}
                           />
 
                           {nomination.status ===
                           "approved"
                             ? "Approved"
-                            : nomination.status ===
-                                "rejected"
+                            : nomination.status === "rejected"
                               ? "Rejected"
-                              : "Pending"}
+                              : nomination.status === "withdrawn"
+                                ? "Withdrawn"
+                                : "Pending"}
                         </span>
                       </td>
 

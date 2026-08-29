@@ -1,17 +1,38 @@
+/**
+ * src/models/Nomination.ts
+ * A candidate nomination filed for a specific election.
+ * DO NOT ADD Anything in this model
+ */
+
 import mongoose, { Model, Schema } from "mongoose";
 
 export interface INomination {
   election: mongoose.Types.ObjectId;
   member: mongoose.Types.ObjectId;
-  position: string;
-  wing: string;
-  manifesto: string;
-  agreedToTerms: boolean;
-  status: "pending" | "approved" | "rejected";
 
-  // Automatically created by Mongoose because timestamps: true
-  createdAt: Date;
-  updatedAt: Date;
+  /** Post / designation the candidate is contesting for */
+  position: string;
+
+  /** Candidate's wing at the time of nomination */
+  wing?: string;
+
+  /** Candidate vision / manifesto */
+  manifesto?: string;
+
+  /** Whether the candidate accepted the election code of conduct */
+  agreedToTerms: boolean;
+
+  /**
+   * Admin-controlled approval:
+   * pending  → submitted, awaiting review
+   * approved → eligible for voting ballot
+   * rejected → not eligible
+   * withdrawn → candidate withdrew
+   */
+  status: "pending" | "approved" | "rejected" | "withdrawn";
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const NominationSchema = new Schema<INomination>(
@@ -20,52 +41,73 @@ const NominationSchema = new Schema<INomination>(
       type: Schema.Types.ObjectId,
       ref: "Election",
       required: true,
-      index: true,
     },
 
     member: {
       type: Schema.Types.ObjectId,
       ref: "Member",
       required: true,
-      index: true,
     },
 
+    /** Post / designation the candidate is contesting for */
     position: {
       type: String,
-      required: true,
+      required: [true, "Contesting position is required"],
       trim: true,
     },
 
+    /** Candidate's wing at the time of nomination */
     wing: {
       type: String,
-      required: true,
       trim: true,
     },
 
+    /** Candidate vision / manifesto */
     manifesto: {
       type: String,
-      required: true,
       trim: true,
+      maxlength: [2000, "Manifesto cannot exceed 2000 characters"],
     },
 
+    /** Whether the candidate accepted the election code of conduct */
     agreedToTerms: {
       type: Boolean,
-      required: true,
       default: false,
     },
 
+    /**
+     * Admin-controlled approval:
+     * pending  → submitted, awaiting review
+     * approved → eligible for voting ballot
+     * rejected → not eligible
+     * withdrawn → candidate withdrew
+     */
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "withdrawn"],
       default: "pending",
-      index: true,
     },
   },
   {
     timestamps: true,
-    collection: "nominations",
-  }
+
+    toJSON: {
+      virtuals: true,
+    },
+
+    toObject: {
+      virtuals: true,
+    },
+  },
 );
+
+// One member can nominate for one position per election
+NominationSchema.index({ election: 1, member: 1 }, { unique: true });
+
+NominationSchema.index({
+  election: 1,
+  status: 1,
+});
 
 const Nomination: Model<INomination> =
   mongoose.models.Nomination ||

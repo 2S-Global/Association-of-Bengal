@@ -14,7 +14,7 @@ export type Nomination = {
   wing: string;
   manifesto: string;
   agreedToTerms: boolean;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "withdrawn";
   createdAt: string;
   updatedAt: string;
 };

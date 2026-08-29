@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     if (
       statusParam &&
-      !["pending", "approved", "rejected"].includes(statusParam)
+      !["pending", "approved", "rejected", "withdrawn"].includes(statusParam)
     ) {
       return NextResponse.json(
         {

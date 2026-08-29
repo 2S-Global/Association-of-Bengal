@@ -86,6 +86,13 @@ export default function ElectionActionLinks({
       >
         <CandidateIcon status="rejected" />
       </Link>
+      <Link
+        href={`${nominationsHref}?status=withdrawn`}
+        title="Withdrawn nominations"
+        className={`${actionClassName} text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-500/10`}
+      >
+        <CandidateIcon status="withdrawn" />
+      </Link>
 
       {hasVotingEnded && (
         <Link
@@ -118,7 +125,7 @@ export default function ElectionActionLinks({
 function CandidateIcon({
   status,
 }: {
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "withdrawn";
 }) {
   return (
     <svg
@@ -140,6 +147,7 @@ function CandidateIcon({
       )}
       {status === "approved" && <path d="M15 12l2 2 4-4" />}
       {status === "rejected" && <path d="M16 13l5 5m0-5l-5 5" />}
+      {status === "withdrawn" && <path d="M15 15l5-5m0 5l-5-5" />}
     </svg>
   );
 }
