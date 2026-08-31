@@ -5,7 +5,8 @@ import { sendAcceptanceEmail, sendRejectionEmail } from "@/lib/acceptemail";
 
 export async function POST(req: Request) {
   try {
-    const { applicationId, status } = await req.json();
+    // 1. Extract amount and remark along with applicationId and status
+    const { applicationId, status, amount, remark } = await req.json();
 
     if (!applicationId || !status) {
       return NextResponse.json(
@@ -23,10 +24,10 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // 1. Permanently update the status in MongoDB
+    // 2. Permanently update status, amount, and remark in MongoDB
     const updatedApp = await Application.findByIdAndUpdate(
       applicationId,
-      { status },
+      { status, amount, remark },
       { new: true }
     );
 
@@ -44,11 +45,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Trigger the dedicated email function based on the action
+    // 3. Trigger the dedicated email function with the correct arguments
     if (status === "ACCEPTED") {
-      await sendAcceptanceEmail(updatedApp.participant_email, updatedApp.participant_name);
+      await sendAcceptanceEmail(
+        updatedApp.participant_email, 
+        updatedApp.participant_name, 
+        amount, 
+        remark
+      );
     } else {
-      await sendRejectionEmail(updatedApp.participant_email, updatedApp.participant_name);
+      await sendRejectionEmail(
+        updatedApp.participant_email, 
+        updatedApp.participant_name, 
+        remark
+      );
     }
 
     return NextResponse.json({
