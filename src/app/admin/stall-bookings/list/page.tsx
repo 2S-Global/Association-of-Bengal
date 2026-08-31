@@ -1,17 +1,19 @@
+
 // "use client";
 
 // import React, { useState, useEffect } from "react";
-// import {
-//   Search,
-//   FileText,
-//   Mail,
-//   Phone,
-//   Loader2,
+// import { 
+//   Search, 
+//   FileText, 
+//   Mail, 
+//   Phone, 
+//   Loader2, 
 //   AlertCircle,
 //   Store,
 //   X,
 //   CheckCircle2,
-//   XCircle
+//   XCircle,
+//   ArrowLeft
 // } from "lucide-react";
 
 // interface Application {
@@ -33,6 +35,8 @@
 //   declaration_place: string;
 //   createdAt: string;
 //   status?: string;
+//   amount?: string;
+//   remark?: string;
 // }
 
 // export default function AdminStallBookingsPage() {
@@ -41,8 +45,11 @@
 //   const [error, setError] = useState<string | null>(null);
 //   const [searchQuery, setSearchQuery] = useState<string>("");
 //   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  
+//   const [modalMode, setModalMode] = useState<'view' | 'accept_prompt' | 'reject_prompt' | 'success'>('view');
+//   const [inputAmount, setInputAmount] = useState<string>("");
+//   const [inputRemark, setInputRemark] = useState<string>("");
 
-//   // Action handling states
 //   const [actionLoading, setActionLoading] = useState<boolean>(false);
 //   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -69,34 +76,54 @@
 //     }
 //   };
 
-//   // Handler to Accept or Reject Application & Send Email Notification
 //   const handleAppAction = async (appId: string, action: 'ACCEPTED' | 'REJECTED') => {
 //     try {
 //       setActionLoading(true);
 //       setActionMessage(null);
 
+//       if (action === 'ACCEPTED' && !inputAmount.trim()) {
+//         setActionMessage({
+//           type: 'error',
+//           text: 'Please enter the payable amount before accepting the application.'
+//         });
+//         setActionLoading(false);
+//         return;
+//       }
+
 //       const res = await fetch(`/api/stallBooking/status`, {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ applicationId: appId, status: action }),
+//         body: JSON.stringify({ 
+//           applicationId: appId, 
+//           status: action, 
+//           amount: action === 'ACCEPTED' ? inputAmount : undefined, 
+//           remark: inputRemark 
+//         }),
 //       });
 
 //       const data = await res.json();
 
 //       if (res.ok && data.success) {
+//         setApplications(prev => 
+//           prev.map(app => app._id === appId ? { ...app, status: action, amount: action === 'ACCEPTED' ? inputAmount : undefined, remark: inputRemark } : app)
+//         );
+        
+//         if (selectedApp && selectedApp._id === appId) {
+//           setSelectedApp(prev => prev ? { ...prev, status: action, amount: action === 'ACCEPTED' ? inputAmount : undefined, remark: inputRemark } : null);
+//         }
+
+//         setModalMode('success');
 //         setActionMessage({
 //           type: 'success',
-//           text: `Application successfully ${action.toLowerCase()} and email notification sent to the participant!`
+//           text: `Application successfully ${action.toLowerCase()} and email notification sent!`
 //         });
 
-//         // Update local state to reflect change
-//         setApplications(prev =>
-//           prev.map(app => app._id === appId ? { ...app, status: action } : app)
-//         );
+//         setTimeout(() => {
+//           setSelectedApp(null);
+//           setModalMode('view');
+//           fetchApplications();
+//         }, 1500);
 
-//         if (selectedApp && selectedApp._id === appId) {
-//           setSelectedApp(prev => prev ? { ...prev, status: action } : null);
-//         }
 //       } else {
 //         setActionMessage({
 //           type: 'error',
@@ -114,15 +141,15 @@
 //     }
 //   };
 
-//   const filteredApplications = applications.filter((app) =>
+//   const filteredApplications = applications.filter((app) => 
 //     app.participant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 //     app.participant_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 //     app.participant_mobile?.includes(searchQuery)
 //   );
 
 //   return (
-//     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 bg-[#fff8f5] min-h-screen text-[#1e1b18] font-['Libre_Franklin'] overflow-x-hidden">
-
+//     <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 bg-[#fff8f5] min-h-screen text-[#1e1b18] font-['Libre_Franklin']">
+      
 //       {/* Page Header */}
 //       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-[#e0bfbf] shadow-sm">
 //         <div>
@@ -173,61 +200,71 @@
 //         </div>
 //       ) : (
 //         <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
-//           <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-//             <table className="w-full text-left border-collapse min-w-[700px]">
+//           <div className="w-full">
+//             <table className="w-full text-left border-collapse">
 //               <thead>
-//                 <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[11px] font-bold text-[#570013] uppercase tracking-wider">
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6">Participant</th>
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6">Contact Info</th>
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6">Space Requirement</th>
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6">Stock Value</th>
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6">Documents</th>
-//                   <th className="py-3 sm:py-4 px-4 sm:px-6 text-center">Actions</th>
+//                 <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[10px] sm:text-[11px] font-bold text-[#570013] uppercase tracking-wider">
+//                   <th className="py-3 px-3 sm:px-5">Participant</th>
+//                   <th className="py-3 px-3 sm:px-5">Contact</th>
+//                   <th className="py-3 px-3 sm:px-5">Space</th>
+//                   <th className="py-3 px-3 sm:px-5">Status</th>
+//                   <th className="py-3 px-3 sm:px-5 text-center">Action</th>
 //                 </tr>
 //               </thead>
 //               <tbody className="divide-y divide-[#e0bfbf]/50 text-xs sm:text-sm">
 //                 {filteredApplications.map((app) => (
 //                   <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6 font-semibold text-[#1e1b18]">
-//                       <div>{app.participant_name}</div>
-//                       <div className="text-[11px] sm:text-xs font-normal text-gray-500">{app.participant_bengali}</div>
+                    
+//                     <td className="py-3 px-3 sm:px-5 font-semibold text-[#1e1b18]">
+//                       <div className="text-xs sm:text-sm font-bold truncate max-w-[160px] sm:max-w-xs">{app.participant_name}</div>
+//                       <div className="text-[10px] text-gray-500 font-normal truncate max-w-[160px] sm:max-w-xs">{app.participant_bengali}</div>
 //                     </td>
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6 text-[11px] sm:text-xs text-[#584141] space-y-1">
-//                       <div className="flex items-center gap-1.5 truncate max-w-[200px]"><Mail className="w-3.5 h-3.5 text-[#775a19] shrink-0" /> <span className="truncate">{app.participant_email}</span></div>
-//                       <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[#775a19] shrink-0" /> {app.participant_mobile}</div>
+
+//                     <td className="py-3 px-3 sm:px-5 text-[11px] sm:text-xs text-[#584141]">
+//                       <div className="flex items-center gap-1 truncate max-w-[150px] sm:max-w-[200px]">
+//                         <Mail className="w-3 h-3 text-[#775a19] shrink-0" /> 
+//                         <span className="truncate">{app.participant_email}</span>
+//                       </div>
+//                       <div className="flex items-center gap-1 mt-0.5">
+//                         <Phone className="w-3 h-3 text-[#775a19] shrink-0" /> 
+//                         <span>{app.participant_mobile}</span>
+//                       </div>
 //                     </td>
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6">
-//                       <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap">
-//                         {app.space_requirement} sq. mt.
+
+//                     <td className="py-3 px-3 sm:px-5 whitespace-nowrap">
+//                       <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold">
+//                         {app.space_requirement} sq.m
 //                       </span>
 //                     </td>
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6 font-medium text-xs text-[#1e1b18] whitespace-nowrap">
-//                       ₹ {app.stock_value}
+
+//                     <td className="py-3 px-3 sm:px-5 whitespace-nowrap">
+//                       <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
+//                         app.status === 'ACCEPTED' 
+//                           ? 'bg-green-100 text-green-800 border border-green-300' 
+//                           : app.status === 'REJECTED' 
+//                           ? 'bg-red-100 text-red-800 border border-red-300' 
+//                           : 'bg-amber-100 text-amber-800 border border-amber-300'
+//                       }`}>
+//                         {app.status || 'PENDING'}
+//                       </span>
 //                     </td>
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6 space-x-2 whitespace-nowrap">
-//                       {app.pan_card_doc && (
-//                         <a href={app.pan_card_doc} target="_blank" rel="noopener noreferrer" className="text-xs text-[#570013] underline font-bold hover:text-[#800020]">
-//                           PAN
-//                         </a>
-//                       )}
-//                       {app.address_proof_doc && (
-//                         <a href={app.address_proof_doc} target="_blank" rel="noopener noreferrer" className="text-xs text-[#570013] underline font-bold hover:text-[#800020]">
-//                           Address Proof
-//                         </a>
-//                       )}
-//                     </td>
-//                     <td className="py-3 sm:py-4 px-4 sm:px-6 text-center whitespace-nowrap">
+
+//                     <td className="py-3 px-3 sm:px-5 text-center whitespace-nowrap">
 //                       <button
 //                         type="button"
 //                         onClick={() => {
 //                           setSelectedApp(app);
+//                           setInputAmount(app.amount || "");
+//                           setInputRemark(app.remark || "");
+//                           setModalMode('view');
 //                           setActionMessage(null);
 //                         }}
-//                         className="bg-[#570013] text-white text-xs font-bold px-3.5 sm:px-4 py-2 rounded-xl hover:bg-[#800020] transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+//                         className="bg-[#570013] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#800020] transition-all cursor-pointer shadow-xs inline-flex items-center gap-1"
 //                       >
 //                         View Details
 //                       </button>
 //                     </td>
+
 //                   </tr>
 //                 ))}
 //               </tbody>
@@ -236,25 +273,39 @@
 //         </div>
 //       )}
 
-//       {/* Detailed View Modal with Accept / Reject Controls */}
+//       {/* Detailed View Modal */}
 //       {selectedApp && (
-//         <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-//           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf] relative overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] my-auto">
-
+//         <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+//           <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf] relative overflow-y-auto my-auto">
+            
 //             {/* Modal Header */}
 //             <div className="sticky top-0 bg-white z-20 flex items-center justify-between border-b border-[#e0bfbf] px-4 sm:px-6 py-4 shadow-xs">
-//               <div>
-//                 <h3 className="font-['Playfair_Display'] text-lg sm:text-xl font-bold text-[#570013] flex flex-wrap items-center gap-2">
-//                   Application Details
-//                   {selectedApp.status && (
-//                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold tracking-wider ${
-//                       selectedApp.status === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'
-//                     }`}>
-//                       {selectedApp.status}
-//                     </span>
-//                   )}
-//                 </h3>
-//                 <p className="text-xs text-[#775a19]">Submitted on {new Date(selectedApp.createdAt).toLocaleDateString()}</p>
+//               <div className="flex items-center gap-3">
+//                 {modalMode !== 'view' && modalMode !== 'success' && (
+//                   <button 
+//                     type="button"
+//                     onClick={() => { setModalMode('view'); setActionMessage(null); }}
+//                     className="p-1.5 bg-[#fbf2ed] hover:bg-[#e0bfbf] rounded-full transition-all text-[#570013] cursor-pointer"
+//                     title="Back to Details"
+//                   >
+//                     <ArrowLeft className="w-4 h-4" />
+//                   </button>
+//                 )}
+//                 <div>
+//                   <h3 className="font-['Playfair_Display'] text-lg sm:text-xl font-bold text-[#570013] flex flex-wrap items-center gap-2">
+//                     {modalMode === 'view' ? "Application Details" : modalMode === 'accept_prompt' ? "Accept Application & Send Invoice" : modalMode === 'reject_prompt' ? "Reject Application & Send Update" : "Action Completed Successfully"}
+//                     {selectedApp.status && modalMode === 'view' && (
+//                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+//                         selectedApp.status === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'
+//                       }`}>
+//                         {selectedApp.status}
+//                       </span>
+//                     )}
+//                   </h3>
+//                   <p className="text-xs text-[#775a19]">
+//                     {modalMode === 'view' ? `Submitted on ${new Date(selectedApp.createdAt).toLocaleDateString()}` : `Participant: ${selectedApp.participant_name}`}
+//                   </p>
+//                 </div>
 //               </div>
 //               <button
 //                 type="button"
@@ -267,113 +318,231 @@
 
 //             {/* Modal Content Body */}
 //             <div className="p-4 sm:p-6 space-y-4 text-xs sm:text-sm text-[#1e1b18]">
-
-//               {/* Action Feedback Notification Message */}
-//               {actionMessage && (
-//                 <div className={`p-3.5 sm:p-4 rounded-xl border flex items-center gap-2.5 text-xs font-bold ${
-//                   actionMessage.type === 'success' ? 'bg-green-50 border-green-300 text-green-900' : 'bg-red-50 border-red-300 text-red-900'
-//                 }`}>
-//                   {actionMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
+              
+//               {actionMessage && actionMessage.type === 'error' && (
+//                 <div className="p-3.5 sm:p-4 rounded-xl border flex items-center gap-2.5 text-xs font-bold bg-red-50 border-red-300 text-red-900">
+//                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
 //                   <span>{actionMessage.text}</span>
 //                 </div>
 //               )}
 
-//               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+//               {modalMode === 'view' ? (
+//                 <div className="space-y-4">
+//                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+//                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Participant Name</span>
+//                       <p className="font-bold text-[#570013] break-words">{selectedApp.participant_name}</p>
+//                       <p className="text-xs text-gray-600">{selectedApp.participant_bengali}</p>
+//                     </div>
 
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Participant Name</span>
-//                   <p className="font-bold text-[#570013] break-words">{selectedApp.participant_name}</p>
-//                   <p className="text-xs text-gray-600">{selectedApp.participant_bengali}</p>
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+//                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Contact Details</span>
+//                       <p className="font-bold break-all">{selectedApp.participant_email}</p>
+//                       <p className="font-bold">{selectedApp.participant_mobile}</p>
+//                     </div>
+
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+//                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">GSTIN</span>
+//                       <p className="font-bold text-[#1e1b18]">{selectedApp.participant_gst || "N/A"}</p>
+//                     </div>
+
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-2">
+//                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Address</span>
+//                       <p className="font-medium break-words">{selectedApp.participant_address}</p>
+//                     </div>
+
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+//                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Stock & Value</span>
+//                       <p><strong>Stock Value:</strong> ₹ {selectedApp.stock_value}</p>
+//                       <p><strong>Copies:</strong> {selectedApp.titles_copies}</p>
+//                     </div>
+
+//                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+//                       <div>
+//                         <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider block">Uploaded Documents</span>
+//                         <span className="text-xs text-gray-600">Verify PAN and Address proof files directly</span>
+//                       </div>
+//                       <div className="flex flex-wrap gap-2">
+//                         {selectedApp.pan_card_doc && (
+//                           <a href={selectedApp.pan_card_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
+//                             View PAN
+//                           </a>
+//                         )}
+//                         {selectedApp.address_proof_doc && (
+//                           <a href={selectedApp.address_proof_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
+//                             View Address Proof
+//                           </a>
+//                         )}
+//                       </div>
+//                     </div>
+//                   </div>
+
+//                   {/* Display saved admin remarks / amount / cancellation reason if processed */}
+//                   {(selectedApp.amount || selectedApp.remark || selectedApp.status) && (
+//                     <div className={`border-l-4 p-4 rounded-xl space-y-1 text-xs ${
+//                       selectedApp.status === 'REJECTED' 
+//                         ? 'bg-red-50 border-red-600 text-red-900' 
+//                         : selectedApp.status === 'ACCEPTED'
+//                         ? 'bg-green-50 border-green-600 text-green-900'
+//                         : 'bg-[#fef3c7] border-amber-600 text-amber-900'
+//                     }`}>
+//                       <h4 className="font-bold uppercase tracking-wider text-[10px] opacity-80">
+//                         {selectedApp.status === 'REJECTED' ? 'Cancellation / Rejection Record' : 'Admin Decision Record'}
+//                       </h4>
+//                       {selectedApp.status && <p><strong>Status:</strong> {selectedApp.status}</p>}
+//                       {selectedApp.amount && <p><strong>Assigned Payable Amount:</strong> ₹{selectedApp.amount}</p>}
+//                       {selectedApp.remark && (
+//                         <p>
+//                           <strong>{selectedApp.status === 'REJECTED' ? 'Reason for Cancellation / Rejection:' : 'Admin Remark / Instructions:'}</strong> {selectedApp.remark}
+//                         </p>
+//                       )}
+//                     </div>
+//                   )}
 //                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Contact Details</span>
-//                   <p className="font-bold break-all">{selectedApp.participant_email}</p>
-//                   <p className="font-bold">{selectedApp.participant_mobile}</p>
-//                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">GSTIN</span>
-//                   <p className="font-bold text-[#1e1b18]">{selectedApp.participant_gst || "N/A"}</p>
-//                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-2">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Address</span>
-//                   <p className="font-medium break-words">{selectedApp.participant_address}</p>
-//                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Declaration</span>
-//                   <p><strong>Date:</strong> {selectedApp.declaration_date}</p>
-//                   <p><strong>Place:</strong> {selectedApp.declaration_place}</p>
-//                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Head & Representative</span>
-//                   <p className="break-words"><strong>Head:</strong> {selectedApp.participant_head}</p>
-//                   <p className="break-words"><strong>Rep:</strong> {selectedApp.participant_rep}</p>
-//                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-2">
-//                   <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Stall & Stock Info</span>
-//                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
-//                     <p><strong>Space:</strong> {selectedApp.space_requirement} sq.mt.</p>
-//                     <p><strong>Stock:</strong> ₹ {selectedApp.stock_value}</p>
-//                     <p><strong>Copies:</strong> {selectedApp.titles_copies}</p>
+//               ) : modalMode === 'accept_prompt' ? (
+//                 <div className="bg-[#fbf2ed] p-6 rounded-2xl border border-[#e0bfbf] space-y-4">
+//                   <div className="space-y-1">
+//                     <h4 className="font-bold text-sm text-[#570013]">
+//                       {selectedApp.status === 'REJECTED' ? 'Reconsider & Accept Application' : 'Acceptance Form & Payment Request'}
+//                     </h4>
+//                     <p className="text-xs text-[#775a19]">Provide the payable stall booking fee and optional payment instructions.</p>
+//                   </div>
+//                   <div className="space-y-3">
+//                     <div>
+//                       <label className="block text-[11px] font-bold text-[#775a19] mb-1">Total Payable Amount (₹) *</label>
+//                       <input 
+//                         type="text"
+//                         placeholder="e.g., 5000"
+//                         value={inputAmount}
+//                         onChange={(e) => setInputAmount(e.target.value)}
+//                         className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
+//                       />
+//                     </div>
+//                     <div>
+//                       <label className="block text-[11px] font-bold text-[#775a19] mb-1">Admin Remarks / Instructions (Optional)</label>
+//                       <textarea 
+//                         rows={3}
+//                         placeholder="e.g., Reconsidered following review of updated documentation."
+//                         value={inputRemark}
+//                         onChange={(e) => setInputRemark(e.target.value)}
+//                         className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
+//                       />
+//                     </div>
 //                   </div>
 //                 </div>
-
-//                 <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-2 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+//               ) : modalMode === 'reject_prompt' ? (
+//                 <div className="bg-[#fbf2ed] p-6 rounded-2xl border border-[#e0bfbf] space-y-4">
+//                   <div className="space-y-1">
+//                     <h4 className="font-bold text-sm text-red-800">Cancellation / Rejection Reason</h4>
+//                     <p className="text-xs text-gray-600">Provide a clear note explaining why this booking is being declined or canceled.</p>
+//                   </div>
 //                   <div>
-//                     <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider block">Uploaded Documents</span>
-//                     <span className="text-xs text-gray-600">Verify PAN and Address proof files directly</span>
-//                   </div>
-//                   <div className="flex flex-wrap gap-2">
-//                     {selectedApp.pan_card_doc && (
-//                       <a href={selectedApp.pan_card_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
-//                         View PAN
-//                       </a>
-//                     )}
-//                     {selectedApp.address_proof_doc && (
-//                       <a href={selectedApp.address_proof_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
-//                         View Address Proof
-//                       </a>
-//                     )}
+//                     <label className="block text-[11px] font-bold text-[#775a19] mb-1">Remark / Reason for Cancellation *</label>
+//                     <textarea 
+//                       rows={3}
+//                       placeholder="e.g., Spatial limitations, incomplete documents, or missed payment deadline."
+//                       value={inputRemark}
+//                       onChange={(e) => setInputRemark(e.target.value)}
+//                       className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
+//                     />
 //                   </div>
 //                 </div>
+//               ) : (
+//                 <div className="bg-green-50 border border-green-300 p-8 rounded-2xl text-center space-y-3">
+//                   <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto" />
+//                   <h4 className="font-bold text-base text-green-900">Success!</h4>
+//                   <p className="text-xs sm:text-sm text-green-800 max-w-md mx-auto">
+//                     {actionMessage?.text || "The application status has been updated and the notification email has been successfully dispatched."}
+//                   </p>
+//                 </div>
+//               )}
 
-//               </div>
 //             </div>
 
-//             {/* Modal Footer / Review Actions & Close */}
+//             {/* Modal Footer Controls */}
 //             <div className="sticky bottom-0 bg-white z-20 border-t border-[#e0bfbf] px-4 sm:px-6 py-4 shadow-inner flex flex-col sm:flex-row items-center gap-3">
-//               <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+//               {modalMode === 'view' ? (
+//                 <>
+//                   <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+//                     {/* Hide Accept button if already ACCEPTED */}
+//                     {selectedApp.status !== 'ACCEPTED' && (
+//                       <button
+//                         type="button"
+//                         onClick={() => setModalMode('accept_prompt')}
+//                         className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2"
+//                       >
+//                         <CheckCircle2 className="w-4 h-4" />
+//                         {selectedApp.status === 'REJECTED' ? 'Reconsider Application' : 'Accept Application'}
+//                       </button>
+//                     )}
+
+//                     {/* Show Rejection button if not already rejected */}
+//                     {selectedApp.status !== 'REJECTED' && (
+//                       <button
+//                         type="button"
+//                         onClick={() => setModalMode('reject_prompt')}
+//                         className={`bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 ${selectedApp.status === 'ACCEPTED' ? 'sm:col-span-2' : ''}`}
+//                       >
+//                         <XCircle className="w-4 h-4" />
+//                         {selectedApp.status === 'ACCEPTED' ? 'Cancel / Reject Booking' : 'Reject Application'}
+//                       </button>
+//                     )}
+//                   </div>
+//                   <button
+//                     type="button"
+//                     onClick={() => setSelectedApp(null)}
+//                     className="w-full sm:w-auto px-6 bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-xs sm:text-sm whitespace-nowrap"
+//                   >
+//                     Close
+//                   </button>
+//                 </>
+//               ) : modalMode === 'accept_prompt' ? (
+//                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+//                   <button
+//                     type="button"
+//                     disabled={actionLoading}
+//                     onClick={() => handleAppAction(selectedApp._id, 'ACCEPTED')}
+//                     className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+//                   >
+//                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+//                     Confirm & Send Invoice Mail
+//                   </button>
+//                   <button
+//                     type="button"
+//                     onClick={() => setModalMode('view')}
+//                     className="bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-xs sm:text-sm"
+//                   >
+//                     Back to Details
+//                   </button>
+//                 </div>
+//               ) : modalMode === 'reject_prompt' ? (
+//                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+//                   <button
+//                     type="button"
+//                     disabled={actionLoading}
+//                     onClick={() => handleAppAction(selectedApp._id, 'REJECTED')}
+//                     className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+//                   >
+//                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+//                     Confirm Cancellation & Send Update
+//                   </button>
+//                   <button
+//                     type="button"
+//                     onClick={() => setModalMode('view')}
+//                     className="bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-xs sm:text-sm"
+//                   >
+//                     Back to Details
+//                   </button>
+//                 </div>
+//               ) : (
 //                 <button
 //                   type="button"
-//                   disabled={actionLoading}
-//                   onClick={() => handleAppAction(selectedApp._id, 'ACCEPTED')}
-//                   className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+//                   onClick={() => { setSelectedApp(null); setModalMode('view'); fetchApplications(); }}
+//                   className="w-full bg-[#570013] text-white font-bold py-3 rounded-xl hover:bg-[#800020] transition-all cursor-pointer text-xs sm:text-sm"
 //                 >
-//                   {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-//                   Accept & Mail Participant
+//                   Done & Close
 //                 </button>
-//                 <button
-//                   type="button"
-//                   disabled={actionLoading}
-//                   onClick={() => handleAppAction(selectedApp._id, 'REJECTED')}
-//                   className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-//                 >
-//                   {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-//                   Reject & Mail Participant
-//                 </button>
-//               </div>
-//               <button
-//                 type="button"
-//                 onClick={() => setSelectedApp(null)}
-//                 className="w-full sm:w-auto px-6 bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-xs sm:text-sm whitespace-nowrap"
-//               >
-//                 Close
-//               </button>
+//               )}
 //             </div>
 
 //           </div>
@@ -400,6 +569,13 @@ import {
   ArrowLeft
 } from "lucide-react";
 
+interface HistoryItem {
+  action: string;
+  amount?: string;
+  remark?: string;
+  date: string;
+}
+
 interface Application {
   _id: string;
   participant_name: string;
@@ -421,6 +597,7 @@ interface Application {
   status?: string;
   amount?: string;
   remark?: string;
+  history?: HistoryItem[];
 }
 
 export default function AdminStallBookingsPage() {
@@ -430,14 +607,15 @@ export default function AdminStallBookingsPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   
-  const [modalMode, setModalMode] = useState<'view' | 'accept_prompt' | 'reject_prompt' | 'success'>('view');
+  const [modalMode, setModalMode] = useState<'view' | 'accept_prompt' | 'reconsider_prompt' | 'reject_prompt' | 'success'>('view');
   const [inputAmount, setInputAmount] = useState<string>("");
   const [inputRemark, setInputRemark] = useState<string>("");
+  const [reconsiderReason, setReconsiderReason] = useState<string>("");
 
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
     fetchApplications();
   }, []);
 
@@ -448,7 +626,10 @@ export default function AdminStallBookingsPage() {
       const data = await res.json();
 
       if (data.success) {
-        setApplications(data.data || []);
+        const sortedData = (data.data || []).sort((a: Application, b: Application) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setApplications(sortedData);
       } else {
         setError(data.error || "Failed to load bookings.");
       }
@@ -474,6 +655,11 @@ export default function AdminStallBookingsPage() {
         return;
       }
 
+      let finalRemark = inputRemark;
+      if (modalMode === 'reconsider_prompt' && reconsiderReason.trim()) {
+        finalRemark = `Reconsidered: ${reconsiderReason} | Note: ${inputRemark}`;
+      }
+
       const res = await fetch(`/api/stallBooking/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -481,19 +667,21 @@ export default function AdminStallBookingsPage() {
           applicationId: appId, 
           status: action, 
           amount: action === 'ACCEPTED' ? inputAmount : undefined, 
-          remark: inputRemark 
+          remark: finalRemark 
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
+        const updatedRecord = data.data;
+
         setApplications(prev => 
-          prev.map(app => app._id === appId ? { ...app, status: action, amount: inputAmount, remark: inputRemark } : app)
+          prev.map(app => app._id === appId ? (updatedRecord || { ...app, status: action, amount: action === 'ACCEPTED' ? inputAmount : undefined, remark: finalRemark }) : app)
         );
         
         if (selectedApp && selectedApp._id === appId) {
-          setSelectedApp(prev => prev ? { ...prev, status: action, amount: inputAmount, remark: inputRemark } : null);
+          setSelectedApp(updatedRecord || (prev => prev ? { ...prev, status: action, amount: action === 'ACCEPTED' ? inputAmount : undefined, remark: finalRemark } : null));
         }
 
         setModalMode('success');
@@ -639,7 +827,8 @@ export default function AdminStallBookingsPage() {
                         onClick={() => {
                           setSelectedApp(app);
                           setInputAmount(app.amount || "");
-                          setInputRemark(app.remark || "");
+                          setInputRemark("");
+                          setReconsiderReason("");
                           setModalMode('view');
                           setActionMessage(null);
                         }}
@@ -677,7 +866,7 @@ export default function AdminStallBookingsPage() {
                 )}
                 <div>
                   <h3 className="font-['Playfair_Display'] text-lg sm:text-xl font-bold text-[#570013] flex flex-wrap items-center gap-2">
-                    {modalMode === 'view' ? "Application Details" : modalMode === 'accept_prompt' ? "Accept Application & Send Invoice" : modalMode === 'reject_prompt' ? "Reject Application & Send Update" : "Action Completed Successfully"}
+                    {modalMode === 'view' ? "Application Details" : modalMode === 'accept_prompt' ? "Accept Application & Send Invoice" : modalMode === 'reconsider_prompt' ? "Reconsider Cancelled Application" : modalMode === 'reject_prompt' ? "Reject Application & Send Update" : "Action Completed Successfully"}
                     {selectedApp.status && modalMode === 'view' && (
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full uppercase font-bold tracking-wider ${
                         selectedApp.status === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-100 text-red-800 border border-red-300'
@@ -761,12 +950,63 @@ export default function AdminStallBookingsPage() {
                     </div>
                   </div>
 
-                  {/* Display saved admin remarks / amount if application is already processed */}
-                  {(selectedApp.amount || selectedApp.remark) && (
-                    <div className="bg-[#fef3c7] border-l-4 border-amber-600 p-4 rounded-xl space-y-1 text-xs text-amber-900">
-                      <h4 className="font-bold uppercase tracking-wider text-[10px] text-amber-800">Previous Admin Record / Remarks</h4>
-                      {selectedApp.amount && <p><strong>Assigned Amount:</strong> ₹{selectedApp.amount}</p>}
-                      {selectedApp.remark && <p><strong>Remark / Reason:</strong> {selectedApp.remark}</p>}
+                  {/* Restored Live Admin Decision Record Summary Box */}
+                  {(selectedApp.amount || selectedApp.remark || selectedApp.status) && (
+                    <div className={`border-l-4 p-4 rounded-xl space-y-1 text-xs ${
+                      selectedApp.status === 'REJECTED' 
+                        ? 'bg-red-50 border-red-600 text-red-900' 
+                        : selectedApp.status === 'ACCEPTED'
+                        ? 'bg-green-50 border-green-600 text-green-900'
+                        : 'bg-[#fef3c7] border-amber-600 text-amber-900'
+                    }`}>
+                      <h4 className="font-bold uppercase tracking-wider text-[10px] opacity-80">
+                        {selectedApp.status === 'REJECTED' ? 'Cancellation / Rejection Record' : 'Admin Decision Record'}
+                      </h4>
+                      {selectedApp.status && <p><strong>Status:</strong> {selectedApp.status}</p>}
+                      {selectedApp.amount && <p><strong>Assigned Payable Amount:</strong> ₹{selectedApp.amount}</p>}
+                      {selectedApp.remark && (
+                        <p>
+                          <strong>{selectedApp.status === 'REJECTED' ? 'Reason for Cancellation / Rejection:' : 'Admin Remark / Instructions:'}</strong> {selectedApp.remark}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 📜 Action History & Audit Log Timeline (Descending Order with Step 1, 2, 3...) */}
+                  {selectedApp.history && selectedApp.history.length > 0 && (
+                    <div className="bg-[#fbf2ed] p-4 rounded-2xl border border-[#e0bfbf] space-y-3">
+                      <h4 className="font-bold uppercase tracking-wider text-[10px] text-[#570013] border-b border-[#e0bfbf]/50 pb-2 flex items-center justify-between">
+                        <span>📜 Action History & Audit Log (Newest First)</span>
+                        <span className="bg-white px-2 py-0.5 rounded-full text-[#775a19]">{selectedApp.history.length} Events</span>
+                      </h4>
+                      <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+                        {[...selectedApp.history].reverse().map((item, idx) => {
+                          // Calculates step number dynamically in descending order (Newest = Step 1)
+                          const stepNumber = selectedApp.history!.length - idx;
+                          return (
+                            <div key={idx} className="bg-white p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1 text-xs">
+                              <div className="flex items-center justify-between">
+                                <span className={`font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 rounded ${
+                                  item.action === 'ACCEPTED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  Step {stepNumber}: {item.action}
+                                </span>
+                                <span className="text-gray-400 font-mono text-[10px]">
+                                  {new Date(item.date).toLocaleString()}
+                                </span>
+                              </div>
+                              {item.amount && (
+                                <p className="text-[#570013] font-bold">Payable Amount: ₹{item.amount}</p>
+                              )}
+                              {item.remark && (
+                                <p className="text-gray-700 bg-[#fff8f5] p-2 rounded-lg border border-[#e0bfbf]/30">
+                                  <strong className="text-[#775a19]">Note:</strong> {item.remark}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -776,6 +1016,14 @@ export default function AdminStallBookingsPage() {
                     <h4 className="font-bold text-sm text-[#570013]">Acceptance Form & Payment Request</h4>
                     <p className="text-xs text-[#775a19]">Provide the payable stall booking fee and optional payment instructions.</p>
                   </div>
+
+                  {selectedApp.remark && (
+                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Remark Reference:</span>
+                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     <div>
                       <label className="block text-[11px] font-bold text-[#775a19] mb-1">Total Payable Amount (₹) *</label>
@@ -788,10 +1036,10 @@ export default function AdminStallBookingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-[#775a19] mb-1">Admin Remarks / Instructions (Optional)</label>
+                      <label className="block text-[11px] font-bold text-[#775a19] mb-1">New Admin Remarks / Instructions (Optional)</label>
                       <textarea 
                         rows={3}
-                        placeholder="e.g., Please complete your payment before the bank deadline."
+                        placeholder="Type new remarks for this acceptance step..."
                         value={inputRemark}
                         onChange={(e) => setInputRemark(e.target.value)}
                         className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
@@ -799,17 +1047,73 @@ export default function AdminStallBookingsPage() {
                     </div>
                   </div>
                 </div>
+              ) : modalMode === 'reconsider_prompt' ? (
+                <div className="bg-[#fbf2ed] p-6 rounded-2xl border border-[#e0bfbf] space-y-4">
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-sm text-amber-900">Reconsider Cancelled / Rejected Application</h4>
+                    <p className="text-xs text-[#775a19]">Explain why this previously rejected application is being reconsidered and approved.</p>
+                  </div>
+
+                  {selectedApp.remark && (
+                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Rejection/Cancellation Reason:</span>
+                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 mb-1">Reason for Reconsideration *</label>
+                      <textarea 
+                        rows={2}
+                        placeholder="e.g., Participant provided missing documents and appealed successfully."
+                        value={reconsiderReason}
+                        onChange={(e) => setReconsiderReason(e.target.value)}
+                        className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2 rounded-xl text-xs font-medium focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#775a19] mb-1">Total Payable Amount (₹) *</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g., 5000"
+                        value={inputAmount}
+                        onChange={(e) => setInputAmount(e.target.value)}
+                        className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#775a19] mb-1">Additional New Remarks (Optional)</label>
+                      <textarea 
+                        rows={2}
+                        placeholder="Type any new instructions..."
+                        value={inputRemark}
+                        onChange={(e) => setInputRemark(e.target.value)}
+                        className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2 rounded-xl text-xs font-medium focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
               ) : modalMode === 'reject_prompt' ? (
                 <div className="bg-[#fbf2ed] p-6 rounded-2xl border border-[#e0bfbf] space-y-4">
                   <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-red-800">Rejection Reason</h4>
-                    <p className="text-xs text-gray-600">Provide an optional reason or note explaining why this booking is being declined.</p>
+                    <h4 className="font-bold text-sm text-red-800">Cancellation / Rejection Reason</h4>
+                    <p className="text-xs text-gray-600">Provide a clear note explaining why this booking is being declined or canceled.</p>
                   </div>
+
+                  {selectedApp.remark && (
+                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Remark Reference:</span>
+                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
+                    </div>
+                  )}
+
                   <div>
-                    <label className="block text-[11px] font-bold text-[#775a19] mb-1">Remark / Reason (Optional)</label>
+                    <label className="block text-[11px] font-bold text-[#775a19] mb-1">Remark / Reason for Cancellation *</label>
                     <textarea 
                       rows={3}
-                      placeholder="e.g., Spatial limitations or documentation mismatch."
+                      placeholder="e.g., Spatial limitations, incomplete documents, or missed payment deadline."
                       value={inputRemark}
                       onChange={(e) => setInputRemark(e.target.value)}
                       className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
@@ -833,11 +1137,10 @@ export default function AdminStallBookingsPage() {
               {modalMode === 'view' ? (
                 <>
                   <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Hide Accept button if already ACCEPTED */}
-                    {selectedApp.status !== 'ACCEPTED' && (
+                    {selectedApp.status !== 'ACCEPTED' && selectedApp.status !== 'REJECTED' && (
                       <button
                         type="button"
-                        onClick={() => setModalMode('accept_prompt')}
+                        onClick={() => { setModalMode('accept_prompt'); setInputRemark(""); }}
                         className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2"
                       >
                         <CheckCircle2 className="w-4 h-4" />
@@ -845,24 +1148,25 @@ export default function AdminStallBookingsPage() {
                       </button>
                     )}
 
-                    {/* Change button text to "Reconsider Application" if REJECTED */}
-                    {selectedApp.status === 'REJECTED' ? (
+                    {selectedApp.status === 'REJECTED' && (
                       <button
                         type="button"
-                        onClick={() => setModalMode('accept_prompt')}
+                        onClick={() => { setModalMode('reconsider_prompt'); setInputRemark(""); }}
                         className="bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         Reconsider Application
                       </button>
-                    ) : selectedApp.status !== 'REJECTED' && (
+                    )}
+
+                    {selectedApp.status !== 'REJECTED' && (
                       <button
                         type="button"
-                        onClick={() => setModalMode('reject_prompt')}
+                        onClick={() => { setModalMode('reject_prompt'); setInputRemark(""); }}
                         className={`bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 ${selectedApp.status === 'ACCEPTED' ? 'sm:col-span-2' : ''}`}
                       >
                         <XCircle className="w-4 h-4" />
-                        Reject Application
+                        {selectedApp.status === 'ACCEPTED' ? 'Cancel / Reject Booking' : 'Reject Application'}
                       </button>
                     )}
                   </div>
@@ -883,7 +1187,26 @@ export default function AdminStallBookingsPage() {
                     className="bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                    Confirm Acceptance & Send Mail
+                    Confirm & Send Invoice Mail
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalMode('view')}
+                    className="bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] font-bold py-3 rounded-xl hover:bg-[#e0bfbf] transition-all cursor-pointer text-xs sm:text-sm"
+                  >
+                    Back to Details
+                  </button>
+                </div>
+              ) : modalMode === 'reconsider_prompt' ? (
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    disabled={actionLoading}
+                    onClick={() => handleAppAction(selectedApp._id, 'ACCEPTED')}
+                    className="bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                    Confirm Reconsideration & Send Mail
                   </button>
                   <button
                     type="button"
@@ -902,7 +1225,7 @@ export default function AdminStallBookingsPage() {
                     className="bg-red-700 text-white font-bold py-3 rounded-xl hover:bg-red-800 transition-all cursor-pointer text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                    Confirm Rejection & Send Mail
+                    Confirm Cancellation & Send Update
                   </button>
                   <button
                     type="button"
