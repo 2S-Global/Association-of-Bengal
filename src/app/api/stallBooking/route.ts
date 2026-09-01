@@ -55,11 +55,14 @@ export async function POST(request: Request) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
+      // Explicitly set resource_type to "raw" for PDFs so Cloudinary serves them correctly without 404 or image mapping errors
+      const resourceType = file.type === "application/pdf" ? "raw" : "image";
+
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: `book-fair/${folder}`,
-            resource_type: "auto",
+            resource_type: resourceType,
           },
           (error, result) => {
             if (error) reject(error);
@@ -77,6 +80,8 @@ export async function POST(request: Request) {
     // --- STORE DEFAULT STATUS IN DB ---
     data.status = "PENDING"; 
     // ----------------------------------
+
+    console.log("data", data);
 
     const newApplication = await Application.create(data);
 

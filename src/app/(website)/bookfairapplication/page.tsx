@@ -1199,11 +1199,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
         )}
       </main>
 
-      {/* Global Root-Level File Preview Modal Popup */}
+      {/* Global Root-Level File Preview Modal Popup (Fixed PDF vs Image check) */}
       {previewFile && (
         <div className="fixed inset-0 z-[9999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border-2 border-[#e0bfbf] space-y-4 relative m-auto">
-            <div className="flex items-center justify-between border-b border-[#e0bfbf] pb-3">
+          <div className="bg-white rounded-3xl max-w-4xl w-full h-[85vh] p-6 shadow-2xl border-2 border-[#e0bfbf] flex flex-col relative m-auto">
+            <div className="flex items-center justify-between border-b border-[#e0bfbf] pb-3 shrink-0">
               <h4 className="font-bold text-[#570013] text-sm truncate flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[#775a19]" />
                 Document Preview: {previewFile.name}
@@ -1219,14 +1219,18 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="w-full max-h-[60vh] overflow-auto flex items-center justify-center bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf]">
-              {previewFile.url.match(/\.(jpeg|jpg|png)$/i) || previewFile.url.startsWith("blob:") ? (
-                <img src={previewFile.url} alt="Uploaded Document Preview" className="max-h-[55vh] object-contain rounded-lg" />
+            <div className="flex-1 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] my-4 overflow-hidden flex items-center justify-center">
+              {previewFile.name.toLowerCase().endsWith('.pdf') ? (
+                <iframe 
+                  src={previewFile.url} 
+                  className="w-full h-full rounded-lg border-0 bg-white"
+                  title="PDF Preview"
+                />
               ) : (
-                <iframe src={previewFile.url} className="w-full h-[55vh] rounded-lg border-0" title="Document Preview" />
+                <img src={previewFile.url} alt="Uploaded Document Preview" className="max-h-full max-w-full object-contain rounded-lg" />
               )}
             </div>
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -1274,7 +1278,7 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
             type="button"
             onClick={() => {
               setIsSubmitted(false);
-              window.location.href = "/"; // Automatically navigate to home page upon success
+              window.location.href = "/";
             }}
             className="w-full mt-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold py-3.5 px-6 rounded-xl hover:opacity-95 transition-all shadow-lg shadow-emerald-900/20 cursor-pointer text-sm"
           >

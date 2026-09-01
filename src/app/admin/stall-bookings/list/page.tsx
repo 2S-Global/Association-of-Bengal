@@ -62,6 +62,9 @@ export default function AdminStallBookingsPage() {
   const [actionLoading, setActionLoading] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  // Document Viewer Modal State
+  const [viewerData, setViewerData] = useState<{ url: string; type: 'image' | 'pdf' } | null>(null);
+
   useEffect(() => {
     fetchApplications();
   }, []);
@@ -158,6 +161,20 @@ export default function AdminStallBookingsPage() {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const openDocument = (url?: string) => {
+    if (!url) return;
+    const fullUrl = url.startsWith('http') ? url : url;
+    const isPdf = 
+      fullUrl.toLowerCase().includes('.pdf') || 
+      fullUrl.toLowerCase().includes('/raw/') ||
+      fullUrl.toLowerCase().includes('format_pdf');
+
+    setViewerData({
+      url: fullUrl,
+      type: isPdf ? 'pdf' : 'image',
+    });
   };
 
   const filteredApplications = applications.filter((app) => 
@@ -384,14 +401,22 @@ export default function AdminStallBookingsPage() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedApp.pan_card_doc && (
-                          <a href={selectedApp.pan_card_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
+                          <button 
+                            type="button"
+                            onClick={() => openDocument(selectedApp.pan_card_doc)} 
+                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020]"
+                          >
                             View PAN
-                          </a>
+                          </button>
                         )}
                         {selectedApp.address_proof_doc && (
-                          <a href={selectedApp.address_proof_doc} target="_blank" rel="noopener noreferrer" className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center">
+                          <button 
+                            type="button"
+                            onClick={() => openDocument(selectedApp.address_proof_doc)} 
+                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020]"
+                          >
                             View Address Proof
-                          </a>
+                          </button>
                         )}
                       </div>
                     </div>
@@ -428,7 +453,6 @@ export default function AdminStallBookingsPage() {
                       </h4>
                       <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                         {[...selectedApp.history].reverse().map((item, idx) => {
-                          // Calculates step number dynamically in descending order (Newest = Step 1)
                           const stepNumber = selectedApp.history!.length - idx;
                           return (
                             <div key={idx} className="bg-white p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1 text-xs">
@@ -696,6 +720,64 @@ export default function AdminStallBookingsPage() {
           </div>
         </div>
       )}
+
+      {/* Embedded Document Viewer Modal (Bypasses download triggers via Google Docs Viewer for PDFs) */}
+      {viewerData && (
+        <div className="fixed inset-0 z-[999999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 transition-all">
+          <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl relative overflow-hidden">
+            
+            {/* Header */}
+            <div className="bg-[#fbf2ed] flex items-center justify-between px-6 py-4 border-b border-[#e0bfbf]">
+              <h3 className="font-bold text-[#570013] flex items-center gap-2 text-sm sm:text-base">
+                <FileText className="w-5 h-5 text-[#570013]" />
+                Document Viewer Modal
+              </h3>
+              <button
+                type="button"
+                onClick={() => setViewerData(null)}
+                className="px-4 py-1.5 bg-[#570013] text-white font-bold rounded-lg hover:bg-[#800020] transition-all text-xs cursor-pointer"
+              >
+                Close Viewer
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 bg-gray-100 flex items-center justify-center p-4 overflow-hidden relative">
+              {viewerData.type === 'pdf' ? (
+                <iframe 
+                  src={`https://docs.google.com/gview?url=${encodeURIComponent(viewerData.url)}&embedded=true`} 
+                  className="w-full h-full rounded-xl border border-gray-300 shadow-inner bg-white"
+                  title="PDF Document Viewer"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center relative">
+                  <img 
+                    src={viewerData.url} 
+                    alt="Document Preview" 
+                    className="max-w-full max-h-full object-contain rounded-xl shadow-md"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent && !parent.querySelector('.error-fallback')) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'error-fallback text-center p-6 bg-white rounded-xl shadow-sm border border-red-200';
+                        fallback.innerHTML = `
+                          <p class="text-xs font-bold text-red-800 mb-2">Unable to load image preview.</p>
+                          <a href="${viewerData.url}" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#570013] text-white px-4 py-2 rounded-lg font-bold inline-block">Open file in new tab</a>
+                        `;
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
