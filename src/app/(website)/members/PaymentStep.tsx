@@ -260,17 +260,6 @@
 //   );
 // }
 
-/**
- * src/components/members/PaymentStep.tsx
- */
-
-/**
- * src/components/members/PaymentStep.tsx
- */
-
-/**
- * src/components/members/PaymentStep.tsx
- */
 
 "use client";
 
@@ -292,12 +281,29 @@ interface PaymentStepProps {
   onSuccessRedirect: () => void;
 }
 
+// Helper function to safely decode JWT token on the client side
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error("Failed to parse JWT token:", e);
+    return null;
+  }
+}
+
 export default function PaymentStep({
   apiBase = API_BASE,
   authToken,
   onSuccessRedirect,
 }: PaymentStepProps) {
-  // Safe multi-variation key check for Razorpay public key on the client side
   const razorpayKey = 
     process.env.NEXT_PUBLIC_RAZORPAY_KEY || 
     process.env.NEXT_PUBLIC_VITE_RAZORPAY_KEY || 
@@ -324,7 +330,7 @@ export default function PaymentStep({
   const displayCurrency =
     membershipDetails.sysmbol || membershipDetails.currencySymbol || "₹";
 
-  // Fetch membership pricing from backend
+  // Fetch membership pricing from backend on mount
   useEffect(() => {
     const fetchMembershipDetails = async () => {
       const token =
@@ -349,7 +355,7 @@ export default function PaymentStep({
     fetchMembershipDetails();
   }, [apiBase, authToken]);
 
-  // Handle Razorpay Checkout Execution
+  // Handle Razorpay Checkout Execution & Verification
   const handleRazorpayPayment = async () => {
     if (!isRazorpayLoaded) {
       setErrorMsg("Razorpay gateway is loading. Please wait.");
@@ -357,7 +363,7 @@ export default function PaymentStep({
     }
 
     if (!razorpayKey) {
-      setErrorMsg("Razorpay public key is missing. Please ensure NEXT_PUBLIC_RAZORPAY_KEY is defined in your .env.local file.");
+      setErrorMsg("Razorpay public key is missing. Please check your environment variables.");
       setIsProcessing(false);
       return;
     }
@@ -371,7 +377,29 @@ export default function PaymentStep({
         localStorage.getItem("token") ||
         localStorage.getItem("accessToken");
 
-      // Call local Next.js API route to create Razorpay order securely
+      if (!token) {
+        throw new Error("Authentication token not found. Please complete step 1 first.");
+      }
+
+      // 1. Safely extract userId from the JWT token with comprehensive key checking
+      const decodedToken = parseJwt(token);
+      console.log("🔍 [PaymentStep] Decoded Auth Token Payload:", decodedToken);
+
+      const currentUserId = 
+        decodedToken?.id || 
+        decodedToken?._id || 
+        decodedToken?.userId || 
+        decodedToken?.user_id || 
+        decodedToken?.sub || 
+        decodedToken?.user?.id || 
+        decodedToken?.user?._id || 
+        "";
+
+      if (!currentUserId) {
+        throw new Error("User ID could not be resolved from token payload. Please log in again.");
+      }
+
+      // 2. Call Next.js API route to create Razorpay order securely
       const response = await axios.post(
         `/api/payments/razorpay/create-order`,
         { 
@@ -381,7 +409,7 @@ export default function PaymentStep({
           purpose: "Membership Registration"
         },
         {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -399,23 +427,33 @@ export default function PaymentStep({
         description: "Membership Registration Fee",
         order_id: order.id,
         handler: async function (paymentResponse: any) {
-          console.log("✅ Payment successful:", paymentResponse);
+          console.log("✅ Payment successful, verifying with server...", paymentResponse);
           
           try {
-            // Optional backend verification call
-            await axios.post(
+            // 3. Send payment details along with the verified userId to prevent validation errors
+            const verifyRes = await axios.post(
               `/api/payments/razorpay/verify`,
-              paymentResponse,
               {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                ...paymentResponse,
+                userId: currentUserId, 
+                donationType: "Membership Registration",
+              },
+              {
+                headers: { Authorization: `Bearer ${token}` },
               }
             );
-          } catch (verifyErr) {
-            console.warn("Verification warning:", verifyErr);
-          }
 
-          setIsProcessing(false);
-          onSuccessRedirect(); // Advances to Step 7
+            if (verifyRes.data.success) {
+              setIsProcessing(false);
+              onSuccessRedirect(); // Advances to the next step
+            } else {
+              throw new Error(verifyRes.data.message || "Verification failed");
+            }
+          } catch (verifyErr: any) {
+            console.error("❌ Verification error:", verifyErr);
+            setErrorMsg(verifyErr.response?.data?.message || "Payment verification failed.");
+            setIsProcessing(false);
+          }
         },
         prefill: { name: "", email: "", contact: "" },
         theme: { color: "#570013" },

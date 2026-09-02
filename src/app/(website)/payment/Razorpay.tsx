@@ -166,9 +166,9 @@ import axios from "axios";
 import { Loader2, CreditCard } from "lucide-react";
 
 interface RazorpayPaymentProps {
-  apiBase: string;
+  apiBase?: string;
   authToken: string;
-  userId: string; // 👈 1. Pass the logged-in user's ID
+  userId: string; // Must be the 24-character string MongoDB ID
   documentType?: string;
   userProfile?: {
     name?: string;
@@ -179,7 +179,7 @@ interface RazorpayPaymentProps {
 }
 
 export default function RazorpayPayment({
-  apiBase,
+  apiBase = "",
   authToken,
   userId,
   documentType = "membership",
@@ -193,34 +193,33 @@ export default function RazorpayPayment({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Fetch fees when component mounts
+  // 1. Fetch membership price when component mounts
   useEffect(() => {
-    const fetchFees = async () => {
+    const fetchMembershipPrice = async () => {
       try {
         const token =
           authToken ||
           localStorage.getItem("token") ||
           localStorage.getItem("accessToken") ||
           "";
-        const response = await axios.get(
-          `${apiBase}/candidatekyc/fees/${documentType}`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
-        if (response.data.success) {
-          setAmount(Number(response.data.fees));
+
+        const endpoint = apiBase ? `${apiBase}/auth/membership-price` : `/auth/membership-price`;
+
+        const response = await axios.get(endpoint, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (response.data.success && response.data.data?.membership) {
+          setAmount(Number(response.data.data.membership.amount));
         }
       } catch (error: any) {
-        console.error("❌ Error fetching fees:", error);
-        setErrorMsg("Failed to load payment amount.");
+        console.error("❌ Error fetching membership price:", error);
+        setErrorMsg("Failed to load membership price.");
       }
     };
 
-    if (apiBase) {
-      fetchFees();
-    }
-  }, [apiBase, documentType, authToken]);
+    fetchMembershipPrice();
+  }, [apiBase, authToken]);
 
   const handlePayment = async () => {
     if (!isRazorpayLoaded) {
@@ -229,7 +228,7 @@ export default function RazorpayPayment({
     }
 
     if (!userId) {
-      setErrorMsg("User session not found. Please log in again.");
+      setErrorMsg("User session not found or userId is missing. Please log in again.");
       return;
     }
 
@@ -243,11 +242,13 @@ export default function RazorpayPayment({
         localStorage.getItem("accessToken") ||
         "";
 
-      // 2. Pass userId and amount along with documentType to the backend
+      // 2. Call local Next.js Create Order API route
+      const createOrderEndpoint = `${apiBase}/api/payments/razorpay/create-order`;
+      
       const response = await axios.post(
-        `${apiBase}/payments/razorpay/create`, // Matches your Next.js API route
+        createOrderEndpoint, 
         {
-          userId, // 👈 Fixed: userId sent to backend
+          userId, 
           amount: amount,
           donationType: documentType,
         },
@@ -274,13 +275,17 @@ export default function RazorpayPayment({
           console.log("✅ Payment successful, verifying with server...", paymentResponse);
           
           try {
-            // Verify payment signature on the backend
+            // 4. Call local Next.js Verify API route
+            const verifyEndpoint = `${apiBase}/api/payments/razorpay/verify`;
+
             const verifyRes = await axios.post(
-              `${apiBase}/payments/razorpay/verify`,
+              verifyEndpoint,
               {
                 razorpay_order_id: paymentResponse.razorpay_order_id,
                 razorpay_payment_id: paymentResponse.razorpay_payment_id,
                 razorpay_signature: paymentResponse.razorpay_signature,
+                donationType: documentType,
+                userId: userId, // 👈 THIS FIXES THE 'Invalid MongoDB User ID provided' ERROR
               },
               {
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -375,6 +380,3 @@ export default function RazorpayPayment({
     </div>
   );
 }
-
-
-

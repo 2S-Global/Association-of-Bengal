@@ -1,8 +1,4 @@
-/**
- * src/models/User.ts
- * Authentication user — stores credentials.
- * Linked 1-to-1 with Member profile.
- */
+
 
 import mongoose, { Model, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
