@@ -22,9 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-/* =========================================================
-   TYPES
-========================================================= */
+
 
 interface MemberData {
   memberId: string;
@@ -75,9 +73,6 @@ interface DashboardData {
   unreadNotifications: number;
 }
 
-/* =========================================================
-   DUMMY API DATA
-========================================================= */
 
 const dummyApiResponse: {
   success: boolean;

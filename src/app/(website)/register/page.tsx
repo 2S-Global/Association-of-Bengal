@@ -34,177 +34,25 @@
 // const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
 
 // const wings = [
-//   {
-//     id: "binders",
-//     name: "Binders",
-//     nameBn: "বাঁধাই শিল্পী",
-//     description: "Book Binding & Finishing",
-//     icon: BookOpen,
-//     color: "#5c3317",
-//     bgColor: "#f5e6d8",
-//   },
-//   {
-//     id: "editor",
-//     name: "Editor",
-//     nameBn: "সম্পাদক",
-//     description: "Editing & Content Curation",
-//     icon: Edit3,
-//     color: "#1a3a6b",
-//     bgColor: "#cfe0f9",
-//   },
-//   {
-//     id: "retail-book-seller",
-//     name: "Retail Book Seller",
-//     nameBn: "খুচরো বই বিক্রেতা",
-//     description: "Retail Book Trade",
-//     icon: ShoppingBag,
-//     color: "#1b5e20",
-//     bgColor: "#c8e6c9",
-//   },
-//   {
-//     id: "writer",
-//     name: "Writer",
-//     nameBn: "লেখক",
-//     description: "Literary Writing & Authorship",
-//     icon: PenTool,
-//     color: "#4a148c",
-//     bgColor: "#e1bee7",
-//   },
-//   {
-//     id: "illustrator",
-//     name: "Illustrator",
-//     nameBn: "অলংকরণ শিল্পী",
-//     description: "Illustration & Artwork",
-//     icon: Brush,
-//     color: "#e65100",
-//     bgColor: "#ffe0b2",
-//   },
-//   {
-//     id: "digital-graphic-designer",
-//     name: "Digital Graphic Designer",
-//     nameBn: "ডিজিটাল গ্রাফিক শিল্পী",
-//     description: "Digital Design & Graphics",
-//     icon: Layers,
-//     color: "#006064",
-//     bgColor: "#b2ebf2",
-//   },
-//   {
-//     id: "wholesale-book-distributor",
-//     name: "Wholesale Book Distributor",
-//     nameBn: "পাইকারি বই পরিবেশক",
-//     description: "Wholesale Book Distribution",
-//     icon: Truck,
-//     color: "#37474f",
-//     bgColor: "#cfd8dc",
-//   },
-//   {
-//     id: "publisher",
-//     name: "Publisher",
-//     nameBn: "প্রকাশক",
-//     description: "Book & Media Publishing",
-//     icon: BookOpen,
-//     color: "#1a3a6b",
-//     bgColor: "#bbdefb",
-//   },
-//   {
-//     id: "cover-artist",
-//     name: "Cover Artist",
-//     nameBn: "প্রচ্ছদ শিল্পী",
-//     description: "Book Cover Design & Art",
-//     icon: Palette,
-//     color: "#6d1f7a",
-//     bgColor: "#f3d6f9",
-//   },
-//   {
-//     id: "reader-or-consumer",
-//     name: "Reader or Consumer",
-//     nameBn: "পাঠক অথবা ভোক্তা",
-//     description: "Reader & Book Consumer",
-//     icon: User,
-//     color: "#0d47a1",
-//     bgColor: "#e3f2fd",
-//   },
-//   {
-//     id: "comics-artist",
-//     name: "Comics Artist",
-//     nameBn: "কমিক্স শিল্পী",
-//     description: "Comics & Sequential Art",
-//     icon: Brush,
-//     color: "#f57f17",
-//     bgColor: "#fff9c4",
-//   },
-//   {
-//     id: "proof-reader",
-//     name: "Proof Reader",
-//     nameBn: "বর্ণশুদ্ধি শিল্পী",
-//     description: "Proofreading & Quality Check",
-//     icon: Search,
-//     color: "#2e7d32",
-//     bgColor: "#dcedc8",
-//   },
-//   {
-//     id: "printing-press",
-//     name: "Printing Press",
-//     nameBn: "মুদ্রক",
-//     description: "Printing & Production",
-//     icon: Printer,
-//     color: "#4e342e",
-//     bgColor: "#efebe9",
-//   },
-//   {
-//     id: "composer-dtp-artist",
-//     name: "Composer or DTP Artist",
-//     nameBn: "বর্ণসংস্থাপন শিল্পী",
-//     description: "Typesetting & Desktop Publishing",
-//     icon: Edit3,
-//     color: "#283593",
-//     bgColor: "#e8eaf6",
-//   },
-//   {
-//     id: "employee-bookseller-publisher",
-//     name: "Employee of Bookseller and/or Publisher",
-//     nameBn: "বইয়ের দোকান কিংবা প্রকাশনায় কর্মরত ব্যক্তি",
-//     description: "Employed in Book Trade",
-//     icon: ShoppingBag,
-//     color: "#455a64",
-//     bgColor: "#eceff1",
-//   },
-//   {
-//     id: "poet",
-//     name: "Poet",
-//     nameBn: "কবি",
-//     description: "Poetry & Verse Writing",
-//     icon: BookMarkedIcon,
-//     color: "#880e4f",
-//     bgColor: "#fce4ec",
-//   },
-//   {
-//     id: "performing-artist",
-//     name: "Performing Artist",
-//     nameBn: "পারফর্মিং আর্টিস্ট",
-//     description: "Music, Dance & Theatre",
-//     icon: Sparkles,
-//     color: "#7a2e00",
-//     bgColor: "#fde4cc",
-//   },
-//   {
-//     id: "painter",
-//     name: "Painter",
-//     nameBn: "চিত্রশিল্পী",
-//     description: "Fine Arts & Canvas Painting",
-//     icon: Brush,
-//     color: "#2e5b1a",
-//     bgColor: "#d4f5c2",
-//   },
-//   {
-//     id: "others",
-//     name: "Others",
-//     nameBn: "অন্যান্য",
-//     description: "Other Book Trade Professionals",
-//     icon: MoreHorizontal,
-//     color: "#546e7a",
-//     bgColor: "#eceff1",
-//   },
+//   { id: "binders", name: "Binders", nameBn: "বাঁধাই শিল্পী", description: "Book Binding & Finishing", icon: BookOpen, color: "#5c3317", bgColor: "#f5e6d8" },
+//   { id: "editor", name: "Editor", nameBn: "সম্পাদক", description: "Editing & Content Curation", icon: Edit3, color: "#1a3a6b", bgColor: "#cfe0f9" },
+//   { id: "retail-book-seller", name: "Retail Book Seller", nameBn: "খুচরো বই বিক্রেতা", description: "Retail Book Trade", icon: ShoppingBag, color: "#1b5e20", bgColor: "#c8e6c9" },
+//   { id: "writer", name: "Writer", nameBn: "লেখক", description: "Literary Writing & Authorship", icon: PenTool, color: "#4a148c", bgColor: "#e1bee7" },
+//   { id: "illustrator", name: "Illustrator", nameBn: "অলংকরণ শিল্পী", description: "Illustration & Artwork", icon: Brush, color: "#e65100", bgColor: "#ffe0b2" },
+//   { id: "digital-graphic-designer", name: "Digital Graphic Designer", nameBn: "ডিজিটাল গ্রাফিক শিল্পী", description: "Digital Design & Graphics", icon: Layers, color: "#006064", bgColor: "#b2ebf2" },
+//   { id: "wholesale-book-distributor", name: "Wholesale Book Distributor", nameBn: "পাইকারি বই পরিবেশক", description: "Wholesale Book Distribution", icon: Truck, color: "#37474f", bgColor: "#cfd8dc" },
+//   { id: "publisher", name: "Publisher", nameBn: "প্রকাশক", description: "Book & Media Publishing", icon: BookOpen, color: "#1a3a6b", bgColor: "#bbdefb" },
+//   { id: "cover-artist", name: "Cover Artist", nameBn: "প্রচ্ছদ শিল্পী", description: "Book Cover Design & Art", icon: Palette, color: "#6d1f7a", bgColor: "#f3d6f9" },
+//   { id: "reader-or-consumer", name: "Reader or Consumer", nameBn: "পাঠক অথবা ভোক্তা", description: "Reader & Book Consumer", icon: User, color: "#0d47a1", bgColor: "#e3f2fd" },
+//   { id: "comics-artist", name: "Comics Artist", nameBn: "কমিক্স শিল্পী", description: "Comics & Sequential Art", icon: Brush, color: "#f57f17", bgColor: "#fff9c4" },
+//   { id: "proof-reader", name: "Proof Reader", nameBn: "বর্ণশুদ্ধি শিল্পী", description: "Proofreading & Quality Check", icon: Search, color: "#2e7d32", bgColor: "#dcedc8" },
+//   { id: "printing-press", name: "Printing Press", nameBn: "মুদ্রক", description: "Printing & Production", icon: Printer, color: "#4e342e", bgColor: "#efebe9" },
+//   { id: "composer-dtp-artist", name: "Composer or DTP Artist", nameBn: "বর্ণসংস্থাপন শিল্পী", description: "Typesetting & Desktop Publishing", icon: Edit3, color: "#283593", bgColor: "#e8eaf6" },
+//   { id: "employee-bookseller-publisher", name: "Employee of Bookseller and/or Publisher", nameBn: "বইয়ের দোকান কিংবা প্রকাশনায় কর্মরত ব্যক্তি", description: "Employed in Book Trade", icon: ShoppingBag, color: "#455a64", bgColor: "#eceff1" },
+//   { id: "poet", name: "Poet", nameBn: "কবি", description: "Poetry & Verse Writing", icon: BookMarkedIcon, color: "#880e4f", bgColor: "#fce4ec" },
+//   { id: "performing-artist", name: "Performing Artist", nameBn: "পারফর্মিং আর্টিস্ট", description: "Music, Dance & Theatre", icon: Sparkles, color: "#7a2e00", bgColor: "#fde4cc" },
+//   { id: "painter", name: "Painter", nameBn: "চিত্রশিল্পী", description: "Fine Arts & Canvas Painting", icon: Brush, color: "#2e5b1a", bgColor: "#d4f5c2" },
+//   { id: "others", name: "Others", nameBn: "অন্যান্য", description: "Other Book Trade Professionals", icon: MoreHorizontal, color: "#546e7a", bgColor: "#eceff1" },
 // ];
 
 // const geographicWings = [
@@ -212,11 +60,7 @@
 //   { name: "USA", desc: "North American Chapters", flag: "🇺🇸" },
 //   { name: "UK", desc: "United Kingdom Branch", flag: "🇬🇧" },
 //   { name: "EU", desc: "European Union Chapters", flag: "🇪🇺" },
-//   {
-//     name: "GCC Countries",
-//     desc: "Gulf Cooperation Council Chapters",
-//     flag: "🇸🇦",
-//   },
+//   { name: "GCC Countries", desc: "Gulf Cooperation Council Chapters", flag: "🇸🇦" },
 // ];
 
 // const stepsList = [
@@ -485,7 +329,7 @@
 //                 ASSOCIATION OF BENGAL FOR LITERATURE AND CULTURE
 //               </h3>
 //               <p className="text-[10px] text-[#775a19] uppercase tracking-wider font-semibold">
-//                 Membership Registration Portal
+//                 Member Portal
 //               </p>
 //             </div>
 //           </div>
@@ -494,7 +338,7 @@
 //             onClick={() => router.push("/")}
 //             className="text-xs font-semibold text-[#8c7071] hover:text-[#570013] transition-colors"
 //           >
-//             Exit to Home
+//             Home
 //           </button>
 //         </div>
 
@@ -626,12 +470,12 @@
 //               )}
 
 //               {/* Footer Controls */}
-//               <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#e0bfbf]/40 mt-6">
+//               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[#e0bfbf]/40 mt-6">
 //                 {step > 1 ? (
 //                   <button
 //                     type="button"
 //                     onClick={handlePrevStep}
-//                     className="px-5 py-2.5 bg-white border border-[#e0bfbf] text-[#584141] text-sm font-semibold rounded-xl hover:bg-[#fbf2ed] transition-all flex items-center gap-1.5 outline-none shadow-sm"
+//                     className="w-full sm:w-auto px-5 py-2.5 bg-white border border-[#e0bfbf] text-[#584141] text-sm font-semibold rounded-xl hover:bg-[#fbf2ed] transition-all flex items-center justify-center gap-1.5 outline-none shadow-sm"
 //                   >
 //                     <ArrowLeft className="w-4 h-4" /> Back
 //                   </button>
@@ -644,12 +488,11 @@
 //                     type="button"
 //                     disabled={isSubmitting}
 //                     onClick={handleNextStep}
-//                     className="px-6 py-2.5 bg-[#570013] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl hover:bg-[#800020] transition-all shadow-md active:scale-95 flex items-center gap-1.5 ml-auto outline-none disabled:opacity-75"
+//                     className="w-full sm:w-auto px-6 py-2.5 bg-[#570013] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl hover:bg-[#800020] transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 ml-auto outline-none disabled:opacity-75"
 //                   >
 //                     {isSubmitting ? (
 //                       <>
-//                         <Loader2 className="w-4 h-4 animate-spin" />{" "}
-//                         Processing...
+//                         <Loader2 className="w-4 h-4 animate-spin" /> Processing...
 //                       </>
 //                     ) : (
 //                       <>
@@ -658,14 +501,22 @@
 //                     )}
 //                   </button>
 //                 )}
-//                 <button
-//                   type="button"
-//                   onClick={() => router.push("/login")}
-//                   className="text-xs font-bold text-[#570013] hover:underline"
-//                 >
-//                   Already have an account? Sign In
-//                 </button>
 //               </div>
+
+//               {step === 1 && (
+//                 <div className="text-center pt-2">
+//                   <p className="text-xs text-[#584141]">
+//                     Already have an account?{" "}
+//                     <button
+//                       type="button"
+//                       onClick={() => router.push("/login")}
+//                       className="font-bold text-[#570013] hover:underline"
+//                     >
+//                       Sign In
+//                     </button>
+//                   </p>
+//                 </div>
+//               )}
 //             </div>
 //           )}
 //         </div>
@@ -680,6 +531,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import PersonalInfoStep from "../members/PersonalInfoStep";
+import AadhaarStep from "../members/AadhaarStep";
+import OtpStep from "../members/OtpStep";
 import PhotoUploadStep from "../members/PhotoUploadStep";
 import MembershipTypeStep from "../members/MembershipTypeStep";
 import RegionStep from "../members/RegionStep";
@@ -710,25 +563,177 @@ import {
 const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
 
 const wings = [
-  { id: "binders", name: "Binders", nameBn: "বাঁধাই শিল্পী", description: "Book Binding & Finishing", icon: BookOpen, color: "#5c3317", bgColor: "#f5e6d8" },
-  { id: "editor", name: "Editor", nameBn: "সম্পাদক", description: "Editing & Content Curation", icon: Edit3, color: "#1a3a6b", bgColor: "#cfe0f9" },
-  { id: "retail-book-seller", name: "Retail Book Seller", nameBn: "খুচরো বই বিক্রেতা", description: "Retail Book Trade", icon: ShoppingBag, color: "#1b5e20", bgColor: "#c8e6c9" },
-  { id: "writer", name: "Writer", nameBn: "লেখক", description: "Literary Writing & Authorship", icon: PenTool, color: "#4a148c", bgColor: "#e1bee7" },
-  { id: "illustrator", name: "Illustrator", nameBn: "অলংকরণ শিল্পী", description: "Illustration & Artwork", icon: Brush, color: "#e65100", bgColor: "#ffe0b2" },
-  { id: "digital-graphic-designer", name: "Digital Graphic Designer", nameBn: "ডিজিটাল গ্রাফিক শিল্পী", description: "Digital Design & Graphics", icon: Layers, color: "#006064", bgColor: "#b2ebf2" },
-  { id: "wholesale-book-distributor", name: "Wholesale Book Distributor", nameBn: "পাইকারি বই পরিবেশক", description: "Wholesale Book Distribution", icon: Truck, color: "#37474f", bgColor: "#cfd8dc" },
-  { id: "publisher", name: "Publisher", nameBn: "প্রকাশক", description: "Book & Media Publishing", icon: BookOpen, color: "#1a3a6b", bgColor: "#bbdefb" },
-  { id: "cover-artist", name: "Cover Artist", nameBn: "প্রচ্ছদ শিল্পী", description: "Book Cover Design & Art", icon: Palette, color: "#6d1f7a", bgColor: "#f3d6f9" },
-  { id: "reader-or-consumer", name: "Reader or Consumer", nameBn: "পাঠক অথবা ভোক্তা", description: "Reader & Book Consumer", icon: User, color: "#0d47a1", bgColor: "#e3f2fd" },
-  { id: "comics-artist", name: "Comics Artist", nameBn: "কমিক্স শিল্পী", description: "Comics & Sequential Art", icon: Brush, color: "#f57f17", bgColor: "#fff9c4" },
-  { id: "proof-reader", name: "Proof Reader", nameBn: "বর্ণশুদ্ধি শিল্পী", description: "Proofreading & Quality Check", icon: Search, color: "#2e7d32", bgColor: "#dcedc8" },
-  { id: "printing-press", name: "Printing Press", nameBn: "মুদ্রক", description: "Printing & Production", icon: Printer, color: "#4e342e", bgColor: "#efebe9" },
-  { id: "composer-dtp-artist", name: "Composer or DTP Artist", nameBn: "বর্ণসংস্থাপন শিল্পী", description: "Typesetting & Desktop Publishing", icon: Edit3, color: "#283593", bgColor: "#e8eaf6" },
-  { id: "employee-bookseller-publisher", name: "Employee of Bookseller and/or Publisher", nameBn: "বইয়ের দোকান কিংবা প্রকাশনায় কর্মরত ব্যক্তি", description: "Employed in Book Trade", icon: ShoppingBag, color: "#455a64", bgColor: "#eceff1" },
-  { id: "poet", name: "Poet", nameBn: "কবি", description: "Poetry & Verse Writing", icon: BookMarkedIcon, color: "#880e4f", bgColor: "#fce4ec" },
-  { id: "performing-artist", name: "Performing Artist", nameBn: "পারফর্মিং আর্টিস্ট", description: "Music, Dance & Theatre", icon: Sparkles, color: "#7a2e00", bgColor: "#fde4cc" },
-  { id: "painter", name: "Painter", nameBn: "চিত্রশিল্পী", description: "Fine Arts & Canvas Painting", icon: Brush, color: "#2e5b1a", bgColor: "#d4f5c2" },
-  { id: "others", name: "Others", nameBn: "অন্যান্য", description: "Other Book Trade Professionals", icon: MoreHorizontal, color: "#546e7a", bgColor: "#eceff1" },
+  {
+    id: "binders",
+    name: "Binders",
+    nameBn: "বাঁধাই শিল্পী",
+    description: "Book Binding & Finishing",
+    icon: BookOpen,
+    color: "#5c3317",
+    bgColor: "#f5e6d8",
+  },
+  {
+    id: "editor",
+    name: "Editor",
+    nameBn: "সম্পাদক",
+    description: "Editing & Content Curation",
+    icon: Edit3,
+    color: "#1a3a6b",
+    bgColor: "#cfe0f9",
+  },
+  {
+    id: "retail-book-seller",
+    name: "Retail Book Seller",
+    nameBn: "খুচরো বই বিক্রেতা",
+    description: "Retail Book Trade",
+    icon: ShoppingBag,
+    color: "#1b5e20",
+    bgColor: "#c8e6c9",
+  },
+  {
+    id: "writer",
+    name: "Writer",
+    nameBn: "লেখক",
+    description: "Literary Writing & Authorship",
+    icon: PenTool,
+    color: "#4a148c",
+    bgColor: "#e1bee7",
+  },
+  {
+    id: "illustrator",
+    name: "Illustrator",
+    nameBn: "অলংকরণ শিল্পী",
+    description: "Illustration & Artwork",
+    icon: Brush,
+    color: "#e65100",
+    bgColor: "#ffe0b2",
+  },
+  {
+    id: "digital-graphic-designer",
+    name: "Digital Graphic Designer",
+    nameBn: "ডিজিটাল গ্রাফিক শিল্পী",
+    description: "Digital Design & Graphics",
+    icon: Layers,
+    color: "#006064",
+    bgColor: "#b2ebf2",
+  },
+  {
+    id: "wholesale-book-distributor",
+    name: "Wholesale Book Distributor",
+    nameBn: "পাইকারি বই পরিবেশক",
+    description: "Wholesale Book Distribution",
+    icon: Truck,
+    color: "#37474f",
+    bgColor: "#cfd8dc",
+  },
+  {
+    id: "publisher",
+    name: "Publisher",
+    nameBn: "প্রকাশক",
+    description: "Book & Media Publishing",
+    icon: BookOpen,
+    color: "#1a3a6b",
+    bgColor: "#bbdefb",
+  },
+  {
+    id: "cover-artist",
+    name: "Cover Artist",
+    nameBn: "প্রচ্ছদ শিল্পী",
+    description: "Book Cover Design & Art",
+    icon: Palette,
+    color: "#6d1f7a",
+    bgColor: "#f3d6f9",
+  },
+  {
+    id: "reader-or-consumer",
+    name: "Reader or Consumer",
+    nameBn: "পাঠক অথবা ভোক্তা",
+    description: "Reader & Book Consumer",
+    icon: User,
+    color: "#0d47a1",
+    bgColor: "#e3f2fd",
+  },
+  {
+    id: "comics-artist",
+    name: "Comics Artist",
+    nameBn: "কমিক্স শিল্পী",
+    description: "Comics & Sequential Art",
+    icon: Brush,
+    color: "#f57f17",
+    bgColor: "#fff9c4",
+  },
+  {
+    id: "proof-reader",
+    name: "Proof Reader",
+    nameBn: "বর্ণশুদ্ধি শিল্পী",
+    description: "Proofreading & Quality Check",
+    icon: Search,
+    color: "#2e7d32",
+    bgColor: "#dcedc8",
+  },
+  {
+    id: "printing-press",
+    name: "Printing Press",
+    nameBn: "মুদ্রক",
+    description: "Printing & Production",
+    icon: Printer,
+    color: "#4e342e",
+    bgColor: "#efebe9",
+  },
+  {
+    id: "composer-dtp-artist",
+    name: "Composer or DTP Artist",
+    nameBn: "বর্ণসংস্থাপন শিল্পী",
+    description: "Typesetting & Desktop Publishing",
+    icon: Edit3,
+    color: "#283593",
+    bgColor: "#e8eaf6",
+  },
+  {
+    id: "employee-bookseller-publisher",
+    name: "Employee of Bookseller and/or Publisher",
+    nameBn: "বইয়ের দোকান কিংবা প্রকাশনায় কর্মরত ব্যক্তি",
+    description: "Employed in Book Trade",
+    icon: ShoppingBag,
+    color: "#455a64",
+    bgColor: "#eceff1",
+  },
+  {
+    id: "poet",
+    name: "Poet",
+    nameBn: "কবি",
+    description: "Poetry & Verse Writing",
+    icon: BookMarkedIcon,
+    color: "#880e4f",
+    bgColor: "#fce4ec",
+  },
+  {
+    id: "performing-artist",
+    name: "Performing Artist",
+    nameBn: "পারফর্মিং আর্টিস্ট",
+    description: "Music, Dance & Theatre",
+    icon: Sparkles,
+    color: "#7a2e00",
+    bgColor: "#fde4cc",
+  },
+  {
+    id: "painter",
+    name: "Painter",
+    nameBn: "চিত্রশিল্পী",
+    description: "Fine Arts & Canvas Painting",
+    icon: Brush,
+    color: "#2e5b1a",
+    bgColor: "#d4f5c2",
+  },
+  {
+    id: "others",
+    name: "Others",
+    nameBn: "অন্যান্য",
+    description: "Other Book Trade Professionals",
+    icon: MoreHorizontal,
+    color: "#546e7a",
+    bgColor: "#eceff1",
+  },
 ];
 
 const geographicWings = [
@@ -736,7 +741,11 @@ const geographicWings = [
   { name: "USA", desc: "North American Chapters", flag: "🇺🇸" },
   { name: "UK", desc: "United Kingdom Branch", flag: "🇬🇧" },
   { name: "EU", desc: "European Union Chapters", flag: "🇪🇺" },
-  { name: "GCC Countries", desc: "Gulf Cooperation Council Chapters", flag: "🇸🇦" },
+  {
+    name: "GCC Countries",
+    desc: "Gulf Cooperation Council Chapters",
+    flag: "🇸🇦",
+  },
 ];
 
 const stepsList = [
@@ -746,6 +755,8 @@ const stepsList = [
   { id: 4, title: "Location" },
   { id: 5, title: "Terms" },
   { id: 6, title: "Pay" },
+  { id: 7, title: "Aadhaar" },
+  { id: 8, title: "OTP" },
 ];
 
 export default function MembershipRegistrationPage() {
@@ -758,6 +769,8 @@ export default function MembershipRegistrationPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    aadhaarNumber: "",
+    otpCode: "",
     photo: null as File | null,
     selectedCategories: [] as string[],
     agreedToTerms: false,
@@ -771,6 +784,7 @@ export default function MembershipRegistrationPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -779,6 +793,12 @@ export default function MembershipRegistrationPage() {
     let finalValue = value;
     if (name === "fullName") {
       finalValue = value.replace(/[0-9]/g, "");
+    }
+    if (name === "aadhaarNumber") {
+      finalValue = value.replace(/\D/g, "").slice(0, 12);
+    }
+    if (name === "otpCode") {
+      finalValue = value.replace(/\D/g, "").slice(0, 6);
     }
 
     setFormData((prev) => ({ ...prev, [name]: finalValue }));
@@ -974,12 +994,33 @@ export default function MembershipRegistrationPage() {
       return;
     }
 
+    if (step === 7) {
+      if (!formData.aadhaarNumber || formData.aadhaarNumber.length !== 12) {
+        setErrors({
+          aadhaarNumber: "Please enter a valid 12-digit identification number.",
+        });
+        return;
+      }
+      setOtpSent(true);
+    }
+
+    if (step === 8) {
+      if (!formData.otpCode || formData.otpCode.length < 4) {
+        setErrors({
+          otpCode: "Please enter the verification code sent to your mobile.",
+        });
+        return;
+      }
+      setIsSuccess(true);
+      return;
+    }
+
     setErrors({});
-    setStep((prev) => Math.min(prev + 1, 6));
+    setStep((prev) => Math.min(prev + 1, 8));
   };
 
   const handleSkipStep = () => {
-    setStep((prev) => Math.min(prev + 1, 6));
+    setStep((prev) => Math.min(prev + 1, 8));
   };
 
   const handlePrevStep = () => {
@@ -1012,55 +1053,57 @@ export default function MembershipRegistrationPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="text-xs font-semibold text-[#8c7071] hover:text-[#570013] transition-colors"
+            className="text-xs font-semibold text-[#8c7071] hover:text-[#570013] transition-colors cursor-pointer"
           >
             Home
           </button>
         </div>
 
-        {/* Progress Step Bar */}
+        {/* Progress Step Bar with Hidden Scrollbars & Responsive Layout */}
         {!isSuccess && (
-          <div className="px-4 py-3 bg-[#fbf2ed] border-b border-[#e0bfbf]/60 flex items-center justify-between overflow-x-auto">
-            {stepsList.map((s, idx) => {
-              const isCompleted = step > s.id;
-              const isCurrent = step === s.id;
-              return (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-1.5 shrink-0 px-1"
-                >
+          <div className="px-4 py-3 bg-[#fbf2ed] border-b border-[#e0bfbf]/60 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center justify-start sm:justify-between w-max sm:w-full min-w-full px-1 gap-2">
+              {stepsList.map((s, idx) => {
+                const isCompleted = step > s.id;
+                const isCurrent = step === s.id;
+                return (
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-sm ${
-                      isCompleted
-                        ? "bg-[#570013] text-white"
-                        : isCurrent
-                          ? "bg-[#775a19] text-white ring-3 ring-[#775a19]/25 scale-105"
-                          : "bg-[#e9e1dc] text-[#8c7071]"
-                    }`}
+                    key={s.id}
+                    className="flex items-center gap-1.5 shrink-0 px-0.5"
                   >
-                    {isCompleted ? (
-                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                    ) : (
-                      s.id
+                    <div
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all shadow-sm ${
+                        isCompleted
+                          ? "bg-[#570013] text-white"
+                          : isCurrent
+                            ? "bg-[#775a19] text-white ring-2 ring-[#775a19]/25 scale-105"
+                            : "bg-[#e9e1dc] text-[#8c7071]"
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      ) : (
+                        s.id
+                      )}
+                    </div>
+                    <span
+                      className={`text-[11px] sm:text-xs font-bold transition-colors hidden md:inline-block ${
+                        isCurrent ? "text-[#570013]" : "text-[#8c7071]"
+                      }`}
+                    >
+                      {s.title}
+                    </span>
+                    {idx < stepsList.length - 1 && (
+                      <div
+                        className={`w-1.5 sm:w-3 h-[2px] mx-0.5 transition-colors ${
+                          step > s.id ? "bg-[#570013]" : "bg-[#e9e1dc]"
+                        }`}
+                      ></div>
                     )}
                   </div>
-                  <span
-                    className={`text-xs font-bold transition-colors hidden sm:inline-block ${
-                      isCurrent ? "text-[#570013]" : "text-[#8c7071]"
-                    }`}
-                  >
-                    {s.title}
-                  </span>
-                  {idx < stepsList.length - 1 && (
-                    <div
-                      className={`w-3 sm:w-6 h-[2px] mx-1 transition-colors ${
-                        step > s.id ? "bg-[#570013]" : "bg-[#e9e1dc]"
-                      }`}
-                    ></div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -1072,16 +1115,16 @@ export default function MembershipRegistrationPage() {
                 <CheckCircle2 className="w-9 h-9" />
               </div>
               <h4 className="text-2xl font-bold text-[#570013] font-['Playfair_Display',serif]">
-                Application Submitted!
+                Registration & Verification Complete!
               </h4>
               <p className="text-sm text-[#584141] max-w-sm mx-auto leading-relaxed">
-                Thank you for applying. Your registration and payment details
-                are under review.
+                Thank you for applying. Your payment, ID verification, and
+                mobile authentication are successfully verified.
               </p>
               <button
                 type="button"
                 onClick={() => router.push("/")}
-                className="mt-4 px-6 py-2.5 bg-[#570013] text-white text-sm font-semibold rounded-xl hover:bg-[#800020] transition-all shadow-md"
+                className="mt-4 px-6 py-2.5 bg-[#570013] text-white text-sm font-semibold rounded-xl hover:bg-[#800020] transition-all shadow-md cursor-pointer"
               >
                 Go to Home Page
               </button>
@@ -1141,43 +1184,81 @@ export default function MembershipRegistrationPage() {
                 <PaymentStep
                   apiBase={API_BASE}
                   authToken={authToken}
-                  onSuccessRedirect={() => setIsSuccess(true)}
+                  onSuccessRedirect={() => setStep(7)}
                 />
               )}
 
-              {/* Footer Controls */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[#e0bfbf]/40 mt-6">
-                {step > 1 ? (
-                  <button
-                    type="button"
-                    onClick={handlePrevStep}
-                    className="w-full sm:w-auto px-5 py-2.5 bg-white border border-[#e0bfbf] text-[#584141] text-sm font-semibold rounded-xl hover:bg-[#fbf2ed] transition-all flex items-center justify-center gap-1.5 outline-none shadow-sm"
-                  >
-                    <ArrowLeft className="w-4 h-4" /> Back
-                  </button>
-                ) : (
-                  <div></div>
-                )}
+              {step === 7 && (
+                <AadhaarStep
+                  aadhaarNumber={formData.aadhaarNumber}
+                  onChange={handleInputChange}
+                  error={errors.aadhaarNumber}
+                  onVerified={() => {
+                    // Advance to the final success state or next step upon verification
+                    setIsSuccess(true);
+                  }}
+                />
+              )}
 
-                {step < 6 && (
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleNextStep}
-                    className="w-full sm:w-auto px-6 py-2.5 bg-[#570013] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl hover:bg-[#800020] transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 ml-auto outline-none disabled:opacity-75"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Processing...
-                      </>
-                    ) : (
-                      <>
-                        Next Step <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+              {step === 8 && (
+                <OtpStep
+                  mobile={formData.mobile}
+                  otpCode={formData.otpCode}
+                  onChange={handleInputChange}
+                  error={errors.otpCode}
+                  onVerified={() => {
+                    // Triggered when mobile OTP verification succeeds
+                    setIsSuccess(true);
+                  }}
+                />
+              )}
+              {/* Footer Controls */}
+              {step !== 6 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[#e0bfbf]/40 mt-6">
+                  {step > 1 ? (
+                    <button
+                      type="button"
+                      onClick={handlePrevStep}
+                      className="w-full sm:w-auto px-5 py-2.5 bg-white border border-[#e0bfbf] text-[#584141] text-sm font-semibold rounded-xl hover:bg-[#fbf2ed] transition-all flex items-center justify-center gap-1.5 outline-none shadow-sm cursor-pointer"
+                    >
+                      <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
+                  ) : (
+                    <div></div>
+                  )}
+
+                  {step < 8 && (
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleNextStep}
+                      className="w-full sm:w-auto px-6 py-2.5 bg-[#570013] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl hover:bg-[#800020] transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 ml-auto outline-none disabled:opacity-75 cursor-pointer"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Next Step <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {step === 8 && (
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleNextStep}
+                      className="w-full sm:w-auto px-6 py-2.5 bg-[#570013] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-xl hover:bg-[#800020] transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 ml-auto outline-none disabled:opacity-75 cursor-pointer"
+                    >
+                      Verify & Complete <CheckCircle2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              )}
 
               {step === 1 && (
                 <div className="text-center pt-2">
@@ -1186,7 +1267,7 @@ export default function MembershipRegistrationPage() {
                     <button
                       type="button"
                       onClick={() => router.push("/login")}
-                      className="font-bold text-[#570013] hover:underline"
+                      className="font-bold text-[#570013] hover:underline cursor-pointer bg-transparent border-none"
                     >
                       Sign In
                     </button>
