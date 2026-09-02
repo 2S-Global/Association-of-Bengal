@@ -92,7 +92,7 @@ VerificationSessionSchema.index({ type: 1, memberId: 1, createdAt: -1 });
 VerificationSessionSchema.index({ type: 1, userId: 1, createdAt: -1 });
 
 const VerificationSession: Model<IVerificationSession> =
-  (mongoose.models.VerificationSession as Model<IVerificationSession> | undefined) ||
+  (mongoose.models.Verification as Model<IVerificationSession> | undefined) ||
   mongoose.model<IVerificationSession>("Verification", VerificationSessionSchema, "verifications");
 
 export default VerificationSession;
