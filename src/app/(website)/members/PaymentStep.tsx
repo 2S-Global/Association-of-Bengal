@@ -266,12 +266,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Script from "next/script";
-import {
-  CreditCard,
-  FileText,
-  Heart,
-  Loader2,
-} from "lucide-react";
+import { CreditCard, FileText, Heart, Loader2 } from "lucide-react";
 
 const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
 
@@ -284,13 +279,13 @@ interface PaymentStepProps {
 // Helper function to safely decode JWT token on the client side
 function parseJwt(token: string) {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
     return JSON.parse(jsonPayload);
   } catch (e) {
@@ -304,17 +299,16 @@ export default function PaymentStep({
   authToken,
   onSuccessRedirect,
 }: PaymentStepProps) {
-  const razorpayKey = 
-    process.env.NEXT_PUBLIC_RAZORPAY_KEY || 
-    process.env.NEXT_PUBLIC_VITE_RAZORPAY_KEY || 
-    process.env.VITE_RAZORPAY_KEY || 
+  const razorpayKey =
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY ||
+    process.env.NEXT_PUBLIC_VITE_RAZORPAY_KEY ||
     "";
 
   const [donation, setDonation] = useState("0");
   const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  
+
   const [membershipDetails, setMembershipDetails] = useState({
     country: "INDIA",
     sysmbol: "₹",
@@ -345,7 +339,7 @@ export default function PaymentStep({
         });
         if (response.data.success && response.data.data) {
           setMembershipDetails(
-            response.data.data.membership || response.data.data,
+            response.data.data.membership || response.data.data
           );
         }
       } catch (error) {
@@ -363,7 +357,9 @@ export default function PaymentStep({
     }
 
     if (!razorpayKey) {
-      setErrorMsg("Razorpay public key is missing. Please check your environment variables.");
+      setErrorMsg(
+        "Razorpay public key is missing. Please check your NEXT_PUBLIC_RAZORPAY_KEY environment variable."
+      );
       setIsProcessing(false);
       return;
     }
@@ -378,35 +374,31 @@ export default function PaymentStep({
         localStorage.getItem("accessToken");
 
       if (!token) {
-        throw new Error("Authentication token not found. Please complete step 1 first.");
+        throw new Error("Authentication token not found. Please log in again.");
       }
 
-      // 1. Safely extract userId from the JWT token with comprehensive key checking
+      // Safely extract userId from JWT token
       const decodedToken = parseJwt(token);
-      console.log("🔍 [PaymentStep] Decoded Auth Token Payload:", decodedToken);
-
-      const currentUserId = 
-        decodedToken?.id || 
-        decodedToken?._id || 
-        decodedToken?.userId || 
-        decodedToken?.user_id || 
-        decodedToken?.sub || 
-        decodedToken?.user?.id || 
-        decodedToken?.user?._id || 
+      const currentUserId =
+        decodedToken?.id ||
+        decodedToken?._id ||
+        decodedToken?.userId ||
+        decodedToken?.user_id ||
+        decodedToken?.sub ||
         "";
 
       if (!currentUserId) {
-        throw new Error("User ID could not be resolved from token payload. Please log in again.");
+        throw new Error("User ID could not be resolved from token payload.");
       }
 
-      // 2. Call Next.js API route to create Razorpay order securely
+      // 1. Call your Next.js API route to create Razorpay order securely
       const response = await axios.post(
         `/api/payments/razorpay/create-order`,
-        { 
+        {
           amount: total,
           currency: membershipDetails.currency || "INR",
           donationAmount: donationAmount,
-          purpose: "Membership Registration"
+          donationType: "Membership Registration",
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -419,24 +411,27 @@ export default function PaymentStep({
 
       const order = response.data.data;
 
+      // 2. Configure Razorpay checkout options
       const options = {
         key: razorpayKey,
-        amount: order.amount || Math.round(total * 100),
-        currency: order.currency || membershipDetails.currency || "INR",
+        amount: order.amount, // Already converted to paise on the server
+        currency: order.currency || "INR",
         name: "Association of Bengal",
-        description: "Membership Registration Fee",
+        description: "Membership Registration & Contribution Fee",
         order_id: order.id,
         handler: async function (paymentResponse: any) {
           console.log("✅ Payment successful, verifying with server...", paymentResponse);
-          
+
           try {
-            // 3. Send payment details along with the verified userId to prevent validation errors
+            // 3. Send payment details along with verified userId to verify route
             const verifyRes = await axios.post(
               `/api/payments/razorpay/verify`,
               {
                 ...paymentResponse,
-                userId: currentUserId, 
+                userId: currentUserId,
                 donationType: "Membership Registration",
+                originalAmount: total,
+                originalCurrency: displayCurrency,
               },
               {
                 headers: { Authorization: `Bearer ${token}` },
@@ -445,13 +440,15 @@ export default function PaymentStep({
 
             if (verifyRes.data.success) {
               setIsProcessing(false);
-              onSuccessRedirect(); // Advances to the next step
+              onSuccessRedirect(); // Advances registration step seamlessly
             } else {
               throw new Error(verifyRes.data.message || "Verification failed");
             }
           } catch (verifyErr: any) {
             console.error("❌ Verification error:", verifyErr);
-            setErrorMsg(verifyErr.response?.data?.message || "Payment verification failed.");
+            setErrorMsg(
+              verifyErr.response?.data?.message || "Payment verification failed."
+            );
             setIsProcessing(false);
           }
         },
@@ -500,17 +497,26 @@ export default function PaymentStep({
         </div>
         <div className="flex justify-between text-[12px] sm:text-[13px] text-[#584141]">
           <span>Membership Fee (Standard)</span>
-          <span className="font-semibold text-[#1e1b18]">{displayCurrency}{membershipAmount.toFixed(2)}</span>
+          <span className="font-semibold text-[#1e1b18]">
+            {displayCurrency}
+            {membershipAmount.toFixed(2)}
+          </span>
         </div>
         {donationAmount > 0 && (
           <div className="flex justify-between text-[12px] sm:text-[13px] text-[#584141]">
             <span>Optional Contribution</span>
-            <span className="font-semibold text-[#1e1b18]">{displayCurrency}{donationAmount.toFixed(2)}</span>
+            <span className="font-semibold text-[#1e1b18]">
+              {displayCurrency}
+              {donationAmount.toFixed(2)}
+            </span>
           </div>
         )}
         <div className="border-t border-[#e0bfbf]/40 pt-2 flex justify-between text-[13px] sm:text-[14px] font-bold text-[#570013]">
           <span>Total</span>
-          <span className="text-[#775a19]">{displayCurrency}{total.toFixed(2)}</span>
+          <span className="text-[#775a19]">
+            {displayCurrency}
+            {total.toFixed(2)}
+          </span>
         </div>
       </div>
 
@@ -521,7 +527,9 @@ export default function PaymentStep({
           <span>Contribution (Optional)</span>
         </div>
         <div className="relative pt-1">
-          <span className="absolute left-3.5 top-4 text-[#8c7071] font-semibold text-[14px]">{displayCurrency}</span>
+          <span className="absolute left-3.5 top-4 text-[#8c7071] font-semibold text-[14px]">
+            {displayCurrency}
+          </span>
           <input
             type="number"
             value={donation}
@@ -551,7 +559,8 @@ export default function PaymentStep({
           </>
         ) : (
           <>
-            <CreditCard className="w-4 h-4" /> Pay {displayCurrency}{total.toFixed(2)} via Razorpay
+            <CreditCard className="w-4 h-4" /> Pay {displayCurrency}
+            {total.toFixed(2)} via Razorpay
           </>
         )}
       </button>

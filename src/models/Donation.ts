@@ -91,7 +91,7 @@ const donationSchema = new Schema<IDonation>(
 donationSchema.index({ member: 1, createdAt: -1 });
 donationSchema.index({ status: 1 });
 
-donationSchema.pre("validate", function (next: any) {
+donationSchema.pre("validate", async function () {
   const doc = this as IDonation;
 
   if (!doc.referenceId) {
@@ -102,7 +102,6 @@ donationSchema.pre("validate", function (next: any) {
     const num = Math.floor(1000 + Math.random() * 9000);
     doc.referenceId = `AL-${typeSlug}-${num}`;
   }
-  next();
 });
 
 const Donation: Model<IDonation> =

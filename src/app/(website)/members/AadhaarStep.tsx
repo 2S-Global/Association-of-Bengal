@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ShieldCheck, Loader2, CheckCircle2, RefreshCw } from "lucide-react";
 
 interface AadhaarStepProps {
   aadhaarNumber: string;
@@ -19,11 +19,36 @@ export default function AadhaarStep({
   const [otpSent, setOtpSent] = useState(false);
   const [aadhaarOtp, setAadhaarOtp] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verifiedSuccess, setVerifiedSuccess] = useState(false);
   const [localError, setLocalError] = useState("");
+  
+  // Timer state (10 minutes = 600 seconds)
+  const [timeLeft, setTimeLeft] = useState(600);
+  const [canResend, setCanResend] = useState(false);
 
   const cleanNumber = aadhaarNumber.replace(/\D/g, "");
+
+  // Countdown timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (otpSent && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(timer);
+  }, [otpSent, timeLeft]);
+
+  // Format seconds into MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Handle Requesting OTP
   const handleSendOtp = async () => {
@@ -36,10 +61,10 @@ export default function AadhaarStep({
     setSendingOtp(true);
 
     try {
-      const response = await fetch("/api/aadhaar/send-otp", {
+      const response = await fetch("/api/verification/aadhaar/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aadhaarNumber: cleanNumber }),
+        body: JSON.stringify({ aadhaar: cleanNumber }),
       });
 
       const data = await response.json();
@@ -48,10 +73,38 @@ export default function AadhaarStep({
       }
 
       setOtpSent(true);
+      setTimeLeft(600); // Reset timer to 10 mins
+      setCanResend(false);
     } catch (err: any) {
       setLocalError(err.message || "Unable to send verification code at this time.");
     } finally {
       setSendingOtp(false);
+    }
+  };
+
+  // Handle Resending OTP
+  const handleResendOtp = async () => {
+    setLocalError("");
+    setResendingOtp(true);
+
+    try {
+      const response = await fetch("/api/verification/aadhaar/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aadhaar: cleanNumber }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to resend verification code.");
+      }
+
+      setTimeLeft(600); // Reset timer to 10 mins
+      setCanResend(false);
+    } catch (err: any) {
+      setLocalError(err.message || "Unable to resend verification code at this time.");
+    } finally {
+      setResendingOtp(false);
     }
   };
 
@@ -66,11 +119,11 @@ export default function AadhaarStep({
     setVerifying(true);
 
     try {
-      const response = await fetch("/api/aadhaar/verify-otp", {
+      const response = await fetch("/api/verification/aadhaar/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          aadhaarNumber: cleanNumber,
+          aadhaar: cleanNumber,
           otp: aadhaarOtp,
         }),
       });
@@ -150,29 +203,54 @@ export default function AadhaarStep({
 
           {/* OTP Input Section */}
           {otpSent && (
-            <div className="pt-2 animate-in fade-in duration-200">
-              <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider mb-1.5">
-                Enter 6-Digit OTP <span className="text-red-600">*</span>
-              </label>
+            <div className="pt-2 animate-in fade-in duration-200 space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider">
+                    Enter 6-Digit OTP <span className="text-red-600">*</span>
+                  </label>
+                  <span className="text-xs font-semibold text-[#775a19]">
+                    Valid for: <span className="font-mono">{formatTime(timeLeft)}</span>
+                  </span>
+                </div>
 
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={aadhaarOtp}
-                  onChange={(e) => setAadhaarOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="Enter OTP"
-                  maxLength={6}
-                  inputMode="numeric"
-                  className="flex-1 bg-white border border-[#e0bfbf] p-3 rounded-xl text-sm font-medium tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-[#570013]/25 text-[#1e1b18]"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aadhaarOtp}
+                    onChange={(e) => setAadhaarOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="Enter OTP"
+                    maxLength={6}
+                    inputMode="numeric"
+                    className="flex-1 bg-white border border-[#e0bfbf] p-3 rounded-xl text-sm font-medium tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-[#570013]/25 text-[#1e1b18]"
+                  />
 
+                  <button
+                    type="button"
+                    disabled={verifying || aadhaarOtp.length !== 6}
+                    onClick={handleVerifyOtp}
+                    className="bg-green-700 text-white text-xs font-bold px-5 rounded-xl hover:bg-green-800 transition-all cursor-pointer flex items-center justify-center gap-1 min-w-[110px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify OTP"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Resend Option */}
+              <div className="flex items-center justify-between text-xs pt-1">
+                <span className="text-[#584141]">Didn't receive the code?</span>
                 <button
                   type="button"
-                  disabled={verifying || aadhaarOtp.length !== 6}
-                  onClick={handleVerifyOtp}
-                  className="bg-green-700 text-white text-xs font-bold px-5 rounded-xl hover:bg-green-800 transition-all cursor-pointer flex items-center justify-center gap-1 min-w-[110px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleResendOtp}
+                  disabled={!canResend || resendingOtp}
+                  className="font-bold text-[#570013] hover:underline disabled:text-gray-400 disabled:no-underline cursor-pointer flex items-center gap-1"
                 >
-                  {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify OTP"}
+                  {resendingOtp ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3" />
+                  )}
+                  {canResend ? "Resend OTP" : `Resend in ${formatTime(timeLeft)}`}
                 </button>
               </div>
             </div>
