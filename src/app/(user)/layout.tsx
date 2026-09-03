@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -14,7 +14,10 @@ import {
   Menu, 
   X,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  UserCircle,
+  ChevronDown
 } from "lucide-react";
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
@@ -34,11 +37,28 @@ export default function DashboardLayout({
   });
   const [memberData, setMemberData] = useState({
     memberId: "ABLC-2026",
+    fullName: "Loading...",
     wings: ["General Member"],
-    location: { country: "India" }
+    location: { country: "India" },
+    photoUrl: ""
   });
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // User Profile Header Dropdown state
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -63,7 +83,7 @@ export default function DashboardLayout({
         const data = await res.json();
 
         if (res.ok && data) {
-          const userObj = data.user || data.data?.user || data.data || data;
+          const userObj = data.user || data.data?.user;
           const memberObj = data.member || data.data?.member;
 
           if (userObj) setUserData(userObj);
@@ -107,7 +127,7 @@ export default function DashboardLayout({
   const getPageTitle = () => {
     if (pathname.includes("/wings")) return "Association Wings";
     if (pathname.includes("/election")) return "Election Portal";
-    if (pathname.includes("/my-id")) return "Digital ID Card";
+    if (pathname.includes("/MyProfile")) return "My Profile";
     if (pathname.includes("/donate")) return "Support & Donate";
     return "Dashboard Overview";
   };
@@ -120,6 +140,10 @@ export default function DashboardLayout({
     );
   }
 
+  // Determine display name using member primary, falling back to user
+  const displayName = memberData?.fullName || userData?.fullName || "Member";
+  const userPhotoUrl = memberData?.photoUrl || "";
+
   const childrenWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child, { userData, memberData } as any);
@@ -131,7 +155,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
     { href: "/wings", label: "Association Wings", icon: Users },
     { href: "/election", label: "Election Portal", icon: Vote },
-    { href: "/MyProfile", label: "My Profile ", icon: IdCard },
+    { href: "/MyProfile", label: "My Profile", icon: IdCard },
     { href: "/donate", label: "Donate & Support", icon: HeartHandshake },
   ];
 
@@ -162,7 +186,7 @@ export default function DashboardLayout({
             </div>
             <div>
               <h3 className="text-[10px] font-extrabold text-[#570013] font-['Playfair_Display',serif] leading-tight uppercase tracking-tight">
-                ASSOCIATION OF BENGAL
+                  ASSOCIATION OF BENGAL FOR LITERATURE AND CULTURE
               </h3>
               <span className="inline-flex items-center gap-1 text-[9px] text-[#775a19] uppercase tracking-wider font-bold mt-0.5">
                 <Sparkles className="w-2.5 h-2.5 text-amber-600" /> Member Portal
@@ -177,7 +201,7 @@ export default function DashboardLayout({
           </button>
         </div>
 
-        {/* Sidebar Navigation Links (Scrollbar hidden inline) */}
+        {/* Sidebar Navigation Links */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="px-3 pb-2 pt-1">
             <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#8c7071]/80">
@@ -264,14 +288,74 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-[#fbf2ed]/60 border border-[#e0bfbf]/50 py-1.5 px-3 rounded-2xl shadow-xs">
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-extrabold text-[#570013]">{userData.fullName}</span>
-              <span className="text-[10px] text-[#775a19] font-semibold">{memberData.memberId}</span>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-[#570013] text-white border border-[#570013] flex items-center justify-center font-bold text-xs shadow-sm">
-              {userData.fullName ? userData.fullName.charAt(0).toUpperCase() : "M"}
-            </div>
+          {/* Header Profile Dropdown Container */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setProfileDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-3 bg-[#fbf2ed]/60 hover:bg-[#fbf2ed] border border-[#e0bfbf]/50 py-1.5 px-3 rounded-2xl shadow-xs transition-colors cursor-pointer"
+            >
+              <div className="hidden sm:flex flex-col text-right">
+                <span className="text-xs font-extrabold text-[#570013]">{displayName}</span>
+                <span className="text-[10px] text-[#775a19] font-semibold">{memberData.memberId}</span>
+              </div>
+              <div className="w-9 h-9 rounded-xl bg-[#570013] text-white border border-[#570013] flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden relative">
+                {userPhotoUrl ? (
+                  <img src={userPhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  displayName ? displayName.charAt(0).toUpperCase() : "M"
+                )}
+              </div>
+              <ChevronDown className={`w-3.5 h-3.5 text-[#570013] transition-transform duration-200 ${profileDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Dropdown Menu Popup */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#e0bfbf]/60 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                
+                {/* Basic User Info Section */}
+                <div className="px-4 py-3 border-b border-[#e0bfbf]/40 bg-[#fbf2ed]/30 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#570013] text-white border border-[#570013] flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden relative shrink-0">
+                    {userPhotoUrl ? (
+                      <img src={userPhotoUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      displayName ? displayName.charAt(0).toUpperCase() : "M"
+                    )}
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-extrabold text-[#570013] truncate">{displayName}</p>
+                    <p className="text-[11px] text-[#8c7071] truncate mt-0.5">{userData.email || "No email provided"}</p>
+                    <div className="mt-1 inline-flex items-center gap-1 bg-[#570013]/10 text-[#570013] px-2 py-0.5 rounded-md text-[10px] font-mono font-bold">
+                      {memberData.memberId}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dropdown Navigation Actions */}
+                <div className="p-1.5 space-y-0.5">
+                  <Link
+                    href="/MyProfile"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-[#584141] hover:bg-[#fbf2ed] hover:text-[#570013] rounded-xl transition-colors"
+                  >
+                    <Settings className="w-4 h-4 text-[#775a19]" /> Settings
+                  </Link>
+                </div>
+
+                {/* Sign Out Option */}
+                <div className="p-1.5 border-t border-[#e0bfbf]/40 mt-1">
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-700 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </div>
+
+              </div>
+            )}
           </div>
         </header>
 
