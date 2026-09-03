@@ -27,15 +27,18 @@ function hashValue(value: string): string {
   return crypto.createHash("sha256").update(value).digest("hex");
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
     await connectDB();
 
-    const body = await request.json().catch(() => ({}));
-    const mobile = normalizeMobile(body.mobile ?? body.phone ?? body.mobileNumber ?? body.phone_number);
-    const otp = typeof body.otp === "string" ? body.otp.trim() : "";
-    const memberId = typeof body.memberId === "string" ? body.memberId.trim() : "";
-    const userId = typeof body.userId === "string" ? body.userId.trim() : "";
+    const params = new URL(request.url).searchParams;
+    const mobile = normalizeMobile(
+      params.get("mobile") ??
+        params.get("phone") ??
+        params.get("mobileNumber") ??
+        params.get("phone_number"),
+    );
+    const otp = params.get("otp")?.trim() ?? "";
 
     if (!mobile || mobile.length !== 10) {
       return NextResponse.json(
@@ -58,11 +61,7 @@ export async function POST(request: Request) {
     }
 
     const mobileHash = hashValue(mobile);
-    const sessionQuery: Record<string, unknown> = { type: "mobile", mobileHash };
-    if (memberId) sessionQuery.memberId = memberId;
-    if (userId) sessionQuery.userId = userId;
-
-    const session = await Verification.findOne(sessionQuery).sort({ createdAt: -1 });
+    const session = await Verification.findOne({ type: "mobile", mobileHash }).sort({ createdAt: -1 });
 
     if (!session) {
       return NextResponse.json(
