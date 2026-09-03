@@ -466,7 +466,7 @@ export default function LoginPage() {
             </div>
             <div>
               <h3 className="text-xs font-bold text-[#570013] font-['Playfair_Display',serif] tracking-tight">
-                ASSOCIATION OF BENGAL
+                ASSOCIATION OF BENGAL 
               </h3>
               <p className="text-[10px] text-[#775a19] uppercase tracking-wider font-semibold">
                 Member Portal

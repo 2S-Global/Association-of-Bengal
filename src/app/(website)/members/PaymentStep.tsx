@@ -416,7 +416,7 @@ export default function PaymentStep({
         key: razorpayKey,
         amount: order.amount, // Already converted to paise on the server
         currency: order.currency || "INR",
-        name: "Association of Bengal",
+        name: "Association of Bengal FOR LITERATURE AND CULTURE",
         description: "Membership Registration & Contribution Fee",
         order_id: order.id,
         handler: async function (paymentResponse: any) {
