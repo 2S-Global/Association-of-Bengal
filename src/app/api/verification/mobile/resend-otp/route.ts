@@ -5,7 +5,7 @@ import Verification from "@/models/Verification";
 
 const OTP_TTL_MINUTES = 2;
 const RESEND_COOLDOWN_MS = 60 * 1000;
-const MAX_RESEND_COUNT = 12;
+const MAX_RESEND_COUNT = 10;
 
 function normalizeMobile(value: string | null): string {
   const digits = (value ?? "").replace(/\D/g, "");
