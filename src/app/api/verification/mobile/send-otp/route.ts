@@ -13,7 +13,7 @@ import Verification from "@/models/Verification";
 
 const OTP_TTL_MINUTES = 2;
 const RESEND_COOLDOWN_MS = 60 * 1000;
-const MAX_RESEND_COUNT = 12;
+const MAX_RESEND_COUNT = 10;
 const MAX_ATTEMPTS = 4;
 
 // ============================================================
