@@ -168,7 +168,7 @@ export default function AadhaarStep({
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider">
-                12-Digit Identification Number <span className="text-red-600">*</span>
+                12-Digit Aadhaar Number <span className="text-red-600">*</span>
               </label>
               <span className="text-[10px] text-gray-500 font-medium">
                 {cleanNumber.length}/12 digits
