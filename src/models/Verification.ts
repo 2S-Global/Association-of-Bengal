@@ -1,13 +1,17 @@
 import mongoose, { Model, Schema } from "mongoose";
 
-export type VerificationType = "aadhaar";
+export type VerificationType = "mobile" | "aadhaar";
 
 export interface IVerificationSession extends mongoose.Document {
   type: VerificationType;
   memberId?: string | mongoose.Types.ObjectId | null;
   userId?: string | mongoose.Types.ObjectId | null;
-  aadhaarHash: string;
-  aadhaarMasked: string;
+  mobile?: string | null;
+  mobileHash?: string | null;
+  mobileMasked?: string | null;
+  aadhaarHash?: string | null;
+  aadhaarMasked?: string | null;
+  otpHash?: string | null;
   providerRequestId?: string | null;
   expiresAt?: Date | null;
   attempts: number;
@@ -24,32 +28,44 @@ const VerificationSessionSchema = new Schema<IVerificationSession>(
   {
     type: {
       type: String,
-      enum: ["aadhaar"],
+      enum: ["mobile", "aadhaar"],
       required: true,
       index: true,
     },
     memberId: {
       type: Schema.Types.Mixed,
-      default: null,
     },
     userId: {
       type: Schema.Types.Mixed,
-      default: null,
+    },
+    mobile: {
+      type: String,
+      trim: true,
+    },
+    mobileHash: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    mobileMasked: {
+      type: String,
+      trim: true,
     },
     aadhaarHash: {
       type: String,
-      required: true,
       trim: true,
       index: true,
     },
     aadhaarMasked: {
       type: String,
-      required: true,
+      trim: true,
+    },
+    otpHash: {
+      type: String,
       trim: true,
     },
     providerRequestId: {
       type: String,
-      default: null,
       trim: true,
     },
     expiresAt: {
@@ -87,6 +103,7 @@ const VerificationSessionSchema = new Schema<IVerificationSession>(
   { timestamps: true },
 );
 
+VerificationSessionSchema.index({ type: 1, mobileHash: 1, createdAt: -1 });
 VerificationSessionSchema.index({ type: 1, aadhaarHash: 1, createdAt: -1 });
 VerificationSessionSchema.index({ type: 1, memberId: 1, createdAt: -1 });
 VerificationSessionSchema.index({ type: 1, userId: 1, createdAt: -1 });
