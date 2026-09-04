@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -245,6 +246,8 @@ export default function MembershipRegistrationPage() {
     aadhaarNumber: "",
     otpCode: "",
     photo: null as File | null,
+    photoUrl: "",
+    photoPublicId: "",
     selectedCategories: [] as string[],
     agreedToTerms: false,
     wing: geographicWings[0].name,
@@ -396,6 +399,16 @@ export default function MembershipRegistrationPage() {
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.message || "Image upload failed");
+
+        // Properly capture photoUrl and publicId from backend response
+        const imgUrl = data.data?.photoUrl || data.photoUrl || "";
+        const imgPublicId = data.data?.publicId || data.publicId || "";
+
+        setFormData((prev) => ({
+          ...prev,
+          photoUrl: imgUrl,
+          photoPublicId: imgPublicId,
+        }));
       } catch (error: any) {
         setErrors({ photo: error.message || "Failed to upload image" });
         setIsSubmitting(false);
@@ -423,6 +436,8 @@ export default function MembershipRegistrationPage() {
           },
           body: JSON.stringify({
             wings: formData.selectedCategories,
+            photoUrl: formData.photoUrl,
+            photoPublicId: formData.photoPublicId,
           }),
         });
         const data = await response.json().catch(() => ({}));
@@ -667,7 +682,6 @@ export default function MembershipRegistrationPage() {
                   onChange={handleInputChange}
                   error={errors.aadhaarNumber}
                   onVerified={() => {
-                    // Advance to the final success state or next step upon verification
                     setIsSuccess(true);
                   }}
                 />
@@ -680,7 +694,6 @@ export default function MembershipRegistrationPage() {
                   onChange={handleInputChange}
                   error={errors.otpCode}
                   onVerified={() => {
-                    // Triggered when mobile OTP verification succeeds
                     setIsSuccess(true);
                   }}
                 />
@@ -754,6 +767,4 @@ export default function MembershipRegistrationPage() {
     </div>
   );
 }
-
-
 
