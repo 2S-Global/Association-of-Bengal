@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import DatePicker from "@/components/admin/ui/DatePicker";
+import TimePicker from "@/components/admin/ui/TimePicker";
 import {
   ElectionPeriod,
   getLocalCalendarDate,
@@ -206,6 +207,14 @@ export default function AddElectionForm({
     );
   };
 
+  const toggleAllWings = () => {
+    setWings((current) =>
+      wingOptions.length > 0 && wingOptions.every((wing) => current.includes(wing))
+        ? []
+        : wingOptions,
+    );
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSaving) return;
@@ -325,24 +334,19 @@ export default function AddElectionForm({
                 <DatePicker
                   id={getPickerId(title, "start")}
                   placeholder="Select start date"
-                  defaultDate={period.startDate || undefined}
+                  value={period.startDate || undefined}
                   minDate={startDateMinimum}
                   allowInvalidPreload={Boolean(initialElection)}
-                  onChange={(_, dateStr) =>
-                    updatePeriod(setter, "startDate", dateStr)
-                  }
+                  onChange={(date) => updatePeriod(setter, "startDate", date)}
                 />
               </div>
               <div>
                 <p className={labelClass}>Start time</p>
-                <DatePicker
+                <TimePicker
                   id={`${getPickerId(title, "start")}-time`}
-                  mode="time"
                   placeholder="Select start time"
-                  defaultDate={period.startTime || undefined}
-                  onChange={(_, time) =>
-                    updatePeriod(setter, "startTime", time)
-                  }
+                  value={period.startTime || undefined}
+                  onChange={(time) => updatePeriod(setter, "startTime", time)}
                 />
               </div>
             </div>
@@ -359,27 +363,24 @@ export default function AddElectionForm({
                 <DatePicker
                   id={getPickerId(title, "end")}
                   placeholder="Select end date"
-                  defaultDate={period.endDate || undefined}
+                  value={period.endDate || undefined}
                   minDate={getLatestCalendarDate(today, period.startDate)}
                   allowInvalidPreload={Boolean(initialElection)}
-                  onChange={(_, dateStr) =>
-                    updatePeriod(setter, "endDate", dateStr)
-                  }
+                  onChange={(date) => updatePeriod(setter, "endDate", date)}
                 />
               </div>
               <div>
                 <p className={labelClass}>End time</p>
-                <DatePicker
+                <TimePicker
                   id={`${getPickerId(title, "end")}-time`}
-                  mode="time"
                   placeholder="Select end time"
-                  defaultDate={period.endTime || undefined}
+                  value={period.endTime || undefined}
                   minTime={getStrictlyLaterTime(
                     period.startDate,
                     period.startTime,
                     period.endDate,
                   )}
-                  onChange={(_, time) => updatePeriod(setter, "endTime", time)}
+                  onChange={(time) => updatePeriod(setter, "endTime", time)}
                 />
               </div>
             </div>
@@ -550,22 +551,36 @@ export default function AddElectionForm({
                   No wings are available in the members collection.
                 </p>
               ) : (
-                wingOptions.map((wing) => (
-                  <label
-                    key={wing}
-                    className="group flex cursor-pointer items-center gap-2.5"
-                  >
+                <>
+                  <label className="group flex cursor-pointer items-center gap-2.5">
                     <input
                       type="checkbox"
-                      checked={wings.includes(wing)}
-                      onChange={() => toggleWing(wing)}
+                      checked={wingOptions.every((wing) => wings.includes(wing))}
+                      onChange={toggleAllWings}
                       className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#8b1a1a] focus:ring-[#8b1a1a] dark:border-gray-600 dark:bg-gray-800"
                     />
-                    <span className="text-sm font-medium text-gray-700 transition group-hover:text-[#8b1a1a] dark:text-gray-300 dark:group-hover:text-[#e8b4b4]">
-                      {wing}
+                    <span className="text-sm font-semibold text-gray-700 transition group-hover:text-[#8b1a1a] dark:text-gray-300 dark:group-hover:text-[#e8b4b4]">
+                      All
                     </span>
                   </label>
-                ))
+
+                  {wingOptions.map((wing) => (
+                    <label
+                      key={wing}
+                      className="group flex cursor-pointer items-center gap-2.5"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={wings.includes(wing)}
+                        onChange={() => toggleWing(wing)}
+                        className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#8b1a1a] focus:ring-[#8b1a1a] dark:border-gray-600 dark:bg-gray-800"
+                      />
+                      <span className="text-sm font-medium text-gray-700 transition group-hover:text-[#8b1a1a] dark:text-gray-300 dark:group-hover:text-[#e8b4b4]">
+                        {wing}
+                      </span>
+                    </label>
+                  ))}
+                </>
               )}
             </div>
 

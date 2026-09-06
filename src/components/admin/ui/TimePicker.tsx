@@ -3,24 +3,37 @@
 import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker as MuiDatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TimePicker as MuiTimePicker } from "@mui/x-date-pickers/TimePicker";
 
 type Props = {
   id: string;
   value?: string;
-  onChange?: (date: string) => void;
-  minDate?: string;
-  maxDate?: string;
-  allowInvalidPreload?: boolean;
+  onChange?: (time: string) => void;
+  minTime?: string;
+  maxTime?: string;
   label?: string;
   placeholder?: string;
 };
 
-const parseCalendarDate = (value?: string) => {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+const to24HourTime = (value?: string) => {
+  if (!value) return undefined;
 
-  const date = dayjs(value);
-  return date.isValid() ? date : null;
+  const twelveHourMatch = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (twelveHourMatch) {
+    const [, hourText, minute, meridiem] = twelveHourMatch;
+    const hour = Number(hourText) % 12 + (meridiem.toUpperCase() === "PM" ? 12 : 0);
+    return `${String(hour).padStart(2, "0")}:${minute}`;
+  }
+
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value) ? value : undefined;
+};
+
+const parseTime = (value?: string) => {
+  const time = to24HourTime(value);
+  if (!time) return null;
+
+  const parsed = dayjs(`2000-01-01T${time}`);
+  return parsed.isValid() ? parsed : null;
 };
 
 const pickerFieldSx = {
@@ -64,12 +77,12 @@ const pickerPopperSx = {
   },
 };
 
-export default function DatePicker({
+export default function TimePicker({
   id,
   value,
   onChange,
-  minDate,
-  maxDate,
+  minTime,
+  maxTime,
   label,
   placeholder,
 }: Props) {
@@ -78,12 +91,14 @@ export default function DatePicker({
       {label && <label htmlFor={id}>{label}</label>}
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <MuiDatePicker
-          value={parseCalendarDate(value)}
-          onChange={(date) => onChange?.(date?.format("YYYY-MM-DD") ?? "")}
-          minDate={parseCalendarDate(minDate) ?? undefined}
-          maxDate={parseCalendarDate(maxDate) ?? undefined}
-          format="DD-MM-YYYY"
+        <MuiTimePicker
+          value={parseTime(value)}
+          onChange={(time) => onChange?.(time?.format("hh:mm A") ?? "")}
+          minTime={parseTime(minTime) ?? undefined}
+          maxTime={parseTime(maxTime) ?? undefined}
+          ampm
+          format="hh:mm A"
+          timeSteps={{ minutes: 5 }}
           slotProps={{
             textField: {
               id,
