@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useRef, useState, useCallback, useEffect } from "react";
@@ -179,12 +178,7 @@ export default function GallerySection() {
                           ease-out
                           group-hover:scale-105
                         "
-                        sizes="
-                          (max-width:639px) 100vw,
-                          (max-width:767px) 50vw,
-                          (max-width:1023px) 33vw,
-                          25vw
-                        "
+                        sizes="(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
                       />
                     </div>
 

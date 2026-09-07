@@ -434,11 +434,7 @@ export default function HomeBody() {
                   alt={heroData.imageAlt}
                   fill
                   priority
-                  sizes="
-                    (max-width: 640px) 100vw,
-                    (max-width: 1024px) 90vw,
-                    42vw
-                  "
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 42vw"
                   className="
                     object-cover
                     transition-transform
