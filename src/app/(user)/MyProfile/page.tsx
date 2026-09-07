@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,16 +12,18 @@ import {
   Loader2, 
   CheckCircle2, 
   AlertCircle,
-  Award,
   CalendarCheck,
   Edit3,
   X,
   KeyRound,
   UserPen,
-  Shield,
   Coins,
   Calendar,
-  Sparkles
+  Sparkles,
+  MapPin,
+  ShieldCheck,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
@@ -35,6 +36,8 @@ export default function MyProfilePage() {
     memberId: "",
     wings: [] as string[],
     country: "",
+    district: "",
+    state: "",
     photoUrl: "",
     totalContributions: 0,
     memberSince: 2026,
@@ -49,8 +52,10 @@ export default function MyProfilePage() {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  // Password state
+  // Password state & visibility toggles
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "" });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passMessage, setPassMessage] = useState({ type: "", text: "" });
 
@@ -71,6 +76,8 @@ export default function MyProfilePage() {
         if (res.ok && json?.data) {
           const u = json.data.user || {};
           const m = json.data.member || {};
+          const location = m.location || {};
+          const aadharAddress = m.kyc?.aadhar?.address || {};
 
           setProfile({
             fullName: m.fullName || u.fullName || "",
@@ -78,7 +85,9 @@ export default function MyProfilePage() {
             mobile: u.mobile || "",
             memberId: m.memberId || "",
             wings: m.wings || [],
-            country: m.location?.country || "",
+            country: location.country || aadharAddress.country || "",
+            district: location.district || aadharAddress.dist || "",
+            state: location.region || aadharAddress.state || "",
             photoUrl: m.photoUrl || "",
             totalContributions: m.totalContributions || 0,
             memberSince: m.memberSince || 2026,
@@ -118,7 +127,11 @@ export default function MyProfilePage() {
         body: JSON.stringify({
           fullName: profile.fullName,
           photoUrl: profile.photoUrl,
-          location: { country: profile.country }
+          location: { 
+            country: profile.country,
+            district: profile.district,
+            region: profile.state
+          }
         })
       });
 
@@ -277,6 +290,11 @@ export default function MyProfilePage() {
               <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
                 <CalendarCheck className="w-3 h-3 text-emerald-600" /> Active
               </span>
+              {profile.verified && (
+                <span className="text-[10px] font-bold text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-sky-600" /> KYC Verified
+                </span>
+              )}
             </div>
             <h2 className="text-xl font-extrabold text-[#570013] font-['Playfair_Display',serif]">{profile.fullName}</h2>
             <p className="text-xs text-[#8c7071] truncate">{profile.email}</p>
@@ -293,14 +311,14 @@ export default function MyProfilePage() {
             </div>
           </div>
 
-          {/* Professional ID Card Download Notice */}
+          {/* Digital ID Card Notice */}
           <div className="w-full bg-[#fbf2ed] border border-[#e0bfbf]/70 rounded-2xl p-4 text-left space-y-2">
             <div className="flex items-center gap-2 text-[#570013]">
               <Sparkles className="w-4 h-4 text-[#775a19] shrink-0" />
               <h4 className="text-xs font-extrabold uppercase tracking-wider">Digital Member ID Card</h4>
             </div>
             <p className="text-[11px] text-[#584141] leading-relaxed">
-              Download our official mobile app to access, view, and download your verified digital membership ID card on the go.
+              Your account is verified and active. Use your official member details to access community perks.
             </p>
           </div>
 
@@ -342,6 +360,7 @@ export default function MyProfilePage() {
               <form onSubmit={handleSaveProfile} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
+                  {/* Full Name */}
                   <div>
                     <label className="block text-xs font-bold text-[#584141] mb-1.5">Full Name</label>
                     <div className="relative">
@@ -360,6 +379,7 @@ export default function MyProfilePage() {
                     </div>
                   </div>
 
+                  {/* Country */}
                   <div>
                     <label className="block text-xs font-bold text-[#584141] mb-1.5">Country</label>
                     <div className="relative">
@@ -377,6 +397,35 @@ export default function MyProfilePage() {
                     </div>
                   </div>
 
+                  {/* District */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#584141] mb-1.5">District</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
+                      <input 
+                        type="text" 
+                        value={profile.district} 
+                        disabled 
+                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* State / Region */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#584141] mb-1.5">State / Region</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-400" />
+                      <input 
+                        type="text" 
+                        value={profile.state} 
+                        disabled 
+                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
                   <div>
                     <label className="block text-xs font-bold text-[#584141] mb-1.5">Email (Read-only)</label>
                     <div className="relative">
@@ -384,12 +433,13 @@ export default function MyProfilePage() {
                       <input 
                         type="email" 
                         value={profile.email} 
-                        disabled
+                        disabled 
                         className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-gray-500 cursor-not-allowed"
                       />
                     </div>
                   </div>
 
+                  {/* Mobile */}
                   <div>
                     <label className="block text-xs font-bold text-[#584141] mb-1.5">Mobile (Read-only)</label>
                     <div className="relative">
@@ -397,7 +447,7 @@ export default function MyProfilePage() {
                       <input 
                         type="text" 
                         value={profile.mobile} 
-                        disabled
+                        disabled 
                         className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-gray-500 cursor-not-allowed"
                       />
                     </div>
@@ -448,33 +498,49 @@ export default function MyProfilePage() {
               )}
 
               <form onSubmit={handleChangePassword} className="space-y-4">
+                {/* Current Password Field with Eye Toggle */}
                 <div>
                   <label className="block text-xs font-bold text-[#584141] mb-1.5">Current Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-[#8c7071]" />
                     <input 
-                      type="password" 
+                      type={showCurrentPassword ? "text" : "password"} 
                       value={passwords.currentPassword}
                       onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
                       required
                       placeholder="••••••••"
-                      className="w-full bg-[#fff8f5] border border-[#e0bfbf] rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-[#570013] focus:outline-none focus:border-[#570013]"
+                      className="w-full bg-[#fff8f5] border border-[#e0bfbf] rounded-2xl px-4 py-3 pl-11 pr-11 text-xs font-bold text-[#570013] focus:outline-none focus:border-[#570013]"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3.5 top-3 text-[#8c7071] hover:text-[#570013] focus:outline-none cursor-pointer"
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
+                {/* New Password Field with Eye Toggle */}
                 <div>
                   <label className="block text-xs font-bold text-[#584141] mb-1.5">New Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-[#8c7071]" />
                     <input 
-                      type="password" 
+                      type={showNewPassword ? "text" : "password"} 
                       value={passwords.newPassword}
                       onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
                       required
                       placeholder="••••••••"
-                      className="w-full bg-[#fff8f5] border border-[#e0bfbf] rounded-2xl px-4 py-3 pl-11 text-xs font-bold text-[#570013] focus:outline-none focus:border-[#570013]"
+                      className="w-full bg-[#fff8f5] border border-[#e0bfbf] rounded-2xl px-4 py-3 pl-11 pr-11 text-xs font-bold text-[#570013] focus:outline-none focus:border-[#570013]"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3.5 top-3 text-[#8c7071] hover:text-[#570013] focus:outline-none cursor-pointer"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
@@ -498,5 +564,3 @@ export default function MyProfilePage() {
     </div>
   );
 }
-
-

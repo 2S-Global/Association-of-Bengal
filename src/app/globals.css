@@ -1110,7 +1110,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: #570013;
-  box-shadow: 0 0 0 4px rgba(87, 0, 19, 0.08);
+  /* box-shadow: 0 0 0 4px rgba(87, 0, 19, 0.08); */
 }
 
 /*
@@ -1233,3 +1233,5 @@ select:focus {
     line-height: 30px;
   }
 }
+
+/* Style the dropdown option background and text */
