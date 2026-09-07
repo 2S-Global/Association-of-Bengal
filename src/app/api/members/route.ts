@@ -13,7 +13,7 @@ export async function GET() {
             .populate({
                 path: "user",
                 model: User,
-                select: "email mobile step allstep_completed" // Selects exact fields from the User table
+                select: "email mobile step allstep_completed is_admin_approved is_admin_rejected adminActionTakenAt" // Selects fields needed by the members admin page
             })
             .sort({ createdAt: -1 })
             .lean();
@@ -27,6 +27,9 @@ export async function GET() {
                 mobile: userData.mobile || null,
                 step: userData.step !== undefined ? userData.step : member.step,
                 allstep_completed: userData.allstep_completed !== undefined ? userData.allstep_completed : member.allstep_completed,
+                is_admin_approved: userData.is_admin_approved ?? false,
+                is_admin_rejected: userData.is_admin_rejected ?? false,
+                adminActionTakenAt: userData.adminActionTakenAt ?? null,
             };
         });
 

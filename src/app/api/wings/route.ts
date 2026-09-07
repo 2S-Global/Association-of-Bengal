@@ -2,21 +2,58 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
+type WingDocument = {
+  id?: string;
+  name?: string;
+  nameBn?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
 export async function GET() {
   try {
     await connectDB();
-    const wings = await mongoose.connection.db
-      ?.collection("members")
-      .distinct("wings", { wings: { $type: "string", $ne: "" } });
-    const data = [...new Set((wings ?? []).map((wing) => wing.trim()).filter(Boolean))]
-      .sort((first, second) => first.localeCompare(second, undefined, { sensitivity: "base" }));
 
-    return NextResponse.json({ success: true, data });
+    const wings = await mongoose.connection.db
+      ?.collection<WingDocument>("wings")
+      .find(
+        { isActive: true },
+        {
+          projection: {
+            _id: 0,
+            id: 1,
+            name: 1,
+            nameBn: 1,
+            sortOrder: 1,
+          },
+        },
+      )
+      .sort({ sortOrder: 1, name: 1 })
+      .toArray();
+
+    const data = (wings ?? [])
+      .filter(
+        (wing) => typeof wing.name === "string" && wing.name.trim().length > 0,
+      )
+      .map((wing) => ({
+        id: wing.id ?? wing.name!.trim().toLowerCase().replace(/\s+/g, "-"),
+        name: wing.name!.trim(),
+        nameBn: typeof wing.nameBn === "string" ? wing.nameBn.trim() : "",
+      }));
+
+    return NextResponse.json({
+      success: true,
+      data,
+    });
   } catch (error) {
     console.error("GET wings error:", error);
+
     return NextResponse.json(
-      { success: false, message: "Unable to load member wings. Please try again." },
-      { status: 500 }
+      {
+        success: false,
+        message: "Unable to load wings. Please try again.",
+      },
+      { status: 500 },
     );
   }
 }

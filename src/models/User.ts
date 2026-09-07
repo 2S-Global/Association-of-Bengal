@@ -1,5 +1,3 @@
-
-
 import mongoose, { Model, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -13,12 +11,16 @@ export interface IUser {
 
   step: number;
   allstep_completed: boolean;
+  all_verified: boolean;
+
+  is_admin_approved: boolean;
+  is_admin_rejected: boolean;
+  adminActionTakenAt?: Date;
 
   mobile: string;
   password: string;
 
   role: UserRole;
-
   isActive: boolean;
 
   lastLoginAt?: Date;
@@ -32,7 +34,6 @@ export interface IUser {
 
 interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;
-
   passwordChangedAfter(jwtIssuedAt: number): boolean;
 }
 
@@ -63,6 +64,26 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>(
     allstep_completed: {
       type: Boolean,
       default: false,
+    },
+
+    all_verified: {
+      type: Boolean,
+      default: false,
+    },
+
+    is_admin_approved: {
+      type: Boolean,
+      default: false,
+    },
+
+    is_admin_rejected: {
+      type: Boolean,
+      default: false,
+    },
+
+    adminActionTakenAt: {
+      type: Date,
+      default: undefined,
     },
 
     mobile: {
@@ -110,7 +131,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods>(
   },
 );
 
-// ── Virtual: member profile ──────────────────────────────────────────────────
+// Virtual: member profile
 UserSchema.virtual("member", {
   ref: "Member",
   localField: "_id",
@@ -118,7 +139,7 @@ UserSchema.virtual("member", {
   justOne: true,
 });
 
-// ── Pre-save: hash password ──────────────────────────────────────────────────
+// Pre-save: hash password
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
@@ -128,14 +149,14 @@ UserSchema.pre("save", async function () {
   this.passwordChangedAt = new Date();
 });
 
-// ── Instance method: compare password ─────────────────────────────────────────
+// Instance method: compare password
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// ── Instance method: check if password changed after token ────────────────────
+// Instance method: check if password changed after token
 UserSchema.methods.passwordChangedAfter = function (
   jwtIssuedAt: number,
 ): boolean {
@@ -150,7 +171,7 @@ UserSchema.methods.passwordChangedAfter = function (
   return false;
 };
 
-// ── Remove sensitive fields from JSON output ──────────────────────────────────
+// Remove sensitive fields from JSON output
 UserSchema.methods.toJSON = function () {
   const user = this.toObject();
 
@@ -160,7 +181,7 @@ UserSchema.methods.toJSON = function () {
   return user;
 };
 
-// ── Model ─────────────────────────────────────────────────────────────────────
+// Model
 const User: UserModel =
   (mongoose.models.User as UserModel | undefined) ||
   mongoose.model<IUser, UserModel>("User", UserSchema);

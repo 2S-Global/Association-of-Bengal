@@ -64,7 +64,10 @@ const getNextCalendarDate = (dateValue: string) => {
 };
 
 const getLatestCalendarDate = (...dates: Array<string | undefined>) =>
-  dates.filter((date): date is string => Boolean(date)).sort().at(-1);
+  dates
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1);
 
 const getStrictlyLaterTime = (
   startDate: string,
@@ -115,8 +118,14 @@ export default function AddElectionForm({
     initialElection?.voting ?? emptyPeriod,
   );
 
+  type WingOption = {
+    id: string;
+    name: string;
+    nameBn: string;
+  };
+
   const [wings, setWings] = useState<string[]>(initialElection?.wings ?? []);
-  const [wingOptions, setWingOptions] = useState<string[]>([]);
+  const [wingOptions, setWingOptions] = useState<WingOption[]>([]);
   const [isLoadingWings, setIsLoadingWings] = useState(true);
   const [wingsError, setWingsError] = useState<string | null>(null);
   const [location, setLocation] = useState(initialElection?.location ?? "");
@@ -131,19 +140,17 @@ export default function AddElectionForm({
     const loadWings = async () => {
       try {
         const response = await fetch("/api/wings");
-        const result: { data?: unknown; message?: string } =
-          await response.json();
+        const result: {
+          data?: WingOption[];
+          message?: string;
+        } = await response.json();
 
         if (!response.ok || !Array.isArray(result.data)) {
-          throw new Error(result.message || "Unable to load member wings.");
+          throw new Error(result.message || "Unable to load wings.");
         }
 
         if (isMounted) {
-          setWingOptions(
-            result.data.filter(
-              (wing): wing is string => typeof wing === "string",
-            ),
-          );
+          setWingOptions(result.data);
         }
       } catch (error) {
         if (isMounted) {
@@ -209,9 +216,10 @@ export default function AddElectionForm({
 
   const toggleAllWings = () => {
     setWings((current) =>
-      wingOptions.length > 0 && wingOptions.every((wing) => current.includes(wing))
+      wingOptions.length > 0 &&
+      wingOptions.every((wing) => current.includes(wing.name))
         ? []
-        : wingOptions,
+        : wingOptions.map((wing) => wing.name),
     );
   };
 
@@ -555,7 +563,10 @@ export default function AddElectionForm({
                   <label className="group flex cursor-pointer items-center gap-2.5">
                     <input
                       type="checkbox"
-                      checked={wingOptions.every((wing) => wings.includes(wing))}
+                      checked={
+                        wingOptions.length > 0 &&
+                        wingOptions.every((wing) => wings.includes(wing.name))
+                      }
                       onChange={toggleAllWings}
                       className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#8b1a1a] focus:ring-[#8b1a1a] dark:border-gray-600 dark:bg-gray-800"
                     />
@@ -566,17 +577,23 @@ export default function AddElectionForm({
 
                   {wingOptions.map((wing) => (
                     <label
-                      key={wing}
+                      key={wing.id}
                       className="group flex cursor-pointer items-center gap-2.5"
                     >
                       <input
                         type="checkbox"
-                        checked={wings.includes(wing)}
-                        onChange={() => toggleWing(wing)}
+                        checked={wings.includes(wing.name)}
+                        onChange={() => toggleWing(wing.name)}
                         className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#8b1a1a] focus:ring-[#8b1a1a] dark:border-gray-600 dark:bg-gray-800"
                       />
+
                       <span className="text-sm font-medium text-gray-700 transition group-hover:text-[#8b1a1a] dark:text-gray-300 dark:group-hover:text-[#e8b4b4]">
-                        {wing}
+                        {wing.name}
+                        {wing.nameBn && (
+                          <span className="ml-1 text-gray-500 dark:text-gray-400">
+                            ({wing.nameBn})
+                          </span>
+                        )}
                       </span>
                     </label>
                   ))}
