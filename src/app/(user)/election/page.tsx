@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -127,11 +128,9 @@ export default function ElectionsPage() {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const json = await res.json();
-      let currentDisplayStatus = "UPCOMING";
       if (res.ok && json?.data) {
         const detail = json.data.election || json.data;
         setElectionDetail(detail);
-        currentDisplayStatus = detail.displayStatus || "UPCOMING";
       }
 
       const nomRes = await fetch(`${API_BASE_URL}/elections/${id}/nominations`, {
@@ -150,14 +149,14 @@ export default function ElectionsPage() {
         setVoteStatus(voteJson);
       }
 
-      if (currentDisplayStatus === "COMPLETED") {
-        const resRes = await fetch(`${API_BASE_URL}/elections/${id}/results`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const resJson = await resRes.json();
-        if (resRes.ok && resJson?.data) {
-          setResultsData(resJson.data);
-        }
+      const resRes = await fetch(`${API_BASE_URL}/elections/${id}/results`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const resJson = await resRes.json();
+      if (resRes.ok && resJson?.data) {
+        setResultsData(resJson.data);
+      } else {
+        setResultsData(null);
       }
 
     } catch (err) {
@@ -496,7 +495,7 @@ export default function ElectionsPage() {
               )}
             </div>
 
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-4">
+            {/* <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-4">
               <h3 className="text-sm font-extrabold text-[#570013] uppercase tracking-wider flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#775a19]" /> Filed Nominations ({nominationsData.nominations?.length || 0})
               </h3>
@@ -524,7 +523,7 @@ export default function ElectionsPage() {
                   ))
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -600,40 +599,71 @@ export default function ElectionsPage() {
           </div>
         )}
 
-        {/* SECTION 3: COMPLETED / RESULTS */}
-        {displayStatus === "COMPLETED" && (
+        {/* SECTION 3: COMPLETED OR RESULTS AVAILABLE */}
+        {(displayStatus === "COMPLETED" || resultsData) && (
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-6">
             <h3 className="text-sm font-extrabold text-[#570013] uppercase tracking-wider flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[#775a19]" /> Certified Election Results & Winners
             </h3>
             {resultsData ? (
               <div className="space-y-6">
+                {/* Winners Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {resultsData.winners?.map((winner: any, i: number) => (
-                    <div key={i} className="bg-amber-50/80 border border-amber-200 p-5 rounded-2xl flex items-center gap-4 shadow-2xs">
-                      <Award className="w-10 h-10 text-amber-600 shrink-0" />
-                      <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md">Winner ({winner.position})</span>
-                        <h4 className="text-sm font-extrabold text-[#570013] mt-1">{winner.fullName || winner.member?.fullName}</h4>
-                        <span className="text-xs font-mono font-bold text-[#775a19] block mt-0.5">Total Votes: {winner.voteCount}</span>
+                  {(resultsData.results?.filter((r: any) => r.isWinner))?.map((winnerObj: any, i: number) => {
+                    const nom = winnerObj.nomination || {};
+                    const memberInfo = nom.member || {};
+                    const memberName = memberInfo.fullName || "Winner";
+                    const photoUrl = memberInfo.photoUrl;
+                    const positionName = nom.position || "Elected Position";
+                    const voteCount = winnerObj.votes ?? 0;
+
+                    return (
+                      <div key={i} className="bg-amber-50/80 border border-amber-200 p-5 rounded-2xl flex items-center gap-4 shadow-2xs">
+                        <div className="w-12 h-12 rounded-2xl bg-[#570013] text-white overflow-hidden relative shrink-0 flex items-center justify-center font-bold text-base shadow-2xs">
+                          {photoUrl ? (
+                            <img src={photoUrl} alt="Winner" className="w-full h-full object-cover" />
+                          ) : (
+                            memberName.charAt(0)
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
+                            <Award className="w-3 h-3 text-amber-600" /> Winner ({positionName})
+                          </span>
+                          <h4 className="text-sm font-extrabold text-[#570013] mt-1">{memberName}</h4>
+                          <span className="text-xs font-mono font-bold text-[#775a19] block mt-0.5">Total Votes: {voteCount}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
+                {/* Candidate Vote Share Breakdown */}
                 <div className="border-t border-[#e0bfbf]/40 pt-4 space-y-3">
-                  <h4 className="text-xs font-extrabold text-[#584141] uppercase tracking-wider">Candidate Vote Share</h4>
-                  {resultsData.candidates?.map((cand: any, idx: number) => (
-                    <div key={idx} className="bg-[#fbf2ed]/50 p-4 rounded-2xl border border-[#e0bfbf]/60 space-y-2">
-                      <div className="flex justify-between text-xs font-extrabold text-[#570013]">
-                        <span>{cand.fullName} <span className="text-[#775a19]">({cand.position})</span></span>
-                        <span className="font-mono">{cand.voteCount} votes ({cand.percentage}%)</span>
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-xs font-extrabold text-[#584141] uppercase tracking-wider">Candidate Vote Share</h4>
+                    <span className="text-xs font-mono font-bold text-[#8c7071]">Total Votes Cast: {resultsData.totalVotesCast ?? 0}</span>
+                  </div>
+                  {resultsData.results?.map((item: any, idx: number) => {
+                    const nom = item.nomination || {};
+                    const memberInfo = nom.member || {};
+                    const memberName = memberInfo.fullName || "Candidate";
+                    const positionName = nom.position || "Position";
+                    const voteCount = item.votes ?? 0;
+                    const percentage = item.percentage || "0%";
+
+                    return (
+                      <div key={idx} className="bg-[#fbf2ed]/50 p-4 rounded-2xl border border-[#e0bfbf]/60 space-y-2">
+                        <div className="flex justify-between text-xs font-extrabold text-[#570013]">
+                          <span>{memberName} <span className="text-[#775a19]">({positionName})</span></span>
+                          <span className="font-mono">{voteCount} votes ({percentage})</span>
+                        </div>
+                        <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                          <div className="bg-[#570013] h-full rounded-full transition-all duration-500" style={{ width: percentage }}></div>
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-[#570013] h-full rounded-full transition-all duration-500" style={{ width: `${cand.percentage || 0}%` }}></div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -643,7 +673,7 @@ export default function ElectionsPage() {
         )}
 
         {/* OTHER STATUSES */}
-        {!["NOMINATION_OPEN", "VOTING_OPEN", "COMPLETED"].includes(displayStatus) && (
+        {!["NOMINATION_OPEN", "VOTING_OPEN", "COMPLETED"].includes(displayStatus) && !resultsData && (
           <div className="bg-white p-12 rounded-3xl border border-[#e0bfbf]/60 text-center space-y-3 shadow-sm">
             <Lock className="w-12 h-12 text-[#775a19] mx-auto opacity-80" />
             <h3 className="text-base font-extrabold text-[#570013]">Election Status: {displayStatus}</h3>

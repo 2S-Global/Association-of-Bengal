@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode, useMemo } from "react";
 import Image from "next/image";
 import { 
   FileCheck, 
@@ -20,22 +20,24 @@ import {
   UserPlus
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-// import MembershipApplicationModal from "./MembershipApplicationModal";
 
 // ============================================================================
-// DYNAMIC DATA ARRAYS
+// CONSTANTS & ORIGINAL STATIC DATA
 // ============================================================================
+
+const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
 
 const bentoCards = [
   {
     id: "member-portal",
     type: "featured-large",
-    badge: "MEMBER BENEFITS",
-    title: "Exclusive Member Portal",
+    badge: "MEMBER SUPPORT",
+    title: "Member Grievance & Complaint Portal",
     description:
-      "Gain verified fellowship status. Access your digital ID card, track payment receipts, view upcoming cultural events, and participate in association elections.",
+      "Submit and track your formal complaints, report administrative issues, and request support regarding your membership, contributions, or association activities.",
     imageSrc: "/images/shape/multipleuser.png",
-  },
+    actionPath: "/complaint",
+},
   {
     id: "circles",
     type: "featured-horizontal",
@@ -120,124 +122,13 @@ const eligibilityList = [
   "Be subject to verification and approval by the authorised Membership Committee/Admin."
 ];
 
-// Sequential Categories List (1 to 18)
-const categoriesList = [
-  "Binder / Bookbinder",
-  "Comics Artist",
-  "Composer / DTP Artist",
-  "Cover Artist",
-  "Digital Graphic Designer",
-  "Editor",
-  "Employee of Bookseller and/or Publisher",
-  "Illustrator",
-  "Painter",
-  "Performing Artist",
-  "Poet",
-  "Printing Press / Printer",
-  "Proofreader",
-  "Publisher",
-  "Reader / Consumer",
-  "Retail Bookseller",
-  "Wholesale Book Distributor",
-  "Writer"
-];
-
-// ============================================================================
-// MODAL UI STRUCTURES
-// ============================================================================
-
-const modalContentData: Record<string, ReactNode> = {
-  // COMBINED & COMPACT MODAL: ELIGIBILITY + CATEGORY PROOF
-  "Eligibility Criteria": (
-    <div className="text-[#1e1b18] space-y-8 bg-white p-4 sm:p-6 rounded-xl border border-[#e0bfbf]/40 shadow-sm">
-      
-      {/* SECTION 1: General Eligibility */}
-      <div className="space-y-5">
-        <p className="text-[15px] leading-relaxed text-[#584141]">
-          Membership should be open to individuals and organisations genuinely associated with literature, books, publishing, printing, visual arts, performing arts, or cultural activities, as well as readers who support the objectives of the Association.
-        </p>
-        
-        <div className="space-y-3">
-          <p className="font-bold text-[#570013] font-['Playfair_Display',serif] text-lg flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
-            The applicant should:
-          </p>
-          <ul className="space-y-2.5">
-            {eligibilityList.map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-[#775a19] shrink-0 mt-0.5" />
-                <span className="text-[14px] leading-relaxed text-[#584141]">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="bg-[#fbf2ed] text-[#584141] p-4 rounded-lg border-l-4 border-[#775a19] text-[14px]">
-          <strong className="text-[#570013]">For Reader / Consumer:</strong> Professional proof should not be necessary. Valid identity proof and declaration of interest in literature and culture should be sufficient.
-        </div>
-      </div>
-
-      {/* SECTION 2: Category-Specific Proof Table */}
-      <div className="space-y-4 pt-4 border-t border-[#e0bfbf]/40">
-        <p className="font-bold text-[#570013] font-['Playfair_Display',serif] text-lg flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
-          Category-Specific Proof
-        </p>
-
-        <div className="overflow-x-auto rounded-lg border border-[#e0bfbf]/60">
-          <table className="w-full text-left border-collapse text-[14px] min-w-[500px]">
-            <thead>
-              <tr className="bg-[#570013] text-white">
-                <th className="p-3 sm:px-4 font-semibold w-[40%]">Category</th>
-                <th className="p-3 sm:px-4 font-semibold">Suggested Proof</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#e0bfbf]/40">
-              {proofData.map((row, index) => (
-                <tr key={index} className="hover:bg-[#fbf2ed]/40 even:bg-[#fff8f5]/50 transition-colors">
-                  <td className="p-3 sm:px-4 align-top">
-                    <div className="flex gap-2">
-                      <span className="font-bold text-[#775a19] text-xs mt-0.5 shrink-0">{row.no}.</span>
-                      <span className="font-semibold text-[#570013]">{row.cat}</span>
-                    </div>
-                  </td>
-                  <td className="p-3 sm:px-4 align-top text-[#584141]">
-                    <span>{row.proof}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="bg-[#fbf2ed] text-[#584141] p-4 rounded-lg border-l-4 border-[#775a19] text-[14px]">
-          <strong className="text-[#570013] uppercase text-xs tracking-wider block mb-1">Important Principle</strong> 
-          Do not make a published book compulsory for writers or poets. That could unfairly exclude genuine new writers. A manuscript, recognised digital publication, magazine contribution, literary activity, or other reasonable evidence can be considered.
-        </div>
-      </div>
-    </div>
-  ),
-
-  "Membership Categories": (
-    <div className="space-y-6 text-[#1e1b18]">
-      <div className="flex items-center gap-3 border-b border-[#e0bfbf]/40 pb-3">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
-        <p className="font-bold text-lg text-[#570013] font-['Playfair_Display',serif] tracking-wide">
-          Membership Categories (Sequential Order)
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-        {categoriesList.map((cat, i) => (
-          <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl border border-[#e0bfbf]/40 bg-white hover:border-[#775a19]/40 hover:shadow-sm transition-all">
-            <span className="text-xs font-bold text-[#775a19] w-6 text-right shrink-0">{i + 1}.</span>
-            <span className="text-[14px] text-[#584141] font-semibold">{cat}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  ),
-};
+interface WingItem {
+  _id: string;
+  id: string;
+  name: string;
+  nameBn?: string;
+  sortOrder?: number;
+}
 
 // ============================================================================
 // MAIN PAGE COMPONENT
@@ -246,7 +137,34 @@ const modalContentData: Record<string, ReactNode> = {
 export default function MembersPage() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
-const router = useRouter();
+  
+  const [categoriesList, setCategoriesList] = useState<WingItem[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchWings = async () => {
+      setIsLoadingCategories(true);
+      try {
+        const res = await fetch(`${API_BASE}/auth/wings`);
+        if (!res.ok) throw new Error("Failed to fetch wings");
+        const jsonResponse = await res.json();
+        
+        const items = jsonResponse?.data || [];
+        const sortedItems = items.sort((a: WingItem, b: WingItem) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        
+        setCategoriesList(sortedItems);
+      } catch (error) {
+        console.error("Error fetching wings data:", error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchWings();
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -267,6 +185,109 @@ const router = useRouter();
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [activeModal, isApplyModalOpen]);
+
+  const modalContentData = useMemo<Record<string, ReactNode>>(() => ({
+    "Eligibility Criteria": (
+      <div className="text-[#1e1b18] space-y-8 bg-white p-4 sm:p-6 rounded-xl border border-[#e0bfbf]/40 shadow-sm">
+        <div className="space-y-5">
+          <p className="text-[15px] leading-relaxed text-[#584141]">
+            Membership should be open to individuals and organisations genuinely associated with literature, books, publishing, printing, visual arts, performing arts, or cultural activities, as well as readers who support the objectives of the Association.
+          </p>
+          
+          <div className="space-y-3">
+            <p className="font-bold text-[#570013] font-['Playfair_Display',serif] text-lg flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
+              The applicant should:
+            </p>
+            <ul className="space-y-2.5">
+              {eligibilityList.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#775a19] shrink-0 mt-0.5" />
+                  <span className="text-[14px] leading-relaxed text-[#584141]">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="bg-[#fbf2ed] text-[#584141] p-4 rounded-lg border-l-4 border-[#775a19] text-[14px]">
+            <strong className="text-[#570013]">For Reader / Consumer:</strong> Professional proof should not be necessary. Valid identity proof and declaration of interest in literature and culture should be sufficient.
+          </div>
+        </div>
+
+        <div className="space-y-4 pt-4 border-t border-[#e0bfbf]/40">
+          <p className="font-bold text-[#570013] font-['Playfair_Display',serif] text-lg flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
+            Category-Specific Proof
+          </p>
+
+          <div className="overflow-x-auto rounded-lg border border-[#e0bfbf]/60">
+            <table className="w-full text-left border-collapse text-[14px] min-w-[500px]">
+              <thead>
+                <tr className="bg-[#570013] text-white">
+                  <th className="p-3 sm:px-4 font-semibold w-[40%]">Category</th>
+                  <th className="p-3 sm:px-4 font-semibold">Suggested Proof</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e0bfbf]/40">
+                {proofData.map((row, index) => (
+                  <tr key={index} className="hover:bg-[#fbf2ed]/40 even:bg-[#fff8f5]/50 transition-colors">
+                    <td className="p-3 sm:px-4 align-top">
+                      <div className="flex gap-2">
+                        <span className="font-bold text-[#775a19] text-xs mt-0.5 shrink-0">{row.no}.</span>
+                        <span className="font-semibold text-[#570013]">{row.cat}</span>
+                      </div>
+                    </td>
+                    <td className="p-3 sm:px-4 align-top text-[#584141]">
+                      <span>{row.proof}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-[#fbf2ed] text-[#584141] p-4 rounded-lg border-l-4 border-[#775a19] text-[14px]">
+            <strong className="text-[#570013] uppercase text-xs tracking-wider block mb-1">Important Principle</strong> 
+            Do not make a published book compulsory for writers or poets. That could unfairly exclude genuine new writers. A manuscript, recognised digital publication, magazine contribution, literary activity, or other reasonable evidence can be considered.
+          </div>
+        </div>
+      </div>
+    ),
+
+    "Membership Categories": (
+      <div className="space-y-6 text-[#1e1b18]">
+        <div className="flex items-center gap-3 border-b border-[#e0bfbf]/40 pb-3">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#775a19]"></span>
+          <p className="font-bold text-lg text-[#570013] font-['Playfair_Display',serif] tracking-wide">
+            Membership Categories (Sequential Order)
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+          {isLoadingCategories ? (
+            <div className="col-span-full p-8 text-center text-[#584141]">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#775a19] mb-2" />
+              Loading membership categories...
+            </div>
+          ) : categoriesList.length > 0 ? (
+            categoriesList.map((wing, i) => (
+              <div key={wing._id || i} className="flex items-center gap-3 p-3.5 rounded-xl border border-[#e0bfbf]/40 bg-white hover:border-[#775a19]/40 hover:shadow-sm transition-all">
+                <span className="text-xs font-bold text-[#775a19] w-6 text-right shrink-0">{wing.sortOrder || i + 1}.</span>
+                <div>
+                  <span className="text-[14px] text-[#584141] font-semibold block">{wing.name}</span>
+                  {wing.nameBn && <span className="text-xs text-[#775a19]">{wing.nameBn}</span>}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full p-6 text-center text-[#584141]">
+              No categories found.
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  }), [categoriesList, isLoadingCategories]);
 
   return (
     <>
@@ -296,7 +317,8 @@ const router = useRouter();
                   return (
                     <div
                       key={card.id}
-                      className="group relative overflow-hidden min-h-[320px] md:min-h-[400px] rounded-2xl p-6 sm:p-8 transition-all duration-300 col-span-1 sm:col-span-2 md:col-span-2 md:row-span-2 bg-[#fcf5f3] border border-[#e0bfbf]/60 shadow-[0_4px_15px_rgba(87,0,19,0.03)] hover:shadow-[0_12px_30px_rgba(87,0,19,0.08)] flex flex-col justify-between"
+                      onClick={() => card.actionPath && router.push(card.actionPath)}
+                      className="group relative overflow-hidden min-h-[320px] md:min-h-[400px] rounded-2xl p-6 sm:p-8 transition-all duration-300 col-span-1 sm:col-span-2 md:col-span-2 md:row-span-2 bg-[#fcf5f3] border border-[#e0bfbf]/60 shadow-[0_4px_15px_rgba(87,0,19,0.03)] hover:shadow-[0_12px_30px_rgba(87,0,19,0.08)] flex flex-col justify-between cursor-pointer hover:-translate-y-0.5"
                     >
                       {/* Faded Background Watermark Icon */}
                       {card.imageSrc && (
@@ -331,6 +353,10 @@ const router = useRouter();
                         <p className="text-[14px] sm:text-[16px] leading-[1.6] text-[#5c4949] font-medium max-w-[92%]">
                           {card.description}
                         </p>
+
+                        <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-[12px] uppercase tracking-widest font-bold text-[#7a5c18] mt-4 group-hover:text-[#570013] transition-colors">
+                          Open Complaint Form <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                        </span>
                       </div>
 
                       <div className="relative z-10"></div>
@@ -338,11 +364,11 @@ const router = useRouter();
                   );
                 }
 
-               if (card.type === "featured-horizontal") {
+                if (card.type === "featured-horizontal") {
                   return (
                     <div
                       key={card.id}
-                      onClick={() => router.push("/register")} // 👈 Updated to route directly to your registration page
+                      onClick={() => router.push("/register")}
                       className="col-span-1 sm:col-span-2 md:col-span-2 bg-[#800020] p-6 sm:p-10 rounded-xl flex items-center justify-between group cursor-pointer transition-all duration-300 hover:shadow-[0_12px_24px_-10px_rgba(87,0,19,0.2)] hover:-translate-y-0.5 border border-[#800020]"
                     >
                       <div className="pr-4">
@@ -353,7 +379,6 @@ const router = useRouter();
                           {card.description}
                         </p>
                         
-                        {/* Clear UX visual hint */}
                         <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-[12px] uppercase tracking-widest font-bold text-[#fed488] group-hover:text-white transition-colors">
                           Apply Now 
                           <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
@@ -507,8 +532,6 @@ const router = useRouter();
             </div>
           </div>
         )}
-
-       
       </div>
     </>
   );

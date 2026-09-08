@@ -214,18 +214,18 @@ export default function ActivitiesBody() {
                 <Landmark className="w-6 h-6" />
               </div>
               <span className="text-xs font-bold text-[#570013] tracking-wider uppercase bg-[#ffdea5]/40 px-3 py-1 rounded-full border border-[#ffdea5]">
-                {meetingEvent.date}
+                {meetingEvent?.date}
               </span>
             </div>
             <h3 className="font-['Playfair_Display'] text-xl sm:text-2xl text-[#570013] font-bold mb-3 italic">
-              {meetingEvent.title}
+              {meetingEvent?.title}
             </h3>
             <p className="text-sm sm:text-base text-[#584141] leading-relaxed">
-              {meetingEvent.description}
+              {meetingEvent?.description}
             </p>
           </div>
           <div className="mt-6 border-t border-[#e0bfbf]/60 pt-4 flex justify-between items-center text-xs font-bold uppercase tracking-wider text-[#584141]">
-            <span>{meetingEvent.location}</span>
+            <span>{meetingEvent?.location}</span>
             <ArrowRight className="w-4 h-4 text-[#570013] group-hover:translate-x-2 transition-transform" />
           </div>
         </div>
