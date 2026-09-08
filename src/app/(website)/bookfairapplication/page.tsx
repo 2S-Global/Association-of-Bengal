@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -26,13 +27,21 @@ import {
   Phone,
   FileText,
   Calendar,
-  Eye
+  Eye,
 } from "lucide-react";
 
 interface FormFieldConfig {
   id: string;
   label: string;
-  type: "text" | "email" | "tel" | "number" | "textarea" | "date" | "select" | "file";
+  type:
+    | "text"
+    | "email"
+    | "tel"
+    | "number"
+    | "textarea"
+    | "date"
+    | "select"
+    | "file";
   placeholder?: string;
   required: boolean;
   colSpan?: "full" | "half";
@@ -86,18 +95,18 @@ interface BookFairApplicationFormProps {
   isAdminView?: boolean;
 }
 
-function CustomDatePicker({ 
-  id, 
-  value, 
-  onChange, 
-  onBlur, 
-  className 
-}: { 
-  id: string; 
-  value: string; 
-  onChange: (e: any) => void; 
-  onBlur: () => void; 
-  className: string; 
+function CustomDatePicker({
+  id,
+  value,
+  onChange,
+  onBlur,
+  className,
+}: {
+  id: string;
+  value: string;
+  onChange: (e: any) => void;
+  onBlur: () => void;
+  className: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,7 +119,10 @@ function CustomDatePicker({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         if (isOpen) {
           setIsOpen(false);
           onBlur();
@@ -123,11 +135,24 @@ function CustomDatePicker({
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   const handleSelectDate = (day: number) => {
-    const formattedMonth = String(currentMonth + 1).padStart(2, '0');
-    const formattedDay = String(day).padStart(2, '0');
+    const formattedMonth = String(currentMonth + 1).padStart(2, "0");
+    const formattedDay = String(day).padStart(2, "0");
     const dateStr = `${currentYear}-${formattedMonth}-${formattedDay}`;
 
     if (dateStr < todayStr) return;
@@ -143,11 +168,15 @@ function CustomDatePicker({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full border p-3 pl-11 pr-10 rounded-lg font-medium text-[#1e1b18] text-sm uppercase cursor-pointer flex items-center justify-between transition-all duration-200 select-none ${className}`}
       >
-        <span className={value ? "text-[#1e1b18]" : "text-gray-400 font-normal"}>
+        <span
+          className={value ? "text-[#1e1b18]" : "text-gray-400 font-normal"}
+        >
           {value || "SELECT DATE (YYYY-MM-DD)"}
         </span>
         <Calendar className="w-5 h-5 text-[#775a19] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <ChevronDown className={`w-4 h-4 text-[#8c7071] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-[#8c7071] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
       </div>
 
       {isOpen && (
@@ -157,8 +186,12 @@ function CustomDatePicker({
             <button
               type="button"
               onClick={() => {
-                if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
-                else { setCurrentMonth(currentMonth - 1); }
+                if (currentMonth === 0) {
+                  setCurrentMonth(11);
+                  setCurrentYear(currentYear - 1);
+                } else {
+                  setCurrentMonth(currentMonth - 1);
+                }
               }}
               className="p-1.5 rounded-full hover:bg-[#fbf2ed] text-[#570013] transition-colors cursor-pointer"
             >
@@ -170,8 +203,12 @@ function CustomDatePicker({
             <button
               type="button"
               onClick={() => {
-                if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
-                else { setCurrentMonth(currentMonth + 1); }
+                if (currentMonth === 11) {
+                  setCurrentMonth(0);
+                  setCurrentYear(currentYear + 1);
+                } else {
+                  setCurrentMonth(currentMonth + 1);
+                }
               }}
               className="p-1.5 rounded-full hover:bg-[#fbf2ed] text-[#570013] transition-colors cursor-pointer"
             >
@@ -181,7 +218,13 @@ function CustomDatePicker({
 
           {/* Weekdays */}
           <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-[#775a19] uppercase mb-1">
-            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+            <span>Su</span>
+            <span>Mo</span>
+            <span>Tu</span>
+            <span>We</span>
+            <span>Th</span>
+            <span>Fr</span>
+            <span>Sa</span>
           </div>
 
           {/* Days Grid */}
@@ -191,8 +234,8 @@ function CustomDatePicker({
             ))}
             {Array.from({ length: daysInMonth }).map((_, index) => {
               const day = index + 1;
-              const formattedMonth = String(currentMonth + 1).padStart(2, '0');
-              const formattedDay = String(day).padStart(2, '0');
+              const formattedMonth = String(currentMonth + 1).padStart(2, "0");
+              const formattedDay = String(day).padStart(2, "0");
               const dateStr = `${currentYear}-${formattedMonth}-${formattedDay}`;
               const isSelected = value === dateStr;
               const isPast = dateStr < todayStr;
@@ -207,8 +250,8 @@ function CustomDatePicker({
                     isPast
                       ? "text-gray-300 cursor-not-allowed bg-transparent"
                       : isSelected
-                      ? "bg-[#570013] text-white shadow-md cursor-pointer"
-                      : "hover:bg-[#fbf2ed] text-[#1e1b18]"
+                        ? "bg-[#570013] text-white shadow-md cursor-pointer"
+                        : "hover:bg-[#fbf2ed] text-[#1e1b18]"
                   }`}
                 >
                   {day}
@@ -222,13 +265,18 @@ function CustomDatePicker({
   );
 }
 
-export default function BookFairApplicationForm({ fairConfig, isAdminView = false }: BookFairApplicationFormProps) {
+export default function BookFairApplicationForm({
+  fairConfig,
+  isAdminView = false,
+}: BookFairApplicationFormProps) {
   const activeFair = fairConfig || {
     fairTitle: "International Kolkata Book Fair",
-    fairSubtitle: "FORM FOR PARTICIPATION WITH THE BUILT UP STALLS FOR REGIONAL BOOKS",
+    fairSubtitle:
+      "FORM FOR PARTICIPATION WITH THE BUILT UP STALLS FOR REGIONAL BOOKS",
     fairDates: "22 January to 3 February 2026",
     stallSelectionText: "30 DECEMBER 2025 at 12:30pm",
-    stallSelectionVenue: "MAHABODHI SOCIETY, 4A Bankim Chatterjee Street, Kolkata-73",
+    stallSelectionVenue:
+      "MAHABODHI SOCIETY, 4A Bankim Chatterjee Street, Kolkata-73",
     organizerName: "ASSOCIATION OF BENGAL",
     organizerSubtext: "FOR LITERATURE AND CULTURE",
     logoSrc: "/images/logo/balc_logo.png",
@@ -269,7 +317,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
       <p><strong>21.</strong> Dispute: Disputes, if any, arising out of participation in the fair shall fall within the jurisdiction of Calcutta High Court and City Civil Court, Kolkata.</p>
       <p><strong>22.</strong> The terms and conditions mentioned above will be binding on the participants and any breach/violation of any of the clauses contained herein will call for strict disciplinary action which may include permanent closure of the stall, penalty or otherwise as may be decided by the organizers.</p>
     `,
-    fairTimingsText: "Timing of the Fair: From 12:00 noon to 8:00 PM on all days and 12:00 noon to 9:00 PM on 03.02.2026. Fair timings may be changed by the authorities as may be deemed necessary.",
+    fairTimingsText:
+      "Timing of the Fair: From 12:00 noon to 8:00 PM on all days and 12:00 noon to 9:00 PM on 03.02.2026. Fair timings may be changed by the authorities as may be deemed necessary.",
   };
 
   const formSections: SectionConfig[] = [
@@ -284,7 +333,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           placeholder: "Enter Name",
           required: true,
           colSpan: "full",
-          validation: (val) => (!val || !val.trim() ? "Please enter the organization/participant name." : ""),
+          validation: (val) =>
+            !val || !val.trim()
+              ? "Please enter the organization/participant name."
+              : "",
         },
         {
           id: "participant_bengali",
@@ -293,7 +345,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           placeholder: "Enter Bengali Name",
           required: true,
           colSpan: "full",
-          validation: (val) => (!val || !val.trim() ? "Please enter the Bengali participant name." : ""),
+          validation: (val) =>
+            !val || !val.trim()
+              ? "Please enter the Bengali participant name."
+              : "",
         },
         {
           id: "participant_address",
@@ -302,7 +357,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           placeholder: "Complete Address",
           required: true,
           colSpan: "full",
-          validation: (val) => (!val || !val.trim() ? "Please enter complete address details." : ""),
+          validation: (val) =>
+            !val || !val.trim() ? "Please enter complete address details." : "",
         },
         {
           id: "participant_email",
@@ -312,9 +368,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           required: true,
           colSpan: "half",
           validation: (val) => {
-            if (!val || !val.trim()) return "Please enter a valid e-mail address.";
+            if (!val || !val.trim())
+              return "Please enter a valid e-mail address.";
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return !emailRegex.test(val) ? "Please enter a valid e-mail address." : "";
+            return !emailRegex.test(val)
+              ? "Please enter a valid e-mail address."
+              : "";
           },
         },
         {
@@ -327,8 +386,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           validation: (val) => {
             if (!val || !val.trim()) return "";
             const cleanVal = val.trim();
-            if (cleanVal.length !== 15) return "GSTIN must be exactly 15 characters.";
-            const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
+            if (cleanVal.length !== 15)
+              return "GSTIN must be exactly 15 characters.";
+            const gstRegex =
+              /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
             return !gstRegex.test(cleanVal) ? "Invalid GSTIN format." : "";
           },
         },
@@ -339,7 +400,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           placeholder: "Head Name",
           required: true,
           colSpan: "half",
-          validation: (val) => (!val || !val.trim() ? "Please specify the Head of the organization." : ""),
+          validation: (val) =>
+            !val || !val.trim()
+              ? "Please specify the Head of the organization."
+              : "",
         },
         {
           id: "participant_mobile",
@@ -349,11 +413,15 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           required: true,
           colSpan: "half",
           validation: (val) => {
-            if (!val || !val.trim()) return "Please enter a valid 10-digit mobile number.";
+            if (!val || !val.trim())
+              return "Please enter a valid 10-digit mobile number.";
             const cleanVal = val.replace(/[\s-]/g, "");
-            if (cleanVal.length !== 10) return "Mobile number must be exactly 10 digits.";
+            if (cleanVal.length !== 10)
+              return "Mobile number must be exactly 10 digits.";
             const phoneRegex = /^[0-9]{10}$/;
-            return !phoneRegex.test(cleanVal) ? "Please enter a valid 10-digit mobile number." : "";
+            return !phoneRegex.test(cleanVal)
+              ? "Please enter a valid 10-digit mobile number."
+              : "";
           },
         },
         {
@@ -363,7 +431,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           placeholder: "Representative Names",
           required: true,
           colSpan: "full",
-          validation: (val) => (!val || !val.trim() ? "Please enter the representative name(s)." : ""),
+          validation: (val) =>
+            !val || !val.trim()
+              ? "Please enter the representative name(s)."
+              : "",
         },
       ],
     },
@@ -378,7 +449,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           required: true,
           colSpan: "full",
           options: activeFair.spaceOptions,
-          validation: (val) => (!val ? "Please select a space requirement option." : ""),
+          validation: (val) =>
+            !val ? "Please select a space requirement option." : "",
         },
       ],
     },
@@ -394,7 +466,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           colSpan: "half",
           validation: (file) => {
             if (!file) return "Please upload the PAN card document.";
-            if (file.size > 100 * 1024) return "File size must be less than 100 KB.";
+            if (file.size > 100 * 1024)
+              return "File size must be less than 100 KB.";
             return "";
           },
         },
@@ -406,7 +479,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           colSpan: "half",
           validation: (file) => {
             if (!file) return "Please upload the owner address proof document.";
-            if (file.size > 100 * 1024) return "File size must be less than 100 KB.";
+            if (file.size > 100 * 1024)
+              return "File size must be less than 100 KB.";
             return "";
           },
         },
@@ -464,7 +538,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
     },
   ];
 
-  const allFieldIds = formSections.flatMap((sec) => sec.fields.map((f) => f.id));
+  const allFieldIds = formSections.flatMap((sec) =>
+    sec.fields.map((f) => f.id),
+  );
 
   const todayDateStr = new Date().toISOString().split("T")[0];
 
@@ -479,7 +555,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showErrorSummary, setShowErrorSummary] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [previewFile, setPreviewFile] = useState<{ name: string; url: string } | null>(null);
+  const [previewFile, setPreviewFile] = useState<{
+    name: string;
+    url: string;
+  } | null>(null);
 
   // Admin View State
   const [applications, setApplications] = useState<Application[]>([]);
@@ -488,7 +567,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
-  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [actionMessage, setActionMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isAdminView) {
@@ -514,7 +596,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
     }
   };
 
-  const handleAppAction = async (appId: string, action: 'ACCEPTED' | 'REJECTED') => {
+  const handleAppAction = async (
+    appId: string,
+    action: "ACCEPTED" | "REJECTED",
+  ) => {
     try {
       setActionLoading(true);
       setActionMessage(null);
@@ -529,38 +614,45 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
 
       if (res.ok && data.success) {
         setActionMessage({
-          type: 'success',
-          text: `Application successfully ${action.toLowerCase()} and email notification sent to the participant!`
+          type: "success",
+          text: `Application successfully ${action.toLowerCase()} and email notification sent to the participant!`,
         });
-        
-        setApplications(prev => 
-          prev.map(app => app._id === appId ? { ...app, status: action } : app)
+
+        setApplications((prev) =>
+          prev.map((app) =>
+            app._id === appId ? { ...app, status: action } : app,
+          ),
         );
-        
+
         if (selectedApp && selectedApp._id === appId) {
-          setSelectedApp(prev => prev ? { ...prev, status: action } : null);
+          setSelectedApp((prev) => (prev ? { ...prev, status: action } : null));
         }
       } else {
         setActionMessage({
-          type: 'error',
-          text: data.error || `Failed to process application ${action.toLowerCase()}.`
+          type: "error",
+          text:
+            data.error ||
+            `Failed to process application ${action.toLowerCase()}.`,
         });
       }
     } catch (err) {
       console.error("Action error:", err);
       setActionMessage({
-        type: 'error',
-        text: "An unexpected error occurred while processing the request."
+        type: "error",
+        text: "An unexpected error occurred while processing the request.",
       });
     } finally {
       setActionLoading(false);
     }
   };
 
-  const filteredApplications = applications.filter((app) => 
-    app.participant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.participant_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.participant_mobile?.includes(searchQuery)
+  const filteredApplications = applications.filter(
+    (app) =>
+      app.participant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.participant_email
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      app.participant_mobile?.includes(searchQuery),
   );
 
   useEffect(() => {
@@ -575,14 +667,20 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
   }, [isModalOpen, isSubmitted, selectedApp, previewFile]);
 
   const getFieldError = (id: string, value: any): string => {
-    const fieldConfig = formSections.flatMap((s) => s.fields).find((f) => f.id === id);
+    const fieldConfig = formSections
+      .flatMap((s) => s.fields)
+      .find((f) => f.id === id);
     if (fieldConfig && fieldConfig.validation) {
       return fieldConfig.validation(value);
     }
     return "";
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { id, value, type } = e.target;
     if (type === "file") {
       const fileInput = e.target as HTMLInputElement;
@@ -604,14 +702,18 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
 
     if (!isTouched || !val) return "border-[#e0bfbf] bg-[#fbf2ed]";
     if (err) return "border-[#ba1a1a] bg-[#fff0f0]";
-    if (id === "participant_gst" && !val?.trim()) return "border-[#e0bfbf] bg-[#fbf2ed]";
+    if (id === "participant_gst" && !val?.trim())
+      return "border-[#e0bfbf] bg-[#fbf2ed]";
     return "border-[#e0bfbf] bg-[#fbf2ed]";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const allTouched = allFieldIds.reduce((acc, id) => ({ ...acc, [id]: true }), {});
+    const allTouched = allFieldIds.reduce(
+      (acc, id) => ({ ...acc, [id]: true }),
+      {},
+    );
     setTouched(allTouched);
 
     const formHasErrors = allFieldIds.some((id) => {
@@ -630,7 +732,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
     try {
       const dataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
-        if (formData[key] !== null && formData[key] !== undefined && formData[key] !== "") {
+        if (
+          formData[key] !== null &&
+          formData[key] !== undefined &&
+          formData[key] !== ""
+        ) {
           dataToSend.append(key, formData[key]);
         }
       });
@@ -646,7 +752,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
         result = await response.json();
       } else {
         const textResponse = await response.text();
-        throw new Error(`Server returned invalid response: ${textResponse.substring(0, 100)}`);
+        throw new Error(
+          `Server returned invalid response: ${textResponse.substring(0, 100)}`,
+        );
       }
 
       if (!response.ok || !result.success) {
@@ -666,7 +774,6 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
   return (
     <>
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-12 bg-[#fff8f5] text-[#1e1b18] font-['Libre_Franklin'] antialiased selection:bg-[#ffdada] selection:text-[#570013]">
-        
         {/* Admin View Mode Rendering */}
         {isAdminView ? (
           <div className="space-y-6">
@@ -677,7 +784,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                   Stall Applications (Admin View)
                 </h1>
                 <p className="text-xs sm:text-sm text-[#775a19] mt-1 font-medium">
-                  Manage and view all registered participant stall bookings for the International Kolkata Book Fair 2026.
+                  Manage and view all registered participant stall bookings for
+                  the International Kolkata Book Fair 2026.
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -701,7 +809,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
             {adminLoading ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e0bfbf] shadow-sm">
                 <Loader2 className="w-10 h-10 animate-spin text-[#570013] mb-3" />
-                <p className="text-sm font-bold text-[#584141]">Loading bookings...</p>
+                <p className="text-sm font-bold text-[#584141]">
+                  Loading bookings...
+                </p>
               </div>
             ) : adminError ? (
               <div className="bg-red-50 border border-red-300 p-6 rounded-2xl text-center text-red-900">
@@ -711,8 +821,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
             ) : filteredApplications.length === 0 ? (
               <div className="bg-white rounded-2xl border border-[#e0bfbf] p-12 text-center shadow-sm">
                 <FileText className="w-12 h-12 text-[#e0bfbf] mx-auto mb-3" />
-                <h3 className="font-bold text-base text-[#570013]">No Bookings Found</h3>
-                <p className="text-xs text-gray-500 mt-1">No applications match your search query.</p>
+                <h3 className="font-bold text-base text-[#570013]">
+                  No Bookings Found
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  No applications match your search query.
+                </p>
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
@@ -729,14 +843,25 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     </thead>
                     <tbody className="divide-y divide-[#e0bfbf]/50 text-sm">
                       {filteredApplications.map((app) => (
-                        <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
+                        <tr
+                          key={app._id}
+                          className="hover:bg-[#fff8f5]/60 transition-colors"
+                        >
                           <td className="py-4 px-6 font-semibold text-[#1e1b18]">
                             <div>{app.participant_name}</div>
-                            <div className="text-xs font-normal text-gray-500">{app.participant_bengali}</div>
+                            <div className="text-xs font-normal text-gray-500">
+                              {app.participant_bengali}
+                            </div>
                           </td>
                           <td className="py-4 px-6 text-xs text-[#584141] space-y-1">
-                            <div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_email}</div>
-                            <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-[#775a19]" /> {app.participant_mobile}</div>
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-3.5 h-3.5 text-[#775a19]" />{" "}
+                              {app.participant_email}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5 text-[#775a19]" />{" "}
+                              {app.participant_mobile}
+                            </div>
                           </td>
                           <td className="py-4 px-6">
                             <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-3 py-1 rounded-full text-xs font-bold">
@@ -744,12 +869,16 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             </span>
                           </td>
                           <td className="py-4 px-6">
-                            <span className={`text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider inline-block ${
-                              (app.status || 'PENDING') === 'ACCEPTED' ? 'bg-green-100 text-green-800 border border-green-300' : 
-                              (app.status || 'PENDING') === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-300' :
-                              'bg-amber-100 text-amber-800 border border-amber-300'
-                            }`}>
-                              {app.status || 'PENDING'}
+                            <span
+                              className={`text-[10px] px-2.5 py-1 rounded-full uppercase font-bold tracking-wider inline-block ${
+                                (app.status || "PENDING") === "ACCEPTED"
+                                  ? "bg-green-100 text-green-800 border border-green-300"
+                                  : (app.status || "PENDING") === "REJECTED"
+                                    ? "bg-red-100 text-red-800 border border-red-300"
+                                    : "bg-amber-100 text-amber-800 border border-amber-300"
+                              }`}
+                            >
+                              {app.status || "PENDING"}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-center">
@@ -784,28 +913,34 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div className="space-y-0.5 flex-1">
-                <h5 className="font-bold text-red-950 text-sm uppercase tracking-wider">Action Required</h5>
+                <h5 className="font-bold text-red-950 text-sm uppercase tracking-wider">
+                  Action Required
+                </h5>
                 <p className="text-red-900 leading-relaxed">
-                  Please correct the highlighted fields below, or verify if an application has already been registered with your email/mobile number.
+                  Please correct the highlighted fields below, or verify if an
+                  application has already been registered with your email/mobile
+                  number.
                 </p>
               </div>
             </div>
 
             {/* Top Header Card */}
-            <div className="bg-white rounded-t-3xl p-6 sm:p-8 shadow-sm border border-[#e0bfbf] mb-0 relative z-10">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#570013] via-[#800020] to-[#775a19]"></div>
+            {/* Top Header Card - Alternative Style */}
+            <div className="bg-gradient-to-b from-[#fff8f5] to-[#fbf2ed] rounded-t-3xl p-6 sm:p-8 shadow-sm border-2 border-[#e0bfbf] mb-0 relative z-10 overflow-hidden">
+              {/* Decorative Top Accent Bar */}
+              <div className="absolute top-0 left-0 w-full h-2.5 bg-gradient-to-r from-[#570013] via-[#800020] to-[#775a19]"></div>
 
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6 mb-6">
-                <div className="text-left space-y-1">
-                  <div className="text-base sm:text-lg lg:text-xl font-bold font-['Playfair_Display'] tracking-wide text-[#570013] whitespace-nowrap">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6 mb-6 pt-1">
+                <div className="text-left space-y-1.5">
+                  <div className="text-base sm:text-lg lg:text-xl font-bold font-['Playfair_Display'] tracking-wide text-[#570013]">
                     {activeFair.fairTitle}
                   </div>
-                  <div className="inline-block bg-[#fff0f0] text-[#570013] px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase border border-[#e0bfbf]">
+                  <div className="inline-block bg-white text-[#570013] px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border border-[#e0bfbf] shadow-2xs">
                     {activeFair.fairDates}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-[#e0bfbf]/30">
+                <div className="flex items-center gap-3 sm:gap-4 justify-between lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-[#e0bfbf]/40">
                   <div className="flex flex-col items-start lg:items-end justify-center">
                     <strong className="block text-[#570013] font-['Playfair_Display'] text-[15px] sm:text-[18px] lg:text-[19px] tracking-wide uppercase font-bold leading-tight">
                       {activeFair.organizerName}
@@ -815,7 +950,7 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     </span>
                   </div>
 
-                  <div className="bg-white rounded-xl p-1.5 border border-[#e0bfbf]/60 shadow-sm shrink-0">
+                  <div className="bg-white rounded-2xl p-2 border border-[#e0bfbf] shadow-sm shrink-0">
                     <Image
                       src={activeFair.logoSrc}
                       alt="Organization Logo"
@@ -827,7 +962,7 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#e0bfbf]/30">
+              <div className="pt-3.5 border-t border-[#e0bfbf]/50">
                 <h2 className="text-[12px] sm:text-[13px] text-center font-bold uppercase tracking-wider text-[#584141] leading-relaxed">
                   {activeFair.fairSubtitle}
                 </h2>
@@ -843,7 +978,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               {/* Section 1: Participant Details */}
               <div className="pb-8 space-y-5 sm:space-y-6 mt-1">
                 <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                  {React.createElement(formSections[0].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {React.createElement(formSections[0].icon, {
+                    className: "w-5 h-5 text-[#570013]",
+                  })}
                   {formSections[0].title}
                 </h3>
 
@@ -851,9 +988,17 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                   {formSections[0].fields.map((field) => {
                     const err = getFieldError(field.id, formData[field.id]);
                     return (
-                      <div key={field.id} className={`space-y-1 ${field.colSpan === "full" ? "md:col-span-2" : "md:col-span-1"}`}>
+                      <div
+                        key={field.id}
+                        className={`space-y-1 ${field.colSpan === "full" ? "md:col-span-2" : "md:col-span-1"}`}
+                      >
                         <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
-                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                          {field.label}{" "}
+                          {field.required && (
+                            <span className="text-red-600 font-bold ml-0.5">
+                              *
+                            </span>
+                          )}
                         </label>
                         {field.type === "textarea" ? (
                           <textarea
@@ -864,7 +1009,7 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             onBlur={() => handleBlur(field.id)}
                             placeholder={field.placeholder}
                             className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                              field.id
+                              field.id,
                             )}`}
                           />
                         ) : (
@@ -875,13 +1020,23 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             onChange={handleChange}
                             onBlur={() => handleBlur(field.id)}
                             placeholder={field.placeholder}
-                            maxLength={field.id === "participant_mobile" ? 10 : field.id === "participant_gst" ? 15 : undefined}
+                            maxLength={
+                              field.id === "participant_mobile"
+                                ? 10
+                                : field.id === "participant_gst"
+                                  ? 15
+                                  : undefined
+                            }
                             className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                              field.id
+                              field.id,
                             )}`}
                           />
                         )}
-                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                        {touched[field.id] && err && (
+                          <p className="error-msg text-xs text-red-600 block">
+                            {err}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -891,7 +1046,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               {/* Section 2: Space Required */}
               <div className="py-8 space-y-5 sm:space-y-6">
                 <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                  {React.createElement(formSections[1].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {React.createElement(formSections[1].icon, {
+                    className: "w-5 h-5 text-[#570013]",
+                  })}
                   {formSections[1].title}
                 </h3>
 
@@ -901,7 +1058,10 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     return (
                       <div key={field.id} className="space-y-2">
                         <label className="block text-xs font-bold text-[#584141] uppercase tracking-wider">
-                          {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
+                          {field.label}{" "}
+                          <span className="text-red-600 font-bold ml-0.5">
+                            *
+                          </span>
                         </label>
                         <div className="relative">
                           <select
@@ -910,7 +1070,7 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             onChange={handleChange}
                             onBlur={() => handleBlur(field.id)}
                             className={`w-full border p-3 pr-10 rounded-lg font-bold text-sm sm:text-base text-[#1e1b18] shadow-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 cursor-pointer appearance-none ${getInputClassName(
-                              field.id
+                              field.id,
                             )}`}
                           >
                             <option value="" disabled className="text-gray-400">
@@ -924,7 +1084,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                           </select>
                           <ChevronDown className="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7071] pointer-events-none" />
                         </div>
-                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                        {touched[field.id] && err && (
+                          <p className="error-msg text-xs text-red-600 block">
+                            {err}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -932,15 +1096,22 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
 
                 <div className="bg-yellow-200 border border-yellow-400 p-4 rounded-lg text-center font-bold text-black text-sm shadow-sm leading-relaxed">
                   STALL SELECTION :{" "}
-                  <span className="underline inline-block mx-1">{activeFair.stallSelectionText}</span> at the{" "}
-                  <u className="inline-block mt-1 sm:mt-0">{activeFair.stallSelectionVenue}</u>
+                  <span className="underline inline-block mx-1">
+                    {activeFair.stallSelectionText}
+                  </span>{" "}
+                  at the{" "}
+                  <u className="inline-block mt-1 sm:mt-0">
+                    {activeFair.stallSelectionVenue}
+                  </u>
                 </div>
               </div>
 
               {/* Section 3: Document Uploads */}
               <div className="py-8 space-y-5 sm:space-y-6">
                 <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                  {React.createElement(formSections[2].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {React.createElement(formSections[2].icon, {
+                    className: "w-5 h-5 text-[#570013]",
+                  })}
                   {formSections[2].title}
                 </h3>
 
@@ -949,12 +1120,20 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     const err = getFieldError(field.id, formData[field.id]);
                     const hasFile = formData[field.id];
                     return (
-                      <div key={field.id} className="space-y-3 bg-[#fbf2ed] p-5 rounded-2xl border border-[#e0bfbf] flex flex-col justify-between shadow-xs">
+                      <div
+                        key={field.id}
+                        className="space-y-3 bg-[#fbf2ed] p-5 rounded-2xl border border-[#e0bfbf] flex flex-col justify-between shadow-xs"
+                      >
                         <div>
                           <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-1">
-                            {field.label} <span className="text-red-600 font-bold ml-0.5">*</span>
+                            {field.label}{" "}
+                            <span className="text-red-600 font-bold ml-0.5">
+                              *
+                            </span>
                           </label>
-                          <p className="text-[11px] text-[#775a19] font-medium">Supported formats: PDF, JPG, PNG (Max 100 KB)</p>
+                          <p className="text-[11px] text-[#775a19] font-medium">
+                            Supported formats: PDF, JPG, PNG (Max 100 KB)
+                          </p>
                         </div>
 
                         <div className="relative w-full overflow-hidden">
@@ -966,11 +1145,15 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             accept=".pdf,.jpg,.jpeg,.png"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                           />
-                          <div className={`w-full bg-white p-3.5 border rounded-xl flex items-center justify-between transition-all ${getInputClassName(field.id)}`}>
+                          <div
+                            className={`w-full bg-white p-3.5 border rounded-xl flex items-center justify-between transition-all ${getInputClassName(field.id)}`}
+                          >
                             <div className="flex items-center gap-2.5 truncate">
                               <CloudUpload className="w-5 h-5 text-[#570013] shrink-0" />
                               <span className="text-xs font-semibold text-[#584141] truncate">
-                                {hasFile ? hasFile.name : "Choose file to upload..."}
+                                {hasFile
+                                  ? hasFile.name
+                                  : "Choose file to upload..."}
                               </span>
                             </div>
                             <span className="bg-[#570013] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shrink-0">
@@ -983,13 +1166,18 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                           <div className="flex items-center justify-between bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
                             <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-semibold truncate mr-2">
                               <FileCheck className="w-4 h-4 shrink-0" />
-                              <span className="truncate">Ready: {hasFile.name}</span>
+                              <span className="truncate">
+                                Ready: {hasFile.name}
+                              </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => {
                                 const fileUrl = URL.createObjectURL(hasFile);
-                                setPreviewFile({ name: hasFile.name, url: fileUrl });
+                                setPreviewFile({
+                                  name: hasFile.name,
+                                  url: fileUrl,
+                                });
                               }}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1 rounded-md inline-flex items-center gap-1 transition-all shadow-xs cursor-pointer shrink-0"
                             >
@@ -998,7 +1186,11 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                           </div>
                         )}
 
-                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                        {touched[field.id] && err && (
+                          <p className="error-msg text-xs text-red-600 block">
+                            {err}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -1008,7 +1200,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               {/* Section 4: Publications & Requirements */}
               <div className="py-8 space-y-5 sm:space-y-6">
                 <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                  {React.createElement(formSections[3].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {React.createElement(formSections[3].icon, {
+                    className: "w-5 h-5 text-[#570013]",
+                  })}
                   {formSections[3].title}
                 </h3>
 
@@ -1016,9 +1210,17 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                   {formSections[3].fields.map((field) => {
                     const err = getFieldError(field.id, formData[field.id]);
                     return (
-                      <div key={field.id} className="space-y-1 flex flex-col justify-between md:col-span-1">
+                      <div
+                        key={field.id}
+                        className="space-y-1 flex flex-col justify-between md:col-span-1"
+                      >
                         <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider mb-2">
-                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                          {field.label}{" "}
+                          {field.required && (
+                            <span className="text-red-600 font-bold ml-0.5">
+                              *
+                            </span>
+                          )}
                         </label>
                         <input
                           type={field.type}
@@ -1028,10 +1230,14 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                           onBlur={() => handleBlur(field.id)}
                           placeholder={field.placeholder}
                           className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                            field.id
+                            field.id,
                           )}`}
                         />
-                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                        {touched[field.id] && err && (
+                          <p className="error-msg text-xs text-red-600 block">
+                            {err}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -1039,16 +1245,29 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
 
                 <div className="bg-[#570013]/5 border border-[#570013]/20 p-4 sm:p-5 rounded-xl">
                   <p className="font-bold text-[#570013] text-sm mb-3">
-                    ** Production of the receipt is mandatory at the time of stall selection.
+                    ** Production of the receipt is mandatory at the time of
+                    stall selection.
                   </p>
                   <ul className="list-disc pl-5 space-y-2 text-[13px] sm:text-sm text-[#584141]">
-                    <li>(Stock value must corroborate with Insurance Policy Certificate)</li>
-                    <li>Copy of the Fire Insurance policy must be submitted along with the Form</li>
                     <li>
-                      Please enclose remittance within the last date of submission. Remittance may be made by{" "}
-                      <strong className="text-[#1e1b18]">Bank Draft</strong> drawn in favour of{" "}
-                      <strong className="text-[#1e1b18]">ASSOCIATION OF BENGAL</strong>{" "}
-                      and payable at Kolkata or by <strong className="text-[#1e1b18]">UPI</strong> at the Association office.
+                      (Stock value must corroborate with Insurance Policy
+                      Certificate)
+                    </li>
+                    <li>
+                      Copy of the Fire Insurance policy must be submitted along
+                      with the Form
+                    </li>
+                    <li>
+                      Please enclose remittance within the last date of
+                      submission. Remittance may be made by{" "}
+                      <strong className="text-[#1e1b18]">Bank Draft</strong>{" "}
+                      drawn in favour of{" "}
+                      <strong className="text-[#1e1b18]">
+                        ASSOCIATION OF BENGAL
+                      </strong>{" "}
+                      and payable at Kolkata or by{" "}
+                      <strong className="text-[#1e1b18]">UPI</strong> at the
+                      Association office.
                     </li>
                   </ul>
                 </div>
@@ -1059,8 +1278,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                       <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Banker</span>
-                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">State Bank of India</span>
+                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">
+                        Official Banker
+                      </span>
+                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">
+                        State Bank of India
+                      </span>
                     </div>
                   </div>
 
@@ -1069,8 +1292,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">Official Insurer</span>
-                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">HDFC ERGO GIC Ltd</span>
+                      <span className="block text-[10px] text-[#775a19] uppercase tracking-wider font-bold">
+                        Official Insurer
+                      </span>
+                      <span className="text-sm font-bold text-[#1e1b18] mt-0.5 block">
+                        HDFC ERGO GIC Ltd
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1079,7 +1306,9 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               {/* Section 5: Terms & Declaration */}
               <div className="pt-8 space-y-5 sm:space-y-6">
                 <h3 className="text-base text-[#570013] font-bold uppercase tracking-tight flex items-center gap-2">
-                  {React.createElement(formSections[4].icon, { className: "w-5 h-5 text-[#570013]" })}
+                  {React.createElement(formSections[4].icon, {
+                    className: "w-5 h-5 text-[#570013]",
+                  })}
                   {formSections[4].title}
                 </h3>
 
@@ -1095,7 +1324,8 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     htmlFor="agree_terms"
                     className="text-[13px] sm:text-sm font-semibold text-[#1e1b18] cursor-pointer select-none leading-relaxed"
                   >
-                    I/ We undertake to abide by the above terms and conditions which are fully understood by me/us.
+                    I/ We undertake to abide by the above terms and conditions
+                    which are fully understood by me/us.
                     <button
                       type="button"
                       onClick={() => setIsModalOpen(true)}
@@ -1115,7 +1345,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                     return (
                       <div key={field.id} className="space-y-1 w-full">
                         <label className="block text-[11px] sm:text-xs font-bold text-[#584141] uppercase tracking-wider">
-                          {field.label} {field.required && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                          {field.label}{" "}
+                          {field.required && (
+                            <span className="text-red-600 font-bold ml-0.5">
+                              *
+                            </span>
+                          )}
                         </label>
                         {field.type === "date" ? (
                           isReadOnlyDate ? (
@@ -1145,11 +1380,15 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
                             onBlur={() => handleBlur(field.id)}
                             placeholder={field.placeholder}
                             className={`w-full border p-3 rounded-lg font-medium text-[#1e1b18] text-sm transition-all duration-200 focus:outline-none focus:ring-3 focus:ring-[#570013]/15 ${getInputClassName(
-                              field.id
+                              field.id,
                             )}`}
                           />
                         )}
-                        {touched[field.id] && err && <p className="error-msg text-xs text-red-600 block">{err}</p>}
+                        {touched[field.id] && err && (
+                          <p className="error-msg text-xs text-red-600 block">
+                            {err}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -1220,14 +1459,18 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               </button>
             </div>
             <div className="flex-1 bg-[#fbf2ed] p-4 rounded-xl border border-[#e0bfbf] my-4 overflow-hidden flex items-center justify-center">
-              {previewFile.name.toLowerCase().endsWith('.pdf') ? (
-                <iframe 
-                  src={previewFile.url} 
+              {previewFile.name.toLowerCase().endsWith(".pdf") ? (
+                <iframe
+                  src={previewFile.url}
                   className="w-full h-full rounded-lg border-0 bg-white"
                   title="PDF Preview"
                 />
               ) : (
-                <img src={previewFile.url} alt="Uploaded Document Preview" className="max-h-full max-w-full object-contain rounded-lg" />
+                <img
+                  src={previewFile.url}
+                  alt="Uploaded Document Preview"
+                  className="max-h-full max-w-full object-contain rounded-lg"
+                />
               )}
             </div>
             <div className="flex justify-end pt-2 shrink-0">
@@ -1262,16 +1505,38 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
               Application Submitted Successfully!
             </h3>
             <p className="text-sm text-emerald-900/90 leading-relaxed">
-              Thank you, <strong className="underline decoration-emerald-400 font-semibold">{formData["participant_name"]}</strong>. Your application form for stall participation in the{" "}
-              <strong>{activeFair.fairTitle}</strong> has been securely registered.
+              Thank you,{" "}
+              <strong className="underline decoration-emerald-400 font-semibold">
+                {formData["participant_name"]}
+              </strong>
+              . Your application form for stall participation in the{" "}
+              <strong>{activeFair.fairTitle}</strong> has been securely
+              registered.
             </p>
           </div>
 
           <div className="w-full bg-emerald-50/80 border border-emerald-200/80 p-3.5 rounded-xl text-xs text-emerald-900 font-medium space-y-1 text-left">
-            <div className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">Notification Info</div>
-            <div>Confirmation details sent to: <span className="font-bold text-emerald-950 break-all">{formData["participant_email"]}</span></div>
-            <div>Mobile Contact: <span className="font-bold text-emerald-950">{formData["participant_mobile"]}</span></div>
-            <div>Space Allotment Requested: <span className="font-bold text-emerald-950">{formData["space_requirement"]} sq. mt.</span></div>
+            <div className="text-emerald-700 font-bold uppercase tracking-wider text-[10px]">
+              Notification Info
+            </div>
+            <div>
+              Confirmation details sent to:{" "}
+              <span className="font-bold text-emerald-950 break-all">
+                {formData["participant_email"]}
+              </span>
+            </div>
+            <div>
+              Mobile Contact:{" "}
+              <span className="font-bold text-emerald-950">
+                {formData["participant_mobile"]}
+              </span>
+            </div>
+            <div>
+              Space Allotment Requested:{" "}
+              <span className="font-bold text-emerald-950">
+                {formData["space_requirement"]} sq. mt.
+              </span>
+            </div>
           </div>
 
           <button
@@ -1318,7 +1583,12 @@ export default function BookFairApplicationForm({ fairConfig, isAdminView = fals
           </div>
 
           <div className="p-5 sm:p-6 overflow-y-auto flex-1 text-[13px] sm:text-sm text-[#1e1b18] space-y-4 text-justify leading-relaxed">
-            <div className="space-y-4 pt-2 text-[#443838]" dangerouslySetInnerHTML={{ __html: activeFair.termsAndConditionsHTML || "" }} />
+            <div
+              className="space-y-4 pt-2 text-[#443838]"
+              dangerouslySetInnerHTML={{
+                __html: activeFair.termsAndConditionsHTML || "",
+              }}
+            />
           </div>
 
           <div className="px-6 py-4 border-t border-[#e0bfbf] bg-[#fff8f5] flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0 shadow-inner">

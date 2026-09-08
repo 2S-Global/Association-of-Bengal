@@ -386,7 +386,9 @@ import {
   Sparkles,
   ChevronRight,
   Settings,
-  ChevronDown
+  ChevronDown,
+  icons,
+  LifeBuoy
 } from "lucide-react";
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
@@ -525,8 +527,9 @@ export default function DashboardLayout({
     { href: "/wings", label: "Association Wings", icon: Users },
     { href: "/election", label: "Election Portal", icon: Vote },
     { href: "/MyProfile", label: "My Profile", icon: IdCard },
-    { href: "/donate", label: "Donate & Support", icon: HeartHandshake },
-  ];
+    { href: "/donate", label: "Donate", icon: HeartHandshake },
+    { href: "/complaint", label: "Support", icon: LifeBuoy }
+];
 
   return (
     <div className="min-h-screen bg-[#fff8f5] flex font-['Libre_Franklin',sans-serif]">
@@ -613,7 +616,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* Member Quick Card Widget inside Sidebar */}
-        <div className="px-4 py-3">
+        {/* <div className="px-4 py-3">
           <div className="bg-gradient-to-br from-[#fbf2ed] to-[#fff8f5] p-3.5 rounded-2xl border border-[#e0bfbf]/50 space-y-1">
             <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#775a19]">
               Active Credential
@@ -622,7 +625,7 @@ export default function DashboardLayout({
               {memberData.memberId}
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* Sidebar Footer (Logout) */}
         <div className="p-4 border-t border-[#e0bfbf]/40 bg-white">

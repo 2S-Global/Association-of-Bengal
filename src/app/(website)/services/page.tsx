@@ -244,7 +244,7 @@ export default function ServicesBody() {
             INQUIRE NOW
           </Link>
           <Link
-            href="/bookfairapplication"
+            href="/register"
             className="border border-[#775a19] text-[#570013] px-8 py-3.5 font-semibold text-sm rounded-lg hover:bg-[#f5ece7] transition-all text-center"
           >
             JOIN AS A MEMBER
