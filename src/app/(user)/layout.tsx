@@ -388,7 +388,8 @@ import {
   Settings,
   ChevronDown,
   icons,
-  LifeBuoy
+  LifeBuoy,
+  Search
 } from "lucide-react";
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
@@ -528,7 +529,8 @@ export default function DashboardLayout({
     { href: "/election", label: "Election Portal", icon: Vote },
     { href: "/MyProfile", label: "My Profile", icon: IdCard },
     { href: "/donate", label: "Donate", icon: HeartHandshake },
-    { href: "/complaint", label: "Support", icon: LifeBuoy }
+    { href: "/support", label: "Support", icon: LifeBuoy },
+    
 ];
 
   return (
