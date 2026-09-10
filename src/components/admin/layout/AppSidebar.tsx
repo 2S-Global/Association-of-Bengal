@@ -473,10 +473,7 @@ const navItems: NavItem[] = [
         name: "Manage Event",
         path: "/admin/manage-cms/manage-events",
       },
-      {
-        name: "List Pages",
-        path: "/admin/manage-cms/list-pages",
-      },
+      
     ],
   },
   {

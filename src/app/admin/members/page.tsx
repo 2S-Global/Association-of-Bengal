@@ -163,7 +163,7 @@ const MembersPage = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-serif font-bold text-[#5c0f18]">Members Management</h1>
+              <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">Members Management</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
                 Manage and view all registered members, their verification status, and contributions.
               </p>

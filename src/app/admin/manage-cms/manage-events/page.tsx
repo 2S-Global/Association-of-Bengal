@@ -248,7 +248,7 @@ export default function ManageEventsPage() {
           <div className="flex items-center gap-2 text-[#775a19] text-xs font-bold uppercase tracking-wider mb-1">
             <FileText className="w-4 h-4" /> Admin CMS Panel
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#570013] font-['Playfair_Display',serif]">
+          <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
             Manage Cultural Events &amp; Festivities
           </h1>
           <p className="text-xs sm:text-sm text-[#584141] mt-1">

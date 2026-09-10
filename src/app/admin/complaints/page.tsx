@@ -65,7 +65,7 @@ export default function ModernAdminComplaintsPage() {
               <MessageSquare className="w-7 h-7" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#570013] font-['Playfair_Display',serif]">
+              <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
                 Support Grievance Control
               </h1>
               <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
