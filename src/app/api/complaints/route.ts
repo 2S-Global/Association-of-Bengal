@@ -93,7 +93,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Complaint from "@/models/Complaint";
-import { sendSupportResponseEmail } from "@/lib/supportEmail"; // Import the email dispatcher
+import { sendSupportResponseEmail } from "@/lib/supportEmail"; 
 
 export async function GET(request: Request) {
   try {

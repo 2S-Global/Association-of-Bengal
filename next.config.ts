@@ -62,6 +62,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.aajkaal.in",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
 
