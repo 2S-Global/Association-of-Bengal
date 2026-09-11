@@ -473,7 +473,10 @@ const navItems: NavItem[] = [
         name: "Manage Event",
         path: "/admin/manage-cms/manage-events",
       },
-      
+      {
+        name: "Manage Wings",
+        path: "/admin/manage-cms/manage-wings",
+      },
     ],
   },
   {
