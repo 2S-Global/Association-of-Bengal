@@ -116,10 +116,10 @@ export default function ManageWingsPage() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="bg-[#570013] text-xs font-semibold uppercase tracking-wider text-white">
-                <th className="px-5 py-4 text-left">Wing</th>
+                <th className="px-5 py-4 text-left">Wing Name</th>
                 <th className="px-5 py-4 text-left">Description</th>
                 <th className="px-5 py-4 text-center">Fee</th>
-                <th className="px-5 py-4 text-center">Order</th>
+                <th className="px-5 py-4 text-center">Sort Order</th>
                 <th className="px-5 py-4 text-center">Status</th>
                 <th className="px-5 py-4 text-center">Actions</th>
               </tr>
