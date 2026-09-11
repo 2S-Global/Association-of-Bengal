@@ -72,7 +72,7 @@ export default function CurrentWingsPage() {
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-[#570013]">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-[#570013] font-['Playfair_Display',serif] mt-0.5">
                 Your Active Membership Wings
               </h3>
               <p className="text-xs text-[#8c7071] font-sans mt-0.5">

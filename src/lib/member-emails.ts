@@ -1,17 +1,18 @@
+import { transporter } from "./transporter"; // Adjust the import path to your transporter file
 
-import { transporter } from "./transporter";
-
-
+/**
+ * Sends a Membership Acceptance Email to the user
+ */
 export async function sendAcceptanceEmail(
   toEmail: string,
   memberName: string,
-  amount?: string,
-  remark?: string
+  amount?: string,       // Optional membership fee if applicable
+  remark?: string        // Optional admin remarks/instructions
 ): Promise<void> {
   const mailOptions = {
     from: `"Association of Bengal for Literature and Culture" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `Membership Approved: Welcome to the Association, ${memberName}!`,
+    subject: `Membership Application Approved: Welcome, ${memberName}!`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #1e1b18; padding: 24px; max-width: 600px; margin: auto; border: 1px solid #e0bfbf; border-radius: 12px; background-color: #fff8f5;">
         
@@ -23,32 +24,32 @@ export async function sendAcceptanceEmail(
         </div>
 
         <h3 style="color: #570013; margin-top: 0; font-size: 18px;">
-          Membership Application Accepted
+          Membership Status Update
         </h3>
 
         <p style="font-size: 15px; line-height: 1.5;">Dear <strong>${memberName}</strong>,</p>
         
         <p style="font-size: 15px; line-height: 1.5;">
-          We are delighted to inform you that your membership application has been successfully reviewed and <strong>APPROVED</strong> by the administration team.
+          We are delighted to inform you that your membership application has been reviewed and <strong>APPROVED</strong> by the administration team of the <strong>Association of Bengal for Literature and Culture</strong>.
         </p>
 
         <div style="background-color: #e6f4ea; border-left: 4px solid #137333; padding: 15px; border-radius: 6px; font-size: 14px; margin: 20px 0; color: #137333; font-weight: bold;">
-          Status: APPROVED
+          Membership Status: APPROVED
         </div>
 
-        <!-- Optional Amount Section -->
+        <!-- Optional Amount Card -->
         ${
           amount
             ? `
           <div style="background-color: #ffffff; border: 1px solid #e0bfbf; padding: 16px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #570013; margin-top: 0; font-size: 16px; margin-bottom: 10px;">Membership Fee Summary</h3>
+            <h3 style="color: #570013; margin-top: 0; font-size: 16px; margin-bottom: 10px;">Membership Fee Details</h3>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Payable Amount:</strong> ₹${amount}</p>
           </div>
         `
             : ""
         }
 
-        <!-- Optional Remark Box -->
+        <!-- Conditional Remark Box -->
         ${
           remark
             ? `
@@ -61,7 +62,7 @@ export async function sendAcceptanceEmail(
         }
 
         <p style="font-size: 15px; line-height: 1.5;">
-          Welcome to our community! You can now log into your account to access all member benefits and upcoming activities.
+          Welcome aboard! You can now log into your account to access all member-exclusive privileges, events, and resources.
         </p>
 
         <!-- Footer -->
@@ -79,17 +80,17 @@ export async function sendAcceptanceEmail(
 }
 
 /**
- * Send Member Rejection Email
+ * Sends a Membership Rejection Email to the user
  */
 export async function sendRejectionEmail(
   toEmail: string,
   memberName: string,
-  remark?: string
+  remark?: string        // Optional reason/feedback for rejection
 ): Promise<void> {
   const mailOptions = {
     from: `"Association of Bengal for Literature and Culture" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `Membership Application Update: ${memberName}`,
+    subject: `Membership Application Status Update: ${memberName}`,
     html: `
       <div style="font-family: Arial, sans-serif; color: #1e1b18; padding: 24px; max-width: 600px; margin: auto; border: 1px solid #e0bfbf; border-radius: 12px; background-color: #fff8f5;">
         
@@ -101,24 +102,24 @@ export async function sendRejectionEmail(
         </div>
 
         <h3 style="color: #570013; margin-top: 0; font-size: 18px;">
-          Membership Application Status
+          Membership Status Update
         </h3>
 
         <p style="font-size: 15px; line-height: 1.5;">Dear <strong>${memberName}</strong>,</p>
         
         <p style="font-size: 15px; line-height: 1.5;">
-          Thank you for submitting your membership application to the <strong>Association of Bengal for Literature and Culture</strong>.
+          Thank you for applying for membership with the <strong>Association of Bengal for Literature and Culture</strong>.
         </p>
 
         <div style="background-color: #fce8e6; border-left: 4px solid #c5221f; padding: 15px; border-radius: 6px; font-size: 14px; margin: 20px 0; color: #c5221f; font-weight: bold;">
-          Status: NOT APPROVED
+          Membership Status: NOT APPROVED
         </div>
 
         <p style="font-size: 15px; line-height: 1.5;">
-          Regrettably, we are unable to accept your membership application at this time based on our current administrative review criteria.
+          Regrettably, we are unable to approve your membership application at this time based on our current review guidelines or criteria.
         </p>
 
-        <!-- Optional Remark Box -->
+        <!-- Conditional Remark Box for Rejection -->
         ${
           remark
             ? `
@@ -131,7 +132,7 @@ export async function sendRejectionEmail(
         }
 
         <p style="font-size: 15px; line-height: 1.5;">
-          We deeply appreciate your interest in our association and thank you for your time.
+          We deeply appreciate your interest in our association and wish you the very best.
         </p>
 
         <!-- Footer -->

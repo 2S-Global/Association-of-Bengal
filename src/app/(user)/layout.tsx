@@ -391,6 +391,7 @@ import {
   LifeBuoy,
   Search
 } from "lucide-react";
+import { Toaster } from "sonner";
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "https://balc.albdglobal.org"}/api/v1`;
 
@@ -736,6 +737,7 @@ export default function DashboardLayout({
         {/* Dynamic Inner Page Content Body */}
         <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-6xl w-full mx-auto space-y-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {childrenWithProps}
+          <Toaster position="top-right" richColors />
         </main>
       </div>
     </div>

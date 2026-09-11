@@ -9,6 +9,6 @@ export const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false, // Helps bypass local self-signed certificate errors if needed
+    rejectUnauthorized: false, 
   },
 });

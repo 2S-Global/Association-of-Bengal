@@ -1,9 +1,11 @@
+
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from "@/lib/admin/admin-session";
 import Member from "@/models/Member";
+import { sendAcceptanceEmail, sendRejectionEmail } from "@/lib/acceptemail";
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -25,7 +27,7 @@ export async function PATCH(request: Request, { params }: Context) {
       return NextResponse.json({ success: false, message: "Invalid member ID." }, { status: 400 });
     }
 
-    const { action } = await request.json();
+    const { action, amount, remark } = await request.json();
     if (action !== "approve" && action !== "reject") {
       return NextResponse.json({ success: false, message: "Invalid admin action." }, { status: 400 });
     }
@@ -65,6 +67,8 @@ export async function PATCH(request: Request, { params }: Context) {
       {
         projection: {
           email: 1,
+          name: 1,
+          fullName: 1,
           mobile: 1,
           step: 1,
           allstep_completed: 1,
@@ -78,6 +82,21 @@ export async function PATCH(request: Request, { params }: Context) {
     if (!user) {
       return NextResponse.json({ success: false, message: "Linked user not found." }, { status: 404 });
     }
+
+    // --- TRIGGER SEPARATE EMAIL BASED ON ACTION ---
+    if (user.email) {
+      const memberName = user.name || user.fullName || "Valued Member";
+      try {
+        if (action === "approve") {
+          await sendAcceptanceEmail(user.email, memberName, amount, remark);
+        } else if (action === "reject") {
+          await sendRejectionEmail(user.email, memberName, remark);
+        }
+      } catch (mailError) {
+        console.error("Failed to send action email:", mailError);
+      }
+    }
+    // ----------------------------------------------
 
     return NextResponse.json({
       success: true,
