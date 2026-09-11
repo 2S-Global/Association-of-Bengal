@@ -14,6 +14,7 @@ export default function ManageWingsPage() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [wingToDelete, setWingToDelete] = useState<Wing | null>(null);
   const load = async () => {
     setLoading(true);
     try {
@@ -50,12 +51,6 @@ export default function ManageWingsPage() {
     [filtered, safePage, size],
   );
   const deleteWing = async (wing: Wing) => {
-    if (
-      !confirm(
-        `Deactivate ${wing.name}? It will no longer appear to users or in election wing selection.`,
-      )
-    )
-      return;
     setDeleting(wing.id);
     try {
       const response = await fetch(
@@ -73,6 +68,7 @@ export default function ManageWingsPage() {
       );
     } finally {
       setDeleting(null);
+      setWingToDelete(null);
     }
   };
   return (
@@ -200,7 +196,7 @@ export default function ManageWingsPage() {
                           <Edit3 className="h-4 w-4" />
                         </Link>
                         <button
-                          onClick={() => deleteWing(wing)}
+                          onClick={() => setWingToDelete(wing)}
                           disabled={deleting === wing.id}
                           title="Deactivate wing"
                           className="flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 disabled:opacity-50"
@@ -258,6 +254,47 @@ export default function ManageWingsPage() {
           </div>
         )}
       </section>
+      {wingToDelete && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-wing-title"
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900">
+            <div className="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+              <h2 id="delete-wing-title" className="text-lg font-semibold text-gray-800 dark:text-white">
+                Deactivate wing?
+              </h2>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                Are you sure you want to deactivate <strong className="font-semibold text-gray-800 dark:text-white">{wingToDelete.name}</strong>?
+                It will be hidden from users and election wing selection, but its record will remain in the database.
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
+              <button
+                type="button"
+                onClick={() => setWingToDelete(null)}
+                disabled={deleting === wingToDelete.id}
+                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteWing(wingToDelete)}
+                disabled={deleting === wingToDelete.id}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting === wingToDelete.id && <Loader2 className="h-4 w-4 animate-spin" />}
+                Yes, deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx>{`
         .pager {
           display: flex;
