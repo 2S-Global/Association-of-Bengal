@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -171,7 +170,6 @@ export default function ElectionsPage() {
   const handleNominateSubmit = async () => {
     if (!selectedElectionId) return;
     setActionLoading(true);
-    setMessage({ type: "", text: "" });
 
     const token = getToken();
 
@@ -195,7 +193,6 @@ export default function ElectionsPage() {
       loading: "🚀 Submitting your candidacy nomination...",
       success: (data) => {
         const successMsg = data.message || "Nomination filed successfully!";
-        setMessage({ type: "success", text: successMsg });
         
         setTimeout(() => {
           handleSelectElection(selectedElectionId);
@@ -204,7 +201,6 @@ export default function ElectionsPage() {
         return successMsg;
       },
       error: (err) => {
-        setMessage({ type: "error", text: err.message });
         return err.message || "Please check your details and try again.";
       },
     });
@@ -215,7 +211,6 @@ export default function ElectionsPage() {
   const handleVoteSubmit = async () => {
     if (!selectedElectionId || selectedNominationIds.length === 0) return;
     setActionLoading(true);
-    setMessage({ type: "", text: "" });
 
     const token = getToken();
 
@@ -239,7 +234,6 @@ export default function ElectionsPage() {
       loading: "🗳️ Securing and casting your vote...",
       success: (data) => {
         const successMsg = data.message || "Vote cast successfully!";
-        setMessage({ type: "success", text: successMsg });
         
         setTimeout(() => {
           handleSelectElection(selectedElectionId);
@@ -248,7 +242,6 @@ export default function ElectionsPage() {
         return successMsg;
       },
       error: (err) => {
-        setMessage({ type: "error", text: err.message });
         return err.message || "Unable to record your vote at this time.";
       },
     });
