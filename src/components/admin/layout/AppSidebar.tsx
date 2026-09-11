@@ -477,6 +477,9 @@ const navItems: NavItem[] = [
       name: "Manage Gallery",
       path: "/admin/manage-cms/manage-gallery",
     },
+      {  name: "Manage Wings",
+        path: "/admin/manage-cms/manage-wings",
+      },
     ],
   },
   {
