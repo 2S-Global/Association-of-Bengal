@@ -1,96 +1,107 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Edit3, Loader2, Plus, Sparkles, Trash2, UsersRound } from "lucide-react";
+import { Edit3, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-// import PageBreadcrumb from "@/components/admin/ui/PageBreadcrumb";
-import type { Wing } from "@/components/admin/wings/WingForm";
+import PageBreadcrumb from "@/components/admin/ui/PageBreadcrumb";
+import type { Service } from "@/components/admin/services/ServiceForm";
 
 const sizes = [5, 10, 20, 50];
-export default function ManageWingsPage() {
-  const [wings, setWings] = useState<Wing[]>([]);
+
+export default function ManageServicesPage() {
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [wingToDelete, setWingToDelete] = useState<Wing | null>(null);
+
   const load = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/wings?admin=true");
+      const response = await fetch("/api/services?admin=true");
       const result = await response.json();
       if (!response.ok || !result.success)
-        throw new Error(result.message || "Unable to load wings.");
-      setWings(result.data.filter((wing: Wing) => wing.isActive));
+        throw new Error(result.message || "Unable to load services.");
+      setServices(result.data.filter((service: Service) => service.isActive));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Unable to load wings.",
+        error instanceof Error ? error.message : "Unable to load services.",
       );
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    void Promise.resolve().then(load);
+    void load();
   }, []);
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return term
-      ? wings.filter((wing) =>
-          [wing.id, wing.name, wing.nameBn, wing.description].some((value) =>
-            value?.toLowerCase().includes(term),
-          ),
+      ? services.filter((service) =>
+          `${service.number} ${service.title} ${service.description}`
+            .toLowerCase()
+            .includes(term),
         )
-      : wings;
-  }, [wings, search]);
+      : services;
+  }, [search, services]);
+
   const pages = Math.max(1, Math.ceil(filtered.length / size));
   const safePage = Math.min(page, pages);
   const items = useMemo(
     () => filtered.slice((safePage - 1) * size, safePage * size),
     [filtered, safePage, size],
   );
-  const deleteWing = async (wing: Wing) => {
-    setDeleting(wing.id);
+
+  const deactivate = async (service: Service) => {
+    if (!confirm(`Deactivate “${service.title}”?`)) return;
+    setDeleting(service._id);
     try {
       const response = await fetch(
-        `/api/wings?id=${encodeURIComponent(wing.id)}`,
+        `/api/services?id=${encodeURIComponent(service._id)}`,
         { method: "DELETE" },
       );
       const result = await response.json();
       if (!response.ok || !result.success)
-        throw new Error(result.message || "Unable to delete wing.");
-      setWings((current) => current.filter((item) => item.id !== wing.id));
+        throw new Error(result.message || "Unable to deactivate service.");
+      setServices((current) =>
+        current.filter((item) => item._id !== service._id),
+      );
       toast.success(result.message);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Unable to delete wing.",
+        error instanceof Error
+          ? error.message
+          : "Unable to deactivate service.",
       );
     } finally {
       setDeleting(null);
-      setWingToDelete(null);
     }
   };
+
   return (
     <div>
-      {/* <PageBreadcrumb pageTitle="Manage Wings" showTitle={false} /> */}
+      {/* <PageBreadcrumb pageTitle="Manage Services" showTitle={false} /> */}
       <div className="mt-0 flex flex-col items-start justify-between gap-5 rounded-3xl border border-[#e0bfbf]/70 bg-gradient-to-r from-white via-[#fff8f5] to-[#fef2eb] p-8 shadow-sm sm:flex-row sm:items-center">
         <div className="space-y-1">
           <span className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#775a19]">
-            <Sparkles className="h-3.5 w-3.5 text-amber-600" /> CMS Administration
+            <Sparkles className="h-3.5 w-3.5 text-amber-600" /> CMS
+            Administration
           </span>
           <h1 className="flex items-center gap-2.5 font-['Playfair_Display'] text-xl font-bold text-[#570013] sm:text-2xl">
-            <Sparkles className="h-6 w-6 text-amber-600" /> Manage Wings
+            <Sparkles className="h-6 w-6 text-amber-600" /> Manage Services
           </h1>
           <p className="text-xs text-[#564242]">
-            Create and manage membership wings available across the portal.
+            Create and manage the services displayed on the association website.
           </p>
         </div>
         <Link
-          href="/admin/manage-cms/manage-wings/add-wing"
+          href="/admin/manage-cms/manage-services/add-service"
           className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-[#570013] px-6 py-3.5 text-xs font-bold text-white shadow-md transition-all hover:bg-[#40000e] hover:shadow-lg active:scale-95"
         >
-          <Plus className="h-4 w-4" /> Add New Wing
+          <Plus className="h-4 w-4" /> Add New Service
         </Link>
       </div>
       <section className="admin-table-card mt-6 overflow-hidden">
@@ -116,7 +127,7 @@ export default function ManageWingsPage() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Search wings..."
+            placeholder="Search services..."
             className="h-10 w-full rounded-xl border border-gray-300 bg-white px-4 text-sm text-gray-800 outline-none transition focus:border-[#570013] focus:ring-2 focus:ring-[#570013]/20 sm:w-72 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
           />
         </div>
@@ -124,92 +135,72 @@ export default function ManageWingsPage() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="bg-[#570013] text-xs font-semibold uppercase tracking-wider text-white">
-                <th className="px-5 py-4 text-left">Wing Name</th>
+                <th className="whitespace-nowrap px-5 py-4 text-center align-middle">
+                  SL No.
+                </th>
+                <th className="px-5 py-4 text-left">Title</th>
                 <th className="px-5 py-4 text-left">Description</th>
-                <th className="px-5 py-4 text-center">Fee</th>
-                <th className="px-5 py-4 text-center">Sort Order</th>
-                <th className="px-5 py-4 text-center">Status</th>
-                <th className="px-5 py-4 text-center">Actions</th>
+                <th className="whitespace-nowrap px-5 py-4 text-center align-middle">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-16 text-center">
+                  <td colSpan={4} className="px-5 py-16 text-center">
                     <Loader2 className="mx-auto h-7 w-7 animate-spin text-[#570013]" />
-                    <p className="mt-3 text-sm text-gray-500">Loading wings…</p>
+                    <p className="mt-3 text-sm text-gray-500">
+                      Loading services…
+                    </p>
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={4}
                     className="px-5 py-16 text-center text-sm text-gray-500"
                   >
                     {search
-                      ? "No matching wings found."
-                      : "No wings have been added yet."}
+                      ? "No matching services found."
+                      : "No services have been added yet."}
                   </td>
                 </tr>
               ) : (
-                items.map((wing) => (
+                items.map((service) => (
                   <tr
-                    key={wing.id}
+                    key={service._id}
                     className="transition-colors hover:bg-gray-50/70 dark:hover:bg-white/[0.02]"
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="flex h-9 w-9 items-center justify-center rounded-lg"
-                          style={{
-                            backgroundColor: wing.bgColor || "#f7e8e8",
-                            color: wing.color || "#570013",
-                          }}
-                        >
-                          <UsersRound className="h-4 w-4" />
-                        </span>
-                        <div>
-                          <p className="font-medium text-gray-800 dark:text-white/90">
-                            {wing.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {wing.nameBn || wing.id}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="max-w-xs px-5 py-4 text-gray-600 dark:text-gray-400">
-                      <span className="line-clamp-2">
-                        {wing.description || "—"}
+                    <td className="whitespace-nowrap px-5 py-4 text-center align-middle">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#570013] text-xs font-bold text-white">
+                        {service.number}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-center text-gray-600 dark:text-gray-400">
-                      ₹{wing.fees || 0}
+                    <td className="px-5 py-4 font-medium text-gray-800 dark:text-white">
+                      {service.title}
                     </td>
-                    <td className="px-5 py-4 text-center text-gray-600 dark:text-gray-400">
-                      {wing.sortOrder || 0}
-                    </td>
-                    <td className="px-5 py-4 text-center">
-                      <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
-                        Active
+                    <td className="max-w-xl px-5 py-4 text-gray-600 dark:text-gray-400">
+                      <span className="line-clamp-2">
+                        {service.description}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-center gap-1">
                         <Link
-                          href={`/admin/manage-cms/manage-wings/add-wing?id=${encodeURIComponent(wing.id)}`}
-                          title="Edit wing"
+                          href={`/admin/manage-cms/manage-services/add-service?id=${encodeURIComponent(service._id)}`}
+                          title="Edit service"
                           className="flex h-9 w-9 items-center justify-center rounded-lg text-[#570013] transition hover:bg-[#570013]/10"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Link>
                         <button
-                          onClick={() => setWingToDelete(wing)}
-                          disabled={deleting === wing.id}
-                          title="Deactivate wing"
+                          onClick={() => deactivate(service)}
+                          disabled={deleting === service._id}
+                          title="Deactivate service"
                           className="flex h-9 w-9 items-center justify-center rounded-lg text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                         >
-                          {deleting === wing.id ? (
+                          {deleting === service._id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <Trash2 className="h-4 w-4" />
@@ -262,47 +253,6 @@ export default function ManageWingsPage() {
           </div>
         )}
       </section>
-      {wingToDelete && (
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-wing-title"
-        >
-          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900">
-            <div className="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
-              <h2 id="delete-wing-title" className="text-lg font-semibold text-gray-800 dark:text-white">
-                Deactivate wing?
-              </h2>
-            </div>
-            <div className="px-6 py-5">
-              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                Are you sure you want to deactivate <strong className="font-semibold text-gray-800 dark:text-white">{wingToDelete.name}</strong>?
-                It will be hidden from users and election wing selection, but its record will remain in the database.
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 border-t border-gray-100 px-6 py-4 dark:border-gray-800">
-              <button
-                type="button"
-                onClick={() => setWingToDelete(null)}
-                disabled={deleting === wingToDelete.id}
-                className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => deleteWing(wingToDelete)}
-                disabled={deleting === wingToDelete.id}
-                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleting === wingToDelete.id && <Loader2 className="h-4 w-4 animate-spin" />}
-                Yes, deactivate
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <style jsx>{`
         .pager {
           display: flex;
