@@ -78,7 +78,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Application from "@/models/Application";
-import { sendAcceptanceEmail, sendRejectionEmail } from "@/lib/acceptemail";
+import { sendAcceptanceEmail, sendRejectionEmail } from "@/lib/bookingmali";
 
 export async function POST(req: Request) {
   try {

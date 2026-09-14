@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useRef, useState, useCallback, useEffect } from "react";
@@ -5,9 +6,69 @@ import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { GALLERY_ITEMS } from "@/data/galleryData";
+import { Loader2 } from "lucide-react";
+
+interface ApiAlbumItem {
+  _id: string;
+  album: string;
+  category: string;
+  date: string;
+  location: string;
+  imageUrls: string[];
+  imageAlt?: string;
+  createdAt?: string;
+}
+
+interface GalleryCardItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  imageAlt: string;
+  album: string;
+}
 
 export default function GallerySection() {
+  const [items, setItems] = useState<GalleryCardItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchGalleryData = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/gallery");
+        const json = await res.json();
+        
+        const rawAlbums: ApiAlbumItem[] = Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json?.items)
+          ? json.items
+          : Array.isArray(json)
+          ? json
+          : [];
+
+        const flattenedItems: GalleryCardItem[] = [];
+        rawAlbums.forEach((albumDoc, albumIdx) => {
+          albumDoc.imageUrls?.forEach((url, imgIdx) => {
+            flattenedItems.push({
+              id: `${albumDoc._id || albumIdx}-${imgIdx}`,
+              title: albumDoc.album || "Untitled Album",
+              imageUrl: url,
+              imageAlt: albumDoc.imageAlt || albumDoc.album || "Gallery image",
+              album: albumDoc.album || "General Album",
+            });
+          });
+        });
+
+        setItems(flattenedItems);
+      } catch (err) {
+        console.error("Failed to load gallery items from API:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchGalleryData();
+  }, []);
+
   const autoplay = useRef(
     Autoplay({
       delay: 3000,
@@ -55,6 +116,13 @@ export default function GallerySection() {
     };
   }, [emblaApi, onSelect]);
 
+  // Re-init embla when items load
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.reInit();
+    }
+  }, [items, emblaApi]);
+
   // Split py into pt (top) and pb (bottom) to drastically reduce the top gap
   return (
     <section className="bg-[#fff8f5] pt-4 pb-16 sm:pt-6 sm:pb-20 lg:pt-1 lg:pb-24 overflow-hidden font-['Libre_Franklin']">
@@ -89,7 +157,7 @@ export default function GallerySection() {
               <button
                 onClick={scrollPrev}
                 aria-label="Previous slide"
-                className="w-11 h-11 rounded-full border border-[#570013]/20 bg-white text-[#570013] flex items-center justify-center hover:bg-[#570013] hover:text-white transition-all duration-300 shadow-sm active:scale-95"
+                className="w-11 h-11 rounded-full border border-[#570013]/20 bg-white text-[#570013] flex items-center justify-center hover:bg-[#570013] hover:text-white transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
               >
                 <svg
                   className="w-5 h-5"
@@ -108,7 +176,7 @@ export default function GallerySection() {
               <button
                 onClick={scrollNext}
                 aria-label="Next slide"
-                className="w-11 h-11 rounded-full border border-[#570013]/20 bg-white text-[#570013] flex items-center justify-center hover:bg-[#570013] hover:text-white transition-all duration-300 shadow-sm active:scale-95"
+                className="w-11 h-11 rounded-full border border-[#570013]/20 bg-white text-[#570013] flex items-center justify-center hover:bg-[#570013] hover:text-white transition-all duration-300 shadow-sm active:scale-95 cursor-pointer"
               >
                 <svg
                   className="w-5 h-5"
@@ -129,85 +197,94 @@ export default function GallerySection() {
         </div>
 
         {/* EMBLA CAROUSEL */}
-        <div
-          ref={emblaRef}
-          className="overflow-hidden cursor-grab active:cursor-grabbing pb-2"
-        >
-          <div className="flex -ml-4">
-            {GALLERY_ITEMS.map((item, index) => (
-              <div
-                key={item.id}
-                className="
-                  flex-[0_0_100%]
-                  min-w-0
-                  pl-4
-                  sm:flex-[0_0_50%]
-                  md:flex-[0_0_33.333333%]
-                  lg:flex-[0_0_25%]
-                "
-              >
-                {/* WRAPPED ENTIRE CARD IN NEXT.JS LINK TO GO TO /gallery */}
-                <Link href="/gallery" className="block h-full group">
-                  <div
-                    className="
-                      bg-white
-                      rounded-[24px]
-                      overflow-hidden
-                      border
-                      border-[#eaded9]
-                      shadow-[0_8px_25px_rgba(87,0,19,0.06)]
-                      flex
-                      flex-col
-                      h-full
-                      transition-transform
-                      duration-300
-                      hover:-translate-y-1
-                    "
-                  >
-                    {/* IMAGE CONTAINER */}
-                    <div className="relative w-full aspect-[4/3] bg-[#fcf8f6] overflow-hidden">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.imageAlt}
-                        fill
-                        priority={index < 4}
-                        className="
-                          object-cover
-                          transition-transform
-                          duration-700
-                          ease-out
-                          group-hover:scale-105
-                        "
-                        sizes="(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
-                      />
-                    </div>
-
-                    {/* CONTENT AREA BELOW IMAGE */}
-                    <div className="p-4 sm:p-5 flex flex-col justify-between flex-grow bg-white border-t border-[#f4ebe6]">
-                      <div className="space-y-1">
-                        <span className="text-[#8a686b] text-[10px] font-semibold uppercase tracking-[0.08em]">
-                          {item.album}
-                        </span>
-                        <h3
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 space-y-3">
+            <Loader2 className="w-8 h-8 text-[#570013] animate-spin" />
+            <p className="text-xs font-semibold text-[#8c7071]">Loading cultural highlights...</p>
+          </div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-20 text-xs text-[#564242]">No cultural highlights available at the moment.</div>
+        ) : (
+          <div
+            ref={emblaRef}
+            className="overflow-hidden cursor-grab active:cursor-grabbing pb-2"
+          >
+            <div className="flex -ml-4">
+              {items.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="
+                    flex-[0_0_100%]
+                    min-w-0
+                    pl-4
+                    sm:flex-[0_0_50%]
+                    md:flex-[0_0_33.333333%]
+                    lg:flex-[0_0_25%]
+                  "
+                >
+                  {/* WRAPPED ENTIRE CARD IN NEXT.JS LINK TO GO TO /gallery */}
+                  <Link href="/gallery" className="block h-full group">
+                    <div
+                      className="
+                        bg-white
+                        rounded-[24px]
+                        overflow-hidden
+                        border
+                        border-[#eaded9]
+                        shadow-[0_8px_25px_rgba(87,0,19,0.06)]
+                        flex
+                        flex-col
+                        h-full
+                        transition-transform
+                        duration-300
+                        hover:-translate-y-1
+                      "
+                    >
+                      {/* IMAGE CONTAINER */}
+                      <div className="relative w-full aspect-[4/3] bg-[#fcf8f6] overflow-hidden">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.imageAlt}
+                          fill
+                          priority={index < 4}
                           className="
-                            font-['Playfair_Display']
-                            text-[#570013]
-                            text-base
-                            sm:text-lg
-                            font-medium
-                            line-clamp-1
+                            object-cover
+                            transition-transform
+                            duration-700
+                            ease-out
+                            group-hover:scale-105
                           "
-                        >
-                          {item.title}
-                        </h3>
+                          sizes="(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
+                        />
+                      </div>
+
+                      {/* CONTENT AREA BELOW IMAGE */}
+                      <div className="p-4 sm:p-5 flex flex-col justify-between flex-grow bg-white border-t border-[#f4ebe6]">
+                        <div className="space-y-1">
+                          <span className="text-[#8a686b] text-[10px] font-semibold uppercase tracking-[0.08em]">
+                            {item.album}
+                          </span>
+                          <h3
+                            className="
+                              font-['Playfair_Display']
+                              text-[#570013]
+                              text-base
+                              sm:text-lg
+                              font-medium
+                              line-clamp-1
+                            "
+                          >
+                            {item.title}
+                          </h3>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

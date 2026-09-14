@@ -1,10 +1,31 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { X, ZoomIn, MapPin, Folder, ChevronLeft, ChevronRight } from "lucide-react";
-import { GALLERY_ITEMS, GalleryItem } from "@/data/galleryData";
+import { X, ZoomIn, MapPin, Folder, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+
+interface ApiAlbumItem {
+  _id: string;
+  album: string;
+  category: string;
+  date: string;
+  location: string;
+  imageUrls: string[];
+  imageAlt?: string;
+  createdAt?: string;
+}
+
+interface GalleryItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  imageAlt: string;
+  album: string;
+  category: string;
+  year: string;
+  location: string;
+}
 
 interface AlbumGroup {
   albumName: string;
@@ -14,26 +35,73 @@ interface AlbumGroup {
 }
 
 export default function GalleryPage() {
+  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeAlbum, setActiveAlbum] = useState<string | null>(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchGalleryData = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/gallery");
+        const json = await res.json();
+        
+        // Extract raw album documents from API response structure: { success: true, data: [...] }
+        const rawAlbums: ApiAlbumItem[] = Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json?.items)
+          ? json.items
+          : Array.isArray(json)
+          ? json
+          : [];
+
+        // Flatten imageUrls into individual interactive gallery items per album
+        const flattenedItems: GalleryItem[] = [];
+        rawAlbums.forEach((albumDoc, albumIdx) => {
+          const yearExtracted = albumDoc.date ? albumDoc.date.split("-")[0] : "";
+          albumDoc.imageUrls?.forEach((url, imgIdx) => {
+            flattenedItems.push({
+              id: `${albumDoc._id || albumIdx}-${imgIdx}`,
+              title: albumDoc.album || "Untitled Album",
+              imageUrl: url,
+              imageAlt: albumDoc.imageAlt || albumDoc.album || "Gallery image",
+              album: albumDoc.album || "General Album",
+              category: albumDoc.category || "General",
+              year: yearExtracted,
+              location: albumDoc.location || "",
+            });
+          });
+        });
+
+        setItems(flattenedItems);
+      } catch (err) {
+        console.error("Failed to load gallery items from API:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchGalleryData();
+  }, []);
 
   // Group items into distinct albums automatically
   const albums: AlbumGroup[] = useMemo(() => {
     const map: { [key: string]: GalleryItem[] } = {};
-    GALLERY_ITEMS.forEach((item) => {
-      if (!map[item.album]) {
-        map[item.album] = [];
+    items.forEach((item) => {
+      const albumKey = item.album || "General Album";
+      if (!map[albumKey]) {
+        map[albumKey] = [];
       }
-      map[item.album].push(item);
+      map[albumKey].push(item);
     });
 
     return Object.keys(map).map((albumName) => ({
       albumName,
-      coverImage: map[albumName][0].imageUrl,
+      coverImage: map[albumName][0]?.imageUrl || "",
       count: map[albumName].length,
       items: map[albumName],
     }));
-  }, []);
+  }, [items]);
 
   // Get active items for the currently opened album modal
   const activeAlbumItems = useMemo(() => {
@@ -43,16 +111,17 @@ export default function GalleryPage() {
   }, [activeAlbum, albums]);
 
   const handleNextSlide = () => {
+    if (activeAlbumItems.length === 0) return;
     setCurrentSlideIndex((prev) => (prev + 1) % activeAlbumItems.length);
   };
 
   const handlePrevSlide = () => {
+    if (activeAlbumItems.length === 0) return;
     setCurrentSlideIndex((prev) => (prev - 1 + activeAlbumItems.length) % activeAlbumItems.length);
   };
 
   const currentActiveImage = activeAlbumItems[currentSlideIndex];
 
-  // Reduced pb-12 to pb-6 here for a tighter fit
   return (
     <div className="text-[#1a1c1b] selection:bg-[#570013] selection:text-white pb-6">
       {/* Hero Section */}
@@ -70,173 +139,193 @@ export default function GalleryPage() {
         </div>
       </section>
 
-      {/* Album Folders Grid Section - Reduced py-12 to pt-12 pb-6 */}
-      <section className="max-w-[1280px] mx-auto px-6 lg:px-12 pt-12 pb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {albums.map((album) => (
-            <div
-              key={album.albumName}
-              onClick={() => {
-                setActiveAlbum(album.albumName);
-                setCurrentSlideIndex(0);
-              }}
-              className="group relative h-[340px] overflow-hidden rounded-3xl cursor-pointer bg-white border border-[#e0bfbf]/80 shadow-[0_10px_30px_rgba(87,0,19,0.06)] hover:shadow-[0_20px_50px_rgba(87,0,19,0.18)] transition-all duration-500 hover:-translate-y-1.5 flex flex-col"
-            >
-              {/* Album Cover Image */}
-              <div className="relative h-[240px] w-full overflow-hidden bg-[#1a0508]">
-                <Image
-                  src={album.coverImage}
-                  alt={album.albumName}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                
-                {/* Photo Count Badge */}
-                <span className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1 rounded-full border border-white/15 flex items-center gap-1.5 shadow-md">
-                  <Folder className="w-3.5 h-3.5 text-[#e0bfbf]" /> {album.count} Photos
-                </span>
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center min-h-[350px] space-y-3">
+          <Loader2 className="w-8 h-8 text-[#570013] animate-spin" />
+          <p className="text-xs font-semibold text-[#8c7071]">Loading visual archives...</p>
+        </div>
+      ) : (
+        <>
+          {/* Album Folders Grid Section */}
+          <section className="max-w-[1280px] mx-auto px-6 lg:px-12 pt-12 pb-6">
+            {albums.length === 0 ? (
+              <div className="text-center py-20 text-xs text-[#564242]">No event albums available at the moment.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                {albums.map((album) => (
+                  <div
+                    key={album.albumName}
+                    onClick={() => {
+                      setActiveAlbum(album.albumName);
+                      setCurrentSlideIndex(0);
+                    }}
+                    className="group relative h-[340px] overflow-hidden rounded-3xl cursor-pointer bg-white border border-[#e0bfbf]/80 shadow-[0_10px_30px_rgba(87,0,19,0.06)] hover:shadow-[0_20px_50px_rgba(87,0,19,0.18)] transition-all duration-500 hover:-translate-y-1.5 flex flex-col"
+                  >
+                    {/* Album Cover Image */}
+                    <div className="relative h-[240px] w-full overflow-hidden bg-[#1a0508]">
+                      {album.coverImage && (
+                        <Image
+                          src={album.coverImage}
+                          alt={album.albumName}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                      
+                      {/* Photo Count Badge */}
+                      <span className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1 rounded-full border border-white/15 flex items-center gap-1.5 shadow-md">
+                        <Folder className="w-3.5 h-3.5 text-[#e0bfbf]" /> {album.count} Photos
+                      </span>
 
-                {/* View Album Badge */}
-                <div className="absolute top-4 right-4 bg-[#570013]/80 backdrop-blur-md rounded-full p-2.5 text-white opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
-                  <ZoomIn className="w-4 h-4" />
+                      {/* View Album Badge */}
+                      <div className="absolute top-4 right-4 bg-[#570013]/80 backdrop-blur-md rounded-full p-2.5 text-white opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                        <ZoomIn className="w-4 h-4" />
+                      </div>
+                    </div>
+
+                    {/* Album Info Footer */}
+                    <div className="p-5 bg-gradient-to-b from-[#fff8f5] to-[#fef2eb] flex-grow flex flex-col justify-center border-t border-[#e0bfbf]/40">
+                      <h3 className="text-lg font-bold text-[#570013] font-['Playfair_Display'] tracking-wide group-hover:text-[#775a19] transition-colors">
+                        {album.albumName}
+                      </h3>
+                      <p className="text-xs text-[#564242] mt-1 font-medium flex items-center gap-1">
+                        <span>Click to open album slider</span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Compact & Clean Lightbox Modal */}
+          {activeAlbum && currentActiveImage && (
+            <div 
+              className="fixed inset-0 z-50 bg-[#2a1115]/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
+              onClick={() => setActiveAlbum(null)}
+            >
+              <div 
+                className="relative bg-[#fff8f5] text-[#1a1c1b] rounded-2xl overflow-hidden max-w-xl w-full flex flex-col shadow-[0_25px_60px_rgba(87,0,19,0.3)] border border-[#e0bfbf]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Top Bar Header inside Modal */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-b from-[#fef2eb] to-[#fff8f5] border-b border-[#e0bfbf]/60 z-20">
+                  <div className="flex items-center gap-2">
+                    <Folder className="w-3.5 h-3.5 text-[#775a19]" />
+                    <span className="text-xs font-bold tracking-wide font-['Playfair_Display'] text-[#570013]">
+                      {activeAlbum}
+                    </span>
+                    <span className="text-[10px] bg-[#570013]/10 text-[#570013] px-2 py-0.5 rounded-full font-semibold ml-1">
+                      {currentSlideIndex + 1} / {activeAlbumItems.length}
+                    </span>
+                  </div>
+
+                  <button 
+                    onClick={() => setActiveAlbum(null)}
+                    className="bg-black/10 hover:bg-[#570013] hover:text-white text-[#570013] rounded-full p-2 transition-all duration-300 shadow-sm flex items-center justify-center cursor-pointer"
+                    aria-label="Close modal"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Compact Image Showcase Frame */}
+                <div className="relative h-[260px] sm:h-[310px] w-full bg-[#1a0508] flex items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0 opacity-20 blur-xl scale-110 pointer-events-none">
+                    <Image 
+                      src={currentActiveImage.imageUrl} 
+                      alt="" 
+                      fill 
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="relative w-full h-full flex items-center justify-center z-10 px-1">
+                    <Image 
+                      src={currentActiveImage.imageUrl} 
+                      alt={currentActiveImage.imageAlt || currentActiveImage.title || ""} 
+                      fill 
+                      className="object-contain transition-all duration-300 ease-out"
+                      priority
+                      sizes="(max-width: 640px) 100vw, 600px"
+                    />
+                  </div>
+
+                  {/* Slider Left Arrow */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrevSlide();
+                    }}
+                    className="absolute left-2.5 z-30 bg-black/55 hover:bg-[#570013] text-white rounded-full p-2 transition-all shadow-md backdrop-blur-sm border border-white/20 active:scale-95 cursor-pointer"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {/* Slider Right Arrow */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNextSlide();
+                    }}
+                    className="absolute right-2.5 z-30 bg-black/55 hover:bg-[#570013] text-white rounded-full p-2 transition-all shadow-md backdrop-blur-sm border border-white/20 active:scale-95 cursor-pointer"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Compact Thumbnail Strip */}
+                <div className="bg-[#fef2eb] px-4 py-2 border-t border-[#e0bfbf]/60 flex items-center gap-2 overflow-x-auto scrollbar-thin">
+                  {activeAlbumItems.map((item, idx) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setCurrentSlideIndex(idx)}
+                      className={`relative flex-shrink-0 w-12 h-9 rounded-lg overflow-hidden border transition-all duration-300 cursor-pointer ${
+                        idx === currentSlideIndex
+                          ? "border-[#570013] scale-105 shadow-md"
+                          : "border-transparent opacity-50 hover:opacity-100"
+                      }`}
+                    >
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title || ""}
+                        fill
+                        className="object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Clean Details Footer */}
+                <div className="p-4 sm:p-5 bg-gradient-to-b from-[#fff8f5] to-[#fef2eb] border-t border-[#e0bfbf]/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider bg-[#775a19]/10 px-2.5 py-1 rounded-full border border-[#775a19]/20">
+                      {currentActiveImage.category} {currentActiveImage.year ? `• ${currentActiveImage.year}` : ""}
+                    </span>
+                    {currentActiveImage.location && (
+                      <span className="text-[10px] font-medium text-[#564242] flex items-center gap-1 bg-white px-2.5 py-1 rounded-full border border-[#dcc0c0]/50 shadow-sm">
+                        <MapPin className="w-3 h-3 text-[#775a19]" /> {currentActiveImage.location}
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#570013] font-['Playfair_Display']">
+                    {currentActiveImage.title}
+                  </h2>
+                  {currentActiveImage.imageAlt && currentActiveImage.imageAlt !== currentActiveImage.title && (
+                    <p className="text-xs text-[#564242] mt-1 leading-relaxed font-['Libre_Franklin'] line-clamp-2">
+                      {currentActiveImage.imageAlt}
+                    </p>
+                  )}
                 </div>
               </div>
-
-              {/* Album Info Footer */}
-              <div className="p-5 bg-gradient-to-b from-[#fff8f5] to-[#fef2eb] flex-grow flex flex-col justify-center border-t border-[#e0bfbf]/40">
-                <h3 className="text-lg font-bold text-[#570013] font-['Playfair_Display'] tracking-wide group-hover:text-[#775a19] transition-colors">
-                  {album.albumName}
-                </h3>
-                <p className="text-xs text-[#564242] mt-1 font-medium flex items-center gap-1">
-                  <span>Click to open album slider</span>
-                </p>
-              </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Compact & Clean Lightbox Modal */}
-      {activeAlbum && currentActiveImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-[#2a1115]/75 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setActiveAlbum(null)}
-        >
-          <div 
-            className="relative bg-[#fff8f5] text-[#1a1c1b] rounded-2xl overflow-hidden max-w-xl w-full flex flex-col shadow-[0_25px_60px_rgba(87,0,19,0.3)] border border-[#e0bfbf]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Top Bar Header inside Modal */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-b from-[#fef2eb] to-[#fff8f5] border-b border-[#e0bfbf]/60 z-20">
-              <div className="flex items-center gap-2">
-                <Folder className="w-3.5 h-3.5 text-[#775a19]" />
-                <span className="text-xs font-bold tracking-wide font-['Playfair_Display'] text-[#570013]">
-                  {activeAlbum}
-                </span>
-                <span className="text-[10px] bg-[#570013]/10 text-[#570013] px-2 py-0.5 rounded-full font-semibold ml-1">
-                  {currentSlideIndex + 1} / {activeAlbumItems.length}
-                </span>
-              </div>
-
-              <button 
-                onClick={() => setActiveAlbum(null)}
-                className="bg-black/10 hover:bg-[#570013] hover:text-white text-[#570013] rounded-full p-2 transition-all duration-300 shadow-sm flex items-center justify-center"
-                aria-label="Close modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Compact Image Showcase Frame */}
-            <div className="relative h-[260px] sm:h-[310px] w-full bg-[#1a0508] flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 opacity-20 blur-xl scale-110 pointer-events-none">
-                <Image 
-                  src={currentActiveImage.imageUrl} 
-                  alt="" 
-                  fill 
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="relative w-full h-full flex items-center justify-center z-10 px-1">
-                <Image 
-                  src={currentActiveImage.imageUrl} 
-                  alt={currentActiveImage.imageAlt} 
-                  fill 
-                  className="object-contain transition-all duration-300 ease-out"
-                  priority
-                  sizes="(max-width: 640px) 100vw, 600px"
-                />
-              </div>
-
-              {/* Slider Left Arrow */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePrevSlide();
-                }}
-                className="absolute left-2.5 z-30 bg-black/50 hover:bg-[#570013] text-white rounded-full p-2 transition-all shadow-md backdrop-blur-sm border border-white/20 active:scale-95"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {/* Slider Right Arrow */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleNextSlide();
-                }}
-                className="absolute right-2.5 z-30 bg-black/50 hover:bg-[#570013] text-white rounded-full p-2 transition-all shadow-md backdrop-blur-sm border border-white/20 active:scale-95"
-                aria-label="Next slide"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Compact Thumbnail Strip */}
-            <div className="bg-[#fef2eb] px-4 py-2 border-t border-[#e0bfbf]/60 flex items-center gap-2 overflow-x-auto scrollbar-thin">
-              {activeAlbumItems.map((item, idx) => (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentSlideIndex(idx)}
-                  className={`relative flex-shrink-0 w-12 h-9 rounded-lg overflow-hidden border transition-all duration-300 ${
-                    idx === currentSlideIndex
-                      ? "border-[#570013] scale-105 shadow-md"
-                      : "border-transparent opacity-50 hover:opacity-100"
-                  }`}
-                >
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Clean Details Footer */}
-            <div className="p-4 sm:p-5 bg-gradient-to-b from-[#fff8f5] to-[#fef2eb] border-t border-[#e0bfbf]/60">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider bg-[#775a19]/10 px-2.5 py-1 rounded-full border border-[#775a19]/20">
-                  {currentActiveImage.category} • {currentActiveImage.year}
-                </span>
-                <span className="text-[10px] font-medium text-[#564242] flex items-center gap-1 bg-white px-2.5 py-1 rounded-full border border-[#dcc0c0]/50 shadow-sm">
-                  <MapPin className="w-3 h-3 text-[#775a19]" /> {currentActiveImage.location}
-                </span>
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-[#570013] font-['Playfair_Display']">
-                {currentActiveImage.title}
-              </h2>
-              <p className="text-xs text-[#564242] mt-1 leading-relaxed font-['Libre_Franklin'] line-clamp-2">
-                {currentActiveImage.imageAlt}
-              </p>
-            </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

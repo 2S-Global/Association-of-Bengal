@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -15,7 +16,9 @@ import {
   Layers,
   Image as ImageIcon,
   Search,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,6 +37,10 @@ export default function ManageGalleryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Pagination state (5 items per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchFolders = async () => {
     try {
@@ -88,6 +95,18 @@ export default function ManageGalleryPage() {
     item.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Paginated items
+  const totalPages = Math.ceil(filteredFolders.length / itemsPerPage);
+  const paginatedFolders = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredFolders.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredFolders, currentPage]);
+
   return (
     <main className="space-y-8 max-w-7xl mx-auto pb-20 animate-in fade-in duration-300 selection:bg-[#fed488] selection:text-[#785a1a]">
       
@@ -97,7 +116,8 @@ export default function ManageGalleryPage() {
           <span className="text-[10px] font-extrabold text-[#775a19] uppercase tracking-[0.2em] flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" /> CMS Administration
           </span>
-          <h1 className="jsx-1e08dac1d6b730fd text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
+
+          <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
             <Sparkles className="w-6 h-6 text-amber-600" /> Manage Gallery Albums
           </h1>
           <p className="text-xs text-[#564242]">Create, search, and curate rich photo collections for your association portal.</p>
@@ -122,7 +142,7 @@ export default function ManageGalleryPage() {
       {!isLoading && (
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#e0bfbf]/40">
-            <h2 className="jsx-1e08dac1d6b730fd text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
+            <h2 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
               <Layers className="w-6 h-6 text-[#775a19]" /> All Event Albums
             </h2>
 
@@ -165,7 +185,7 @@ export default function ManageGalleryPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredFolders.map((item) => (
+              {paginatedFolders.map((item) => (
                 <div 
                   key={item._id}
                   onClick={() => router.push(`/admin/manage-cms/manage-gallery/${item._id}`)}
@@ -221,6 +241,46 @@ export default function ManageGalleryPage() {
                   </div>
                 </div>
               ))}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-6 border-t border-[#e0bfbf]/40">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#570013] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fff8f5] px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> Previous
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                      <button
+                        key={pg}
+                        type="button"
+                        onClick={() => setCurrentPage(pg)}
+                        className={`w-7 h-7 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                          currentPage === pg
+                            ? "bg-[#570013] text-white shadow-2xs"
+                            : "bg-[#fff8f5] text-[#775a19] border border-[#e0bfbf]/50 hover:bg-[#fbf2ed]"
+                        }`}
+                      >
+                        {pg}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#570013] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#fff8f5] px-4 py-2.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    Next <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
