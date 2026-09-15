@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -17,44 +17,19 @@ interface HeroButton {
   variant: "primary" | "secondary";
 }
 
-interface HeroData {
-  badge: string;
+interface HeroSectionData {
+  badgeText: string;
   welcomeTitle: string;
   tagline: string;
-  titleBefore: string;
-  highlightedTitle: string;
-  titleAfter: string;
+  headline: string;
   description: string;
-  image: string;
-  imageAlt: string;
-  buttons: HeroButton[];
-  stats: HeroStat[];
+  heroImage: string;
+  eventsPlanned: number;
+  registeredMembers: number;
+  indianCities: number;
 }
 
-const heroData: HeroData = {
-  badge: "Official Event Booking Platform",
-
-  // NEW CONTENT
-  welcomeTitle:
-    "Welcome to the Association of Bengal for Literature & Culture",
-
-  tagline: "United by Literature, Enriched by Culture",
-
-  // PREVIOUS CONTENT - KEPT
-  titleBefore: "Book Stall Spaces for Bengal's",
-
-  highlightedTitle: "Major",
-
-  titleAfter: "Cultural Expos & Book Fairs.",
-
-  description:
-    "Book exhibition stalls online for major book fairs, cultural meets, and art expos with fast processing and clear layout maps.",
-
-  image: "/images/abcd.jpeg",
-
-  imageAlt: "Exhibition Hall",
-
-  buttons: [
+const heroButtons: HeroButton[] = [
     {
       id: 1,
       label: "Book Stall Now",
@@ -67,26 +42,10 @@ const heroData: HeroData = {
       href: "/register",
       variant: "secondary",
     },
-  ],
+];
 
-  stats: [
-    {
-      id: 1,
-      value: "500+",
-      label: "Events Planned",
-    },
-    {
-      id: 2,
-      value: "12K+",
-      label: "Registered Members",
-    },
-    {
-      id: 3,
-      value: "10+",
-      label: "Indian Cities",
-    },
-  ],
-};
+const formatStat = (value: number) =>
+  `${value >= 1000 && value % 1000 === 0 ? `${value / 1000}K` : value}+`;
 
 function HeroButton({
   button,
@@ -199,6 +158,26 @@ function HeroStat({
 }
 
 export default function HomeBody() {
+  const [heroSection, setHeroSection] = useState<HeroSectionData | null>(null);
+  const [heroError, setHeroError] = useState(false);
+
+  useEffect(() => {
+    void fetch("/api/hero-section")
+      .then(async (response) => {
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || "Unable to load Hero Section.");
+        setHeroSection(result.data);
+      })
+      .catch(() => setHeroError(true));
+  }, []);
+
+  const heroStats = useMemo<HeroStat[]>(() => heroSection ? [
+    { id: 1, value: formatStat(heroSection.eventsPlanned), label: "Events Planned" },
+    { id: 2, value: formatStat(heroSection.registeredMembers), label: "Registered Members" },
+    { id: 3, value: formatStat(heroSection.indianCities), label: "Indian Cities" },
+  ] : [], [heroSection]);
+  const headlineParts = heroSection?.headline.split(/(Major)/i) ?? [];
+  const displayTagline = heroSection?.tagline.replace(/^[“"]|[”"]$/g, "");
   return (
     <main
       className="
@@ -209,6 +188,7 @@ export default function HomeBody() {
         font-['Libre_Franklin']
       "
     >
+      {!heroSection && <p className="sr-only" role="status">{heroError ? "Hero content is temporarily unavailable." : "Loading hero content."}</p>}
       <section
         className="
           relative
@@ -314,7 +294,7 @@ export default function HomeBody() {
                   sm:mb-6
                 "
               >
-                {heroData.badge}
+                {heroSection?.badgeText}
               </span>
 
               {/* NEW ASSOCIATION CONTENT */}
@@ -333,7 +313,7 @@ export default function HomeBody() {
                     tracking-[-0.01em]
                   "
                 >
-                  {heroData.welcomeTitle}
+                  {heroSection?.welcomeTitle}
                 </h2>
 
                 <div className="mt-2 sm:mt-3 flex items-center gap-3">
@@ -350,7 +330,7 @@ export default function HomeBody() {
                       tracking-[0.02em]
                     "
                   >
-                    “{heroData.tagline}”
+                    “{displayTagline}”
                   </p>
                 </div>
               </div>
@@ -373,13 +353,7 @@ export default function HomeBody() {
                   sm:mb-6
                 "
               >
-                {heroData.titleBefore}{" "}
-
-                <span className="text-[#775a19]">
-                  {heroData.highlightedTitle}
-                </span>{" "}
-
-                {heroData.titleAfter}
+                {headlineParts.map((part, index) => part.toLowerCase() === "major" ? <span key={index} className="text-[#775a19]">{part}</span> : part)}
               </h1>
 
               {/* PREVIOUS DESCRIPTION - KEPT */}
@@ -401,12 +375,12 @@ export default function HomeBody() {
                   lg:mb-10
                 "
               >
-                {heroData.description}
+                {heroSection?.description}
               </p>
 
               {/* EXISTING BUTTONS - KEPT */}
 
-              {heroData.buttons.length > 0 && (
+              {heroButtons.length > 0 && (
                 <div
                   className="
                     flex
@@ -418,7 +392,7 @@ export default function HomeBody() {
                     sm:gap-4
                   "
                 >
-                  {heroData.buttons.map((button) => (
+                  {heroButtons.map((button) => (
                     <HeroButton
                       key={button.id}
                       button={button}
@@ -429,7 +403,7 @@ export default function HomeBody() {
 
               {/* EXISTING STATISTICS - KEPT */}
 
-              {heroData.stats.length > 0 && (
+              {heroStats.length > 0 && (
                 <div
                   className="
                     mt-8
@@ -446,7 +420,7 @@ export default function HomeBody() {
                     max-w-[620px]
                   "
                 >
-                  {heroData.stats.map((stat, index) => (
+                  {heroStats.map((stat, index) => (
                     <HeroStat
                       key={stat.id}
                       stat={stat}
@@ -489,12 +463,12 @@ export default function HomeBody() {
               >
                 {/* IMAGE */}
 
-                <Image
-                  src={heroData.image}
-                  alt={heroData.imageAlt}
+                {heroSection?.heroImage && <Image
+                  src={heroSection.heroImage}
+                  alt={heroSection.headline || "Hero image"}
                   fill
                   priority
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 42vw"
+                  sizes="(max-width: 1023px) 100vw, 42vw"
                   className="
                     object-cover
                     transition-transform
@@ -502,7 +476,7 @@ export default function HomeBody() {
                     ease-out
                     group-hover:scale-105
                   "
-                />
+                />}
 
                 {/* IMAGE GRADIENT */}
 
