@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   Search, 
   FileText, 
@@ -13,7 +13,12 @@ import {
   X,
   CheckCircle2,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  Calendar,
+  TableProperties,
+  Users,
+  Eye,
+  Download
 } from "lucide-react";
 
 interface HistoryItem {
@@ -25,6 +30,8 @@ interface HistoryItem {
 
 interface Application {
   _id: string;
+  fair_slug?: string;
+  fair_title?: string;
   participant_name: string;
   participant_bengali: string;
   participant_address: string;
@@ -47,14 +54,22 @@ interface Application {
   history?: HistoryItem[];
 }
 
-export default function AdminStallBookingsPage() {
+export default function AdminFairTablePage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   
+  // Navigation State: "FAIR_DIRECTORY" or specific fair title like "New Book Fair Title"
+  const [activeFairView, setActiveFairView] = useState<string | null>(null);
+  
+  // Search & Filtering
+  const [fairDirectorySearch, setFairDirectorySearch] = useState<string>("");
+  const [applicantSearch, setApplicantSearch] = useState<string>("");
+  
+  // Modal / Review state
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [modalMode, setModalMode] = useState<'view' | 'accept_prompt' | 'reconsider_prompt' | 'reject_prompt' | 'success'>('view');
+  
   const [inputAmount, setInputAmount] = useState<string>("");
   const [inputRemark, setInputRemark] = useState<string>("");
   const [reconsiderReason, setReconsiderReason] = useState<string>("");
@@ -88,6 +103,41 @@ export default function AdminStallBookingsPage() {
     }
   };
 
+  // Group applications into a table directory structure by Fair Name
+  const fairTableData = useMemo(() => {
+    const map = new Map<string, { title: string; count: number; accepted: number; pending: number; rejected: number }>();
+    
+    applications.forEach((app) => {
+      const title = app.fair_title || app.fair_slug || "International Kolkata Book Fair";
+      if (!map.has(title)) {
+        map.set(title, { title, count: 0, accepted: 0, pending: 0, rejected: 0 });
+      }
+      const entry = map.get(title)!;
+      entry.count += 1;
+      if (app.status === 'ACCEPTED') entry.accepted += 1;
+      else if (app.status === 'REJECTED') entry.rejected += 1;
+      else entry.pending += 1;
+    });
+
+    return Array.from(map.values()).filter(item =>
+      item.title.toLowerCase().includes(fairDirectorySearch.toLowerCase())
+    );
+  }, [applications, fairDirectorySearch]);
+
+  // Applicants filtered for the active selected fair view
+  const applicantsForActiveFair = useMemo(() => {
+    if (!activeFairView) return [];
+    return applications.filter((app) => {
+      const fairVal = app.fair_title || app.fair_slug || "International Kolkata Book Fair";
+      const matchesFair = fairVal === activeFairView;
+      const matchesSearch = 
+        app.participant_name?.toLowerCase().includes(applicantSearch.toLowerCase()) ||
+        app.participant_email?.toLowerCase().includes(applicantSearch.toLowerCase()) ||
+        app.participant_mobile?.includes(applicantSearch);
+      return matchesFair && matchesSearch;
+    });
+  }, [applications, activeFairView, applicantSearch]);
+
   const handleAppAction = async (appId: string, action: 'ACCEPTED' | 'REJECTED') => {
     try {
       setActionLoading(true);
@@ -114,7 +164,8 @@ export default function AdminStallBookingsPage() {
           applicationId: appId, 
           status: action, 
           amount: action === 'ACCEPTED' ? inputAmount : undefined, 
-          remark: finalRemark 
+          remark: finalRemark,
+          fair_title: selectedApp?.fair_title
         }),
       });
 
@@ -160,153 +211,221 @@ export default function AdminStallBookingsPage() {
     }
   };
 
-  const openDocument = (url?: string) => {
+  const handlePreviewDocument = (url?: string, docTitle?: string) => {
     if (!url) return;
     let fullUrl = url.startsWith('http') ? url : url;
     if (fullUrl.startsWith('http://')) {
       fullUrl = fullUrl.replace('http://', 'https://');
     }
-    // Opens document safely in a new tab across any browser/system (Mac, Windows, Mobile)
+    if (!fullUrl.startsWith('http') && !fullUrl.startsWith('blob:')) {
+      fullUrl = `${window.location.origin}${fullUrl.startsWith('/') ? '' : '/'}${fullUrl}`;
+    }
+
+    const lowerUrl = fullUrl.toLowerCase();
+    const isImage = /\.(jpg|jpeg|png|webp|gif|bmp|svg)($|\?)/i.test(lowerUrl) && !lowerUrl.includes('/raw/upload/');
+
+    if (!isImage) {
+      // Use Mozilla's robust PDF.js viewer or Google Docs Viewer to force in-browser viewing in a new tab without downloading
+      const viewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(fullUrl)}`;
+      window.open(viewerUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // Open images normally in a new tab as well
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const filteredApplications = applications.filter((app) => 
-    app.participant_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.participant_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.participant_mobile?.includes(searchQuery)
-  );
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 bg-[#fff8f5] min-h-screen text-[#1e1b18] font-['Libre_Franklin']">
+    <div className="p-4 sm:p-6 lg:p-8 bg-[#fff8f5] min-h-screen text-[#1e1b18] font-['Libre_Franklin'] space-y-6">
       
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-[#e0bfbf] shadow-sm">
+      {/* Header Banner */}
+      <div className="bg-white p-5 rounded-2xl border border-[#e0bfbf] shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
             <Store className="w-6 h-6 sm:w-7 sm:h-7 text-[#570013]" />
-            Stall Applications
+            {activeFairView ? `Applicants: ${activeFairView}` : "Fair Directory Table"}
           </h1>
           <p className="text-xs sm:text-sm text-[#775a19] mt-1 font-medium">
-            Manage and view all registered participant stall bookings for the International Kolkata Book Fair 2026.
+            {activeFairView 
+              ? "Viewing all participant records registered for this specific fair event." 
+              : "Click any fair row below to open and inspect applicants registered under that event."}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-[#fbf2ed] border border-[#e0bfbf] px-4 py-2 rounded-xl text-xs font-bold text-[#570013] whitespace-nowrap">
-            Total Bookings: {applications.length}
+        {activeFairView ? (
+          <button
+            type="button"
+            onClick={() => { setActiveFairView(null); setApplicantSearch(""); }}
+            className="bg-[#570013] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-[#800020] transition-all cursor-pointer self-start sm:self-center shadow-xs"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Fair Table
+          </button>
+        ) : (
+          <div className="bg-[#fbf2ed] border border-[#e0bfbf] px-4 py-2 rounded-xl text-xs font-bold text-[#570013]">
+            Total Unique Fairs: {fairTableData.length}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-[#e0bfbf] shadow-sm flex items-center gap-3">
-        <Search className="w-5 h-5 text-[#8c7071] ml-2 shrink-0" />
-        <input
-          type="text"
-          placeholder="Search by participant name, email, or mobile number..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-transparent text-xs sm:text-sm font-medium focus:outline-none text-[#1e1b18] placeholder:text-gray-400"
-        />
-      </div>
-
-      {/* Content Area */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e0bfbf] shadow-sm">
           <Loader2 className="w-10 h-10 animate-spin text-[#570013] mb-3" />
-          <p className="text-sm font-bold text-[#584141]">Loading bookings...</p>
+          <p className="text-sm font-bold text-[#584141]">Loading fair directory...</p>
         </div>
       ) : error ? (
         <div className="bg-red-50 border border-red-300 p-6 rounded-2xl text-center text-red-900">
           <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
           <p className="font-bold">{error}</p>
         </div>
-      ) : filteredApplications.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-[#e0bfbf] p-12 text-center shadow-sm">
-          <FileText className="w-12 h-12 text-[#e0bfbf] mx-auto mb-3" />
-          <h3 className="font-bold text-base text-[#570013]">No Bookings Found</h3>
-          <p className="text-xs text-gray-500 mt-1">No applications match your search query.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
-          <div className="w-full">
+      ) : !activeFairView ? (
+        /* ==================== VIEW 1: FAIR NAME TABLE STRUCTURE ==================== */
+        <div className="space-y-4">
+          <div className="bg-white p-3.5 rounded-2xl border border-[#e0bfbf] shadow-sm flex items-center gap-3">
+            <Search className="w-5 h-5 text-[#8c7071] ml-2 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search fair names..."
+              value={fairDirectorySearch}
+              onChange={(e) => setFairDirectorySearch(e.target.value)}
+              className="w-full bg-transparent text-xs sm:text-sm font-medium focus:outline-none text-[#1e1b18] placeholder:text-gray-400"
+            />
+          </div>
+
+          <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[10px] sm:text-[11px] font-bold text-[#570013] uppercase tracking-wider">
-                  <th className="py-3 px-3 sm:px-5">Participant</th>
-                  <th className="py-3 px-3 sm:px-5">Contact</th>
-                  <th className="py-3 px-3 sm:px-5">Space</th>
-                  <th className="py-3 px-3 sm:px-5">Status</th>
-                  <th className="py-3 px-3 sm:px-5 text-center">Action</th>
+                  <th className="py-4 px-6 flex items-center gap-1.5"><TableProperties className="w-4 h-4 text-[#775a19]" /> Fair Event Title / Name</th>
+                  <th className="py-4 px-6 text-center">Total Applicants</th>
+                  <th className="py-4 px-6 text-center">Accepted</th>
+                  <th className="py-4 px-6 text-center">Pending</th>
+                  <th className="py-4 px-6 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e0bfbf]/50 text-xs sm:text-sm">
-                {filteredApplications.map((app) => (
-                  <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
-                    
-                    <td className="py-3 px-3 sm:px-5 font-semibold text-[#1e1b18]">
-                      <div className="text-xs sm:text-sm font-bold truncate max-w-[160px] sm:max-w-xs">{app.participant_name}</div>
-                      <div className="text-[10px] text-gray-500 font-normal truncate max-w-[160px] sm:max-w-xs">{app.participant_bengali}</div>
-                    </td>
-
-                    <td className="py-3 px-3 sm:px-5 text-[11px] sm:text-xs text-[#584141]">
-                      <div className="flex items-center gap-1 truncate max-w-[150px] sm:max-w-[200px]">
-                        <Mail className="w-3 h-3 text-[#775a19] shrink-0" /> 
-                        <span className="truncate">{app.participant_email}</span>
-                      </div>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Phone className="w-3 h-3 text-[#775a19] shrink-0" /> 
-                        <span>{app.participant_mobile}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-3 px-3 sm:px-5 whitespace-nowrap">
-                      <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold">
-                        {app.space_requirement} sq.m
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-3 sm:px-5 whitespace-nowrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
-                        app.status === 'ACCEPTED' 
-                          ? 'bg-green-100 text-green-800 border border-green-300' 
-                          : app.status === 'REJECTED' 
-                          ? 'bg-red-100 text-red-800 border border-red-300' 
-                          : 'bg-amber-100 text-amber-800 border border-amber-300'
-                      }`}>
-                        {app.status || 'PENDING'}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-3 sm:px-5 text-center whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedApp(app);
-                          setInputAmount(app.amount || "");
-                          setInputRemark("");
-                          setReconsiderReason("");
-                          setModalMode('view');
-                          setActionMessage(null);
-                        }}
-                        className="bg-[#570013] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg hover:bg-[#800020] transition-all cursor-pointer shadow-xs inline-flex items-center gap-1"
-                      >
-                        View Details
-                      </button>
-                    </td>
-
+                {fairTableData.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-gray-500 font-medium">No fairs found matching search query.</td>
                   </tr>
-                ))}
+                ) : (
+                  fairTableData.map((fair) => (
+                    <tr 
+                      key={fair.title} 
+                      onClick={() => setActiveFairView(fair.title)}
+                      className="hover:bg-[#fff8f5] transition-colors cursor-pointer group"
+                    >
+                      <td className="py-4 px-6 font-bold font-['Playfair_Display'] text-sm sm:text-base text-[#570013] group-hover:underline">
+                        {fair.title}
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="bg-[#fbf2ed] text-[#570013] border border-[#e0bfbf] px-3 py-1 rounded-full font-bold text-xs">
+                          {fair.count}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-green-700 font-bold text-xs">{fair.accepted}</span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span className="text-amber-700 font-bold text-xs">{fair.pending}</span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#570013] bg-[#fff0f0] group-hover:bg-[#570013] group-hover:text-white px-3 py-1.5 rounded-lg border border-[#e0bfbf] transition-all">
+                          <Users className="w-3.5 h-3.5" /> View Applicants
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
+      ) : (
+        /* ==================== VIEW 2: APPLICANTS FOR SELECTED FAIR ==================== */
+        <div className="space-y-4">
+          <div className="bg-white p-3.5 rounded-2xl border border-[#e0bfbf] shadow-sm flex items-center gap-3">
+            <Search className="w-5 h-5 text-[#8c7071] ml-2 shrink-0" />
+            <input
+              type="text"
+              placeholder={`Search applicants in "${activeFairView}" by name, email, or mobile...`}
+              value={applicantSearch}
+              onChange={(e) => setApplicantSearch(e.target.value)}
+              className="w-full bg-transparent text-xs sm:text-sm font-medium focus:outline-none text-[#1e1b18] placeholder:text-gray-400"
+            />
+          </div>
+
+          <div className="bg-white rounded-2xl border border-[#e0bfbf] shadow-sm overflow-hidden">
+            {applicantsForActiveFair.length === 0 ? (
+              <div className="p-12 text-center">
+                <FileText className="w-10 h-10 text-[#e0bfbf] mx-auto mb-2" />
+                <h3 className="font-bold text-base text-[#570013]">No Applicants Found</h3>
+                <p className="text-xs text-gray-500 mt-1">No participant registrations found for this fair query.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#fbf2ed] border-b border-[#e0bfbf] text-[10px] sm:text-[11px] font-bold text-[#570013] uppercase tracking-wider">
+                      <th className="py-3 px-4">Participant Name</th>
+                      <th className="py-3 px-4">Contact Details</th>
+                      <th className="py-3 px-4">Space Req</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-center">Review Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e0bfbf]/40 text-xs sm:text-sm">
+                    {applicantsForActiveFair.map((app) => (
+                      <tr key={app._id} className="hover:bg-[#fff8f5]/60 transition-colors">
+                        <td className="py-3 px-4 font-semibold text-[#1e1b18]">
+                          <div className="font-bold">{app.participant_name}</div>
+                          <div className="text-[10px] text-gray-500">{app.participant_bengali}</div>
+                        </td>
+                        <td className="py-3 px-4 text-xs text-[#584141] space-y-0.5">
+                          <div className="flex items-center gap-1"><Mail className="w-3 h-3 text-[#775a19]" /> {app.participant_email}</div>
+                          <div className="flex items-center gap-1 font-mono"><Phone className="w-3 h-3 text-[#775a19]" /> {app.participant_mobile}</div>
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span className="bg-[#fff0f0] text-[#570013] border border-[#e0bfbf] px-2.5 py-0.5 rounded-full font-bold text-xs">
+                            {app.space_requirement} sq.m
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            app.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' : app.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {app.status || 'PENDING'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedApp(app);
+                              setInputAmount(app.amount || "");
+                              setInputRemark("");
+                              setReconsiderReason("");
+                              setModalMode('view');
+                              setActionMessage(null);
+                            }}
+                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg hover:bg-[#800020] transition-all cursor-pointer shadow-2xs"
+                          >
+                            Review Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
-      {/* Detailed View Modal */}
+      {/* Review & Action Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf] relative overflow-y-auto my-auto">
+        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border-2 border-[#e0bfbf] relative overflow-y-auto my-auto">
             
             {/* Modal Header */}
             <div className="sticky top-0 bg-white z-20 flex items-center justify-between border-b border-[#e0bfbf] px-4 sm:px-6 py-4 shadow-xs">
@@ -333,7 +452,7 @@ export default function AdminStallBookingsPage() {
                     )}
                   </h3>
                   <p className="text-xs text-[#775a19]">
-                    {modalMode === 'view' ? `Submitted on ${new Date(selectedApp.createdAt).toLocaleDateString()}` : `Participant: ${selectedApp.participant_name}`}
+                    {modalMode === 'view' ? `Fair: ${selectedApp.fair_title || selectedApp.fair_slug || 'International Kolkata Book Fair'} | Submitted on ${new Date(selectedApp.createdAt).toLocaleDateString()}` : `Participant: ${selectedApp.participant_name}`}
                   </p>
                 </div>
               </div>
@@ -348,7 +467,6 @@ export default function AdminStallBookingsPage() {
 
             {/* Modal Content Body */}
             <div className="p-4 sm:p-6 space-y-4 text-xs sm:text-sm text-[#1e1b18]">
-              
               {actionMessage && actionMessage.type === 'error' && (
                 <div className="p-3.5 sm:p-4 rounded-xl border flex items-center gap-2.5 text-xs font-bold bg-red-50 border-red-300 text-red-900">
                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
@@ -359,6 +477,11 @@ export default function AdminStallBookingsPage() {
               {modalMode === 'view' ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
+                      <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Fair Event</span>
+                      <p className="font-bold text-[#570013] break-words">{selectedApp.fair_title || selectedApp.fair_slug || "International Kolkata Book Fair"}</p>
+                    </div>
+
                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1">
                       <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider">Participant Name</span>
                       <p className="font-bold text-[#570013] break-words">{selectedApp.participant_name}</p>
@@ -390,32 +513,32 @@ export default function AdminStallBookingsPage() {
                     <div className="bg-[#fbf2ed] p-3.5 rounded-xl border border-[#e0bfbf]/60 space-y-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
                         <span className="text-[10px] font-bold text-[#775a19] uppercase tracking-wider block">Uploaded Documents</span>
-                        <span className="text-xs text-gray-600">Verify PAN and Address proof files directly</span>
+                        <span className="text-xs text-gray-600">Inspect documents directly in browser tab</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedApp.pan_card_doc && (
                           <button 
                             type="button"
-                            onClick={() => openDocument(selectedApp.pan_card_doc)} 
-                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020]"
+                            onClick={() => handlePreviewDocument(selectedApp.pan_card_doc, "PAN Card Document")} 
+                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020] inline-flex items-center gap-1.5 shadow-xs"
                           >
-                            View PAN
+                            <Eye className="w-3.5 h-3.5" /> View PAN
                           </button>
                         )}
                         {selectedApp.address_proof_doc && (
                           <button 
                             type="button"
-                            onClick={() => openDocument(selectedApp.address_proof_doc)} 
-                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020]"
+                            onClick={() => handlePreviewDocument(selectedApp.address_proof_doc, "Owner Address Proof")} 
+                            className="bg-[#570013] text-white text-xs font-bold px-3.5 py-2 rounded-lg text-center cursor-pointer hover:bg-[#800020] inline-flex items-center gap-1.5 shadow-xs"
                           >
-                            View Address Proof
+                            <Eye className="w-3.5 h-3.5" /> View Address Proof
                           </button>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Restored Live Admin Decision Record Summary Box */}
+                  {/* Decision Record Summary Box */}
                   {(selectedApp.amount || selectedApp.remark || selectedApp.status) && (
                     <div className={`border-l-4 p-4 rounded-xl space-y-1 text-xs ${
                       selectedApp.status === 'REJECTED' 
@@ -437,7 +560,7 @@ export default function AdminStallBookingsPage() {
                     </div>
                   )}
 
-                  {/* 📜 Action History & Audit Log Timeline */}
+                  {/* Action History & Audit Log Timeline */}
                   {selectedApp.history && selectedApp.history.length > 0 && (
                     <div className="bg-[#fbf2ed] p-4 rounded-2xl border border-[#e0bfbf] space-y-3">
                       <h4 className="font-bold uppercase tracking-wider text-[10px] text-[#570013] border-b border-[#e0bfbf]/50 pb-2 flex items-center justify-between">
@@ -480,14 +603,6 @@ export default function AdminStallBookingsPage() {
                     <h4 className="font-bold text-sm text-[#570013]">Acceptance Form & Payment Request</h4>
                     <p className="text-xs text-[#775a19]">Provide the payable stall booking fee and optional payment instructions.</p>
                   </div>
-
-                  {selectedApp.remark && (
-                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Remark Reference:</span>
-                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
-                    </div>
-                  )}
-
                   <div className="space-y-3">
                     <div>
                       <label className="block text-[11px] font-bold text-[#775a19] mb-1">Total Payable Amount (₹) *</label>
@@ -517,14 +632,6 @@ export default function AdminStallBookingsPage() {
                     <h4 className="font-bold text-sm text-amber-900">Reconsider Cancelled / Rejected Application</h4>
                     <p className="text-xs text-[#775a19]">Explain why this previously rejected application is being reconsidered and approved.</p>
                   </div>
-
-                  {selectedApp.remark && (
-                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Rejection/Cancellation Reason:</span>
-                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
-                    </div>
-                  )}
-
                   <div className="space-y-3">
                     <div>
                       <label className="block text-[11px] font-bold text-amber-900 mb-1">Reason for Reconsideration *</label>
@@ -547,16 +654,6 @@ export default function AdminStallBookingsPage() {
                         className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2.5 rounded-xl text-xs font-medium focus:outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-[#775a19] mb-1">Additional New Remarks (Optional)</label>
-                      <textarea 
-                        rows={2}
-                        placeholder="Type any new instructions..."
-                        value={inputRemark}
-                        onChange={(e) => setInputRemark(e.target.value)}
-                        className="w-full bg-white border border-[#e0bfbf] px-3.5 py-2 rounded-xl text-xs font-medium focus:outline-none"
-                      />
-                    </div>
                   </div>
                 </div>
               ) : modalMode === 'reject_prompt' ? (
@@ -565,14 +662,6 @@ export default function AdminStallBookingsPage() {
                     <h4 className="font-bold text-sm text-red-800">Cancellation / Rejection Reason</h4>
                     <p className="text-xs text-gray-600">Provide a clear note explaining why this booking is being declined or canceled.</p>
                   </div>
-
-                  {selectedApp.remark && (
-                    <div className="bg-white/80 p-3 rounded-xl border border-[#e0bfbf]/60 space-y-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">Previous Remark Reference:</span>
-                      <p className="text-xs text-gray-700 italic">{selectedApp.remark}</p>
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-[11px] font-bold text-[#775a19] mb-1">Remark / Reason for Cancellation *</label>
                     <textarea 
@@ -593,7 +682,6 @@ export default function AdminStallBookingsPage() {
                   </p>
                 </div>
               )}
-
             </div>
 
             {/* Modal Footer Controls */}
