@@ -482,6 +482,11 @@ const navItems: NavItem[] = [
       },
       {  name: "Manage Form",
         path: "/admin/manage-cms/manage-form",
+
+      },
+      {
+        name: "Manage Services",
+        path: "/admin/manage-cms/manage-services",
       },
     ],
   },

@@ -5,18 +5,20 @@ interface BreadcrumbProps {
   pageTitle: string;
   previousPage?: string;
   previousPageHref?: string;
+  showTitle?: boolean;
 }
 
 const PageBreadcrumb: React.FC<BreadcrumbProps> = ({
   pageTitle,
   previousPage,
   previousPageHref,
+  showTitle = true,
 }) => {
   return (
-    <div className="admin-page-header flex flex-wrap items-center justify-between gap-3">
-      <h2 className="admin-page-title text-xl">
-        {pageTitle}
-      </h2>
+    <div
+      className={`admin-page-header flex flex-wrap items-center gap-3 ${showTitle ? "justify-between" : "justify-end"}`}
+    >
+      {showTitle && <h2 className="admin-page-title text-xl">{pageTitle}</h2>}
 
       <nav>
         <ol className="flex items-center gap-1.5">
