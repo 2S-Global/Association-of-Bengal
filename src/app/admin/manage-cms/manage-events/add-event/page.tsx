@@ -1,4 +1,5 @@
 
+
 // "use client";
 
 // import React, { useState, forwardRef } from "react";
@@ -18,7 +19,8 @@
 //   Info,
 //   X,
 //   AlertCircle,
-//   ChevronDown
+//   ChevronDown,
+//   Sparkles
 // } from "lucide-react";
 
 // export default function AddEventPage() {
@@ -65,7 +67,7 @@
 
 //   // Custom Input Component for DatePicker to embed the Calendar Icon securely
 //   const CustomDateInput = forwardRef(({ value, onClick, placeholder }: any, ref: any) => (
-//     <div className="relative cursor-pointer" onClick={onClick} ref={ref}>
+//     <div className="relative cursor-pointer w-full" onClick={onClick} ref={ref}>
 //       <input
 //         type="text"
 //         readOnly
@@ -224,7 +226,7 @@
 //   };
 
 //   return (
-//     <main className="max-w-[1000px] mx-auto px-4 md:px-12 py-16 flex-grow font-['Libre_Franklin'] selection:bg-[#fed488] selection:text-[#785a1a]">
+//     <main className="max-w-[1000px] mx-auto px-4 md:px-12 py-16 flex-grow font-['Libre_Franklin'] selection:bg-[#fed488] selection:text-[#785a1a] space-y-8">
       
 //       {/* Datepicker Theme Customization */}
 //       <style jsx global>{`
@@ -264,25 +266,28 @@
 //         }
 //       `}</style>
 
-//       {/* Header */}
-//       <div className="mb-10">
-//         <button 
-//           onClick={() => router.back()}
-//           className="inline-flex items-center gap-2 text-xs font-bold text-[#775a19] uppercase tracking-wider mb-3 hover:underline cursor-pointer"
+//       {/* Top Executive Banner */}
+//       <div className="bg-gradient-to-r from-white via-[#fff8f5] to-[#fef2eb] p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/70 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
+//         <div className="space-y-1">
+//           <span className="text-[10px] font-extrabold text-[#775a19] uppercase tracking-[0.2em] flex items-center gap-1.5">
+//             <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Event Creation Workspace
+//           </span>
+//           <h1 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5">
+//             <FileText className="w-6 h-6 text-[#775a19]" /> Add New Cultural Event
+//           </h1>
+//           <p className="text-xs text-[#564242]">Complete the required form fields accurately to publish your event live to the database.</p>
+//         </div>
+//         <button
+//           onClick={() => router.push("/admin/manage-cms/manage-events")}
+//           className="inline-flex items-center gap-2 text-xs font-bold text-[#570013] bg-white hover:bg-[#fbf2ed] px-5 py-3 rounded-2xl transition-all cursor-pointer shadow-2xs border border-[#e0bfbf]/80 shrink-0"
 //         >
-//           <ArrowLeft className="w-4 h-4" /> Back to Event Manager
+//           <ArrowLeft className="w-4 h-4" /> Return to All Events
 //         </button>
-//         <h1 className="text-[28px] sm:text-[32px] md:text-[40px] font-bold text-[#570013] font-['Playfair_Display',serif] leading-tight">
-//           Add New Cultural Event
-//         </h1>
-//         <p className="text-sm sm:text-base text-[#584141] mt-2">
-//           Complete the required form fields accurately to publish your event live to the database.
-//         </p>
 //       </div>
 
 //       {/* Global API / Validation Banner Error */}
 //       {(errors.api || Object.keys(errors).length > 0) && (
-//         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
+//         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-3">
 //           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" />
 //           <div>
 //             <span className="font-bold block mb-1">Please address the following items before submitting:</span>
@@ -760,7 +765,9 @@ export default function AddEventPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Submit Handler appending separate startDate and endDate as clean strings
+  // ---------------------------------------------------------------------------
+  // UPDATED: Submit Handler to ensure all Mongoose required fields are passed
+  // ---------------------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -778,6 +785,8 @@ export default function AddEventPage() {
       
       if (startDate) {
         formData.append("startDate", toSimpleDateStr(startDate));
+        // Explicitly send eventDate for the required base Mongoose schema field
+        formData.append("eventDate", startDate.toISOString()); 
       }
       if (endDate) {
         formData.append("endDate", toSimpleDateStr(endDate));
@@ -786,9 +795,16 @@ export default function AddEventPage() {
       }
 
       formData.append("dateStr", dateStr || "TBD");
-      formData.append("location", location);
+      
+      // Explicitly send venue since schema expects location: { venue: String }
+      formData.append("location", location); // Fallback
+      formData.append("venue", location);    // Direct target for backend parsing
+      
       formData.append("description", description);
+      
+      // Sync publication states
       formData.append("status", status);
+      formData.append("isPublished", status === "Published" ? "true" : "false");
 
       if (imageFile) {
         formData.append("image", imageFile);
@@ -812,6 +828,7 @@ export default function AddEventPage() {
       setIsSubmitting(false);
     }
   };
+  // ---------------------------------------------------------------------------
 
   return (
     <main className="max-w-[1000px] mx-auto px-4 md:px-12 py-16 flex-grow font-['Libre_Franklin'] selection:bg-[#fed488] selection:text-[#785a1a] space-y-8">
