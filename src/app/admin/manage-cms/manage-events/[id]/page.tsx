@@ -28,10 +28,21 @@ interface AdminEvent {
   status: "Published" | "Draft";
 }
 
+// Bulletproof helper to prevent any .trim() runtime errors
+const safeTrim = (val: any): string => {
+  if (typeof val === 'string') return val.trim();
+  if (typeof val === 'object' && val !== null) {
+    return String(val.venue || val.name || val.title || "").trim();
+  }
+  return String(val || "").trim();
+};
+
 export default function EditEventWorkspacePage() {
   const params = useParams();
   const router = useRouter();
-  const eventId = params?.id;
+  
+  // Safely resolve eventId whether it's a string or string array
+  const eventId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
@@ -58,7 +69,6 @@ export default function EditEventWorkspacePage() {
     "Folk Tradition & Craft"
   ];
 
-  // Helper to get tomorrow's midnight boundary for strict future date enforcement
   const getTomorrow = () => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -66,7 +76,6 @@ export default function EditEventWorkspacePage() {
     return d;
   };
 
-  // Custom Input Component for DatePicker
   const CustomDateInput = forwardRef(({ value, onClick, placeholder }: any, ref: any) => (
     <div className="relative cursor-pointer w-full" onClick={onClick} ref={ref}>
       <input
@@ -107,7 +116,6 @@ export default function EditEventWorkspacePage() {
           setStartDate(parseSafeDate(found.startDate));
           setEndDate(parseSafeDate(found.endDate));
           
-          // Safely extract location whether it's a string or an object
           const locValue = typeof found.location === 'object' && found.location !== null
             ? (found.location.venue || "")
             : (found.location || "");
@@ -184,12 +192,10 @@ export default function EditEventWorkspacePage() {
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Safely extract string value for validation
-    const locStr = typeof location === 'string' 
-      ? location 
-      : (typeof location === 'object' && location !== null ? (location as any).venue : "");
+    const titleStr = safeTrim(title);
+    const locStr = safeTrim(location);
 
-    if (!title.trim() || !locStr.trim()) {
+    if (!titleStr || !locStr) {
       setErrorMsg("Title and Location are required fields.");
       toast.error("Title and Location are required fields.");
       return;
@@ -201,8 +207,8 @@ export default function EditEventWorkspacePage() {
     const updatePromise = async () => {
       const formData = new FormData();
       formData.append("id", eventId as string);
-      formData.append("title", title);
-      formData.append("category", category);
+      formData.append("title", titleStr);
+      formData.append("category", safeTrim(category));
       
       if (startDate) {
         formData.append("startDate", toSimpleDateStr(startDate));
@@ -261,7 +267,6 @@ export default function EditEventWorkspacePage() {
   return (
     <main className="space-y-8 max-w-5xl mx-auto pb-20 animate-in fade-in duration-300 selection:bg-[#fed488] selection:text-[#785a1a]">
       
-      {/* Datepicker Styling Overrides */}
       <style jsx global>{`
         .react-datepicker-wrapper { width: 100%; display: block; }
         .react-datepicker {
@@ -278,7 +283,6 @@ export default function EditEventWorkspacePage() {
         .react-datepicker__day--disabled { color: #ccc !important; background-color: transparent !important; cursor: not-allowed !important; }
       `}</style>
 
-      {/* Top Workspace Banner */}
       <div className="bg-gradient-to-r from-white via-[#fff8f5] to-[#fef2eb] p-6 sm:p-8 rounded-3xl border border-[#e0bfbf]/70 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold text-[#775a19] uppercase tracking-[0.2em] flex items-center gap-1.5">
@@ -303,10 +307,8 @@ export default function EditEventWorkspacePage() {
         </div>
       )}
 
-      {/* Main Workspace Edit Form */}
       <form onSubmit={handleUpdateSubmit} className="space-y-8">
         
-        {/* Section 1: Core Metadata */}
         <div className="bg-white p-6 sm:p-10 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-6">
           <h2 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5 border-b border-[#e0bfbf]/40 pb-4">
             <Sparkles className="w-6 h-6 text-[#775a19]" /> Event Core Properties
@@ -362,7 +364,6 @@ export default function EditEventWorkspacePage() {
           </div>
         </div>
 
-        {/* Section 2: Schedule & Location */}
         <div className="bg-white p-6 sm:p-10 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-6">
           <h2 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5 border-b border-[#e0bfbf]/40 pb-4">
             <Calendar className="w-6 h-6 text-[#775a19]" /> Schedule &amp; Venue Details
@@ -430,7 +431,6 @@ export default function EditEventWorkspacePage() {
           </div>
         </div>
 
-        {/* Section 3: Media & Description */}
         <div className="bg-white p-6 sm:p-10 rounded-3xl border border-[#e0bfbf]/60 shadow-sm space-y-6">
           <h2 className="text-xl sm:text-2xl font-bold font-['Playfair_Display'] text-[#570013] flex items-center gap-2.5 border-b border-[#e0bfbf]/40 pb-4">
             <MapPin className="w-6 h-6 text-[#775a19]" /> Banner Illustration &amp; Narrative
@@ -467,7 +467,6 @@ export default function EditEventWorkspacePage() {
             />
           </div>
 
-          {/* Action Buttons Footer */}
           <div className="flex justify-end pt-6 border-t border-[#e0bfbf]/40">
             <button
               type="submit"

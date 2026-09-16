@@ -765,9 +765,6 @@ export default function AddEventPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // ---------------------------------------------------------------------------
-  // UPDATED: Submit Handler to ensure all Mongoose required fields are passed
-  // ---------------------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -785,7 +782,6 @@ export default function AddEventPage() {
       
       if (startDate) {
         formData.append("startDate", toSimpleDateStr(startDate));
-        // Explicitly send eventDate for the required base Mongoose schema field
         formData.append("eventDate", startDate.toISOString()); 
       }
       if (endDate) {
@@ -795,14 +791,9 @@ export default function AddEventPage() {
       }
 
       formData.append("dateStr", dateStr || "TBD");
-      
-      // Explicitly send venue since schema expects location: { venue: String }
-      formData.append("location", location); // Fallback
-      formData.append("venue", location);    // Direct target for backend parsing
-      
+      formData.append("location", location);
+      formData.append("venue", location);    
       formData.append("description", description);
-      
-      // Sync publication states
       formData.append("status", status);
       formData.append("isPublished", status === "Published" ? "true" : "false");
 
@@ -828,12 +819,10 @@ export default function AddEventPage() {
       setIsSubmitting(false);
     }
   };
-  // ---------------------------------------------------------------------------
 
   return (
     <main className="max-w-[1000px] mx-auto px-4 md:px-12 py-16 flex-grow font-['Libre_Franklin'] selection:bg-[#fed488] selection:text-[#785a1a] space-y-8">
       
-      {/* Datepicker Theme Customization */}
       <style jsx global>{`
         .react-datepicker-wrapper {
           width: 100%;
@@ -937,7 +926,7 @@ export default function AddEventPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
-              {/* Enhanced Category Selector (Dropdown or Custom Input Toggle) */}
+              {/* Enhanced Category Selector */}
               <div className="relative">
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="block text-xs font-bold text-[#570013] uppercase tracking-wider">
@@ -1041,7 +1030,7 @@ export default function AddEventPage() {
                 selectsStart
                 startDate={startDate}
                 endDate={endDate}
-                minDate={getTomorrow()} // Blocks today and past dates completely
+                minDate={getTomorrow()} 
                 placeholderText="Select start date"
                 dateFormat="MMM dd, yyyy"
                 customInput={<CustomDateInput />}
@@ -1057,7 +1046,7 @@ export default function AddEventPage() {
                 selectsEnd
                 startDate={startDate}
                 endDate={endDate}
-                minDate={startDate || getTomorrow()} // Blocks dates prior to selected start date or tomorrow
+                minDate={startDate || getTomorrow()} 
                 placeholderText="Select end date"
                 dateFormat="MMM dd, yyyy"
                 customInput={<CustomDateInput />}
@@ -1134,8 +1123,8 @@ export default function AddEventPage() {
               {errors.image && <span className="text-xs text-red-600 mt-1 block font-medium">{errors.image}</span>}
             </div>
 
-            {/* Preview Box */}
-            {imagePreview && (
+            {/* Preview Box with Safe Conditional Render */}
+            {imagePreview ? (
               <div className="relative w-full h-48 rounded-xl overflow-hidden border border-[#e0bfbf] shadow-xs">
                 <Image fill src={imagePreview} alt="Preview" className="object-cover" />
                 <button
@@ -1147,7 +1136,7 @@ export default function AddEventPage() {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-            )}
+            ) : null}
 
             <div>
               <label className="block text-xs font-bold text-[#570013] uppercase tracking-wider mb-1.5">
