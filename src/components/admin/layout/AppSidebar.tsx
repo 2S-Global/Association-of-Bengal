@@ -462,6 +462,10 @@ const navItems: NavItem[] = [
         name: "Manage Services",
         path: "/admin/manage-cms/manage-services",
       },
+      {
+        name: "Manage Hero Section",
+        path: "/admin/manage-cms/manage-hero-section",
+      },
     ],
   },
   {
