@@ -19,6 +19,7 @@ interface PublicEvent {
   category?: string;
   startDate?: string;
   endDate?: string;
+  eventDate?: string;
   dateStr?: string;
   location: 
     | {
@@ -34,7 +35,7 @@ interface PublicEvent {
 }
 
 // Helper function to format any date string to DD/MM/YYYY
-const formatDDMMYYYY = (dateInput: string | number | Date) => {
+const formatDDMMYYYY = (dateInput?: string | number | Date | null) => {
   if (!dateInput) return "Upcoming";
   const d = new Date(dateInput);
   if (isNaN(d.getTime())) return typeof dateInput === "string" ? dateInput : "Upcoming";
