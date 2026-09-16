@@ -32,18 +32,30 @@ export default function ManageHeroSectionPage() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-6 pb-20 animate-in fade-in duration-300">
-      <div className="rounded-3xl border border-[#e0bfbf]/70 bg-gradient-to-r from-white via-[#fff8f5] to-[#fef2eb] p-7 shadow-sm sm:p-8">
-        <span className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#775a19]">
-          <Sparkles className="h-3.5 w-3.5 text-amber-600" /> CMS Administration
-        </span>
-        <h1 className="mt-1 flex items-center gap-2.5 font-['Playfair_Display'] text-xl font-bold text-[#570013] sm:text-2xl">
-          <Sparkles className="h-6 w-6 text-amber-600" /> Manage Hero Section
-        </h1>
-        <p className="mt-1 text-xs text-[#564242]">
-          Review and update the singleton hero content displayed on the
-          association website.
-        </p>
-      </div>
+      {!editing && (
+        <div className="rounded-3xl border border-[#e0bfbf]/70 bg-gradient-to-r from-white via-[#fff8f5] to-[#fef2eb] p-7 shadow-sm sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <span className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#775a19]">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600" /> CMS Administration
+              </span>
+              <h1 className="mt-1 flex items-center gap-2.5 font-['Playfair_Display'] text-xl font-bold text-[#570013] sm:text-2xl">
+                <Sparkles className="h-6 w-6 text-amber-600" /> Manage Hero Section
+              </h1>
+              <p className="mt-1 text-xs text-[#564242]">
+                Review and update the singleton hero content displayed on the
+                association website.
+              </p>
+            </div>
+            <button
+              onClick={() => setEditing(true)}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#570013] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#40000e] active:scale-[0.98]"
+            >
+              <Edit3 className="h-4 w-4" /> Edit Hero Section
+            </button>
+          </div>
+        </div>
+      )}
 
       {!heroSection ? (
         <div className="flex items-center justify-center gap-3 rounded-3xl border border-[#e0bfbf]/60 bg-white p-12 text-sm text-[#725b55] shadow-sm">
@@ -76,12 +88,6 @@ export default function ManageHeroSectionPage() {
                 Hero Section Content
               </h2>
             </div>
-            <button
-              onClick={() => setEditing(true)}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#570013] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#40000e] active:scale-[0.98]"
-            >
-              <Edit3 className="h-4 w-4" /> Edit Hero Section
-            </button>
           </div>
           <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr]">
             <div className="space-y-5">
