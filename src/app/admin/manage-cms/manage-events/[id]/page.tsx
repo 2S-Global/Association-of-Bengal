@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, forwardRef } from "react";
@@ -23,7 +22,7 @@ interface AdminEvent {
   dateStr: string;
   startDate?: string;
   endDate?: string;
-  location: string;
+  location: string | { venue?: string; city?: string; country?: string };
   description: string;
   image: string;
   status: "Published" | "Draft";
@@ -69,7 +68,7 @@ export default function EditEventWorkspacePage() {
 
   // Custom Input Component for DatePicker
   const CustomDateInput = forwardRef(({ value, onClick, placeholder }: any, ref: any) => (
-    <div className="relative cursor-pointer w-full" onClick={onClick} ref= {ref}>
+    <div className="relative cursor-pointer w-full" onClick={onClick} ref={ref}>
       <input
         type="text"
         readOnly
@@ -107,7 +106,13 @@ export default function EditEventWorkspacePage() {
           setDateStr(found.dateStr || "");
           setStartDate(parseSafeDate(found.startDate));
           setEndDate(parseSafeDate(found.endDate));
-          setLocation(found.location || "");
+          
+          // Safely extract location whether it's a string or an object
+          const locValue = typeof found.location === 'object' && found.location !== null
+            ? (found.location.venue || "")
+            : (found.location || "");
+          setLocation(locValue);
+
           setDescription(found.description || "");
           setStatus(found.status || "Published");
           setExistingImageUrl(found.image || "");
@@ -178,7 +183,13 @@ export default function EditEventWorkspacePage() {
 
   const handleUpdateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !location.trim()) {
+    
+    // Safely extract string value for validation
+    const locStr = typeof location === 'string' 
+      ? location 
+      : (typeof location === 'object' && location !== null ? (location as any).venue : "");
+
+    if (!title.trim() || !locStr.trim()) {
       setErrorMsg("Title and Location are required fields.");
       toast.error("Title and Location are required fields.");
       return;
@@ -203,7 +214,7 @@ export default function EditEventWorkspacePage() {
       }
 
       formData.append("dateStr", dateStr || "TBD");
-      formData.append("location", location);
+      formData.append("location", locStr);
       formData.append("description", description);
       formData.append("status", status);
 
