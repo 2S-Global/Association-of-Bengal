@@ -264,7 +264,7 @@ export default function DonationPage() {
                 razorpay_signature: paymentResponse.razorpay_signature,
                 donationType: donationType,
                 originalAmount: parsedAmount,
-                originalCurrency: currencyDetails.symbol, // Passes "₹" symbol explicitly
+                originalCurrency: currencyDetails.symbol,
               },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -574,6 +574,23 @@ export default function DonationPage() {
                       )}
                       {selectedDonation.breakdown.kycFee !== undefined && (
                         <p className="flex justify-between"><span>KYC Verification Fee:</span> <span className="font-semibold">{currencyDetails.symbol}{selectedDonation.breakdown.kycFee}</span></p>
+                      )}
+                      {selectedDonation.breakdown.kycBreakdown && (
+                        <div className="pt-2 mt-2 border-t border-[#e0bfbf]/30 space-y-1 text-[11px] text-[#8c7071]">
+                          <p className="font-bold text-[#570013]">KYC Components:</p>
+                          {selectedDonation.breakdown.kycBreakdown.mobile?.selected && (
+                            <p className="flex justify-between pl-2"><span>• Mobile Verification:</span> <span>{currencyDetails.symbol}{selectedDonation.breakdown.kycBreakdown.mobile.fee}</span></p>
+                          )}
+                          {selectedDonation.breakdown.kycBreakdown.aadhar?.selected && (
+                            <p className="flex justify-between pl-2"><span>• Aadhaar Verification:</span> <span>{currencyDetails.symbol}{selectedDonation.breakdown.kycBreakdown.aadhar.fee}</span></p>
+                          )}
+                          {selectedDonation.breakdown.kycBreakdown.pan?.selected && (
+                            <p className="flex justify-between pl-2"><span>• PAN Verification:</span> <span>{currencyDetails.symbol}{selectedDonation.breakdown.kycBreakdown.pan.fee}</span></p>
+                          )}
+                        </div>
+                      )}
+                      {selectedDonation.breakdown.contribution !== undefined && (
+                        <p className="flex justify-between pt-1 border-t border-[#e0bfbf]/30 font-bold text-[#570013]"><span>Contribution:</span> <span>{currencyDetails.symbol}{selectedDonation.breakdown.contribution}</span></p>
                       )}
                     </div>
                   </div>
