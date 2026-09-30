@@ -20,6 +20,7 @@ import { ReactElement, ReactNode } from "react";
 import Header from "./component/header";
 import Footer from "./component/footer";
 import "../globals.css"
+import { Toaster } from 'sonner';
 
 interface WebsiteLayoutProps {
   children: ReactNode;
@@ -34,6 +35,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps): ReactEl
       {/* Removed 'flex-grow' from here so it simply wraps the content */}
       <main className="w-full">
         {children}
+        <Toaster position="top-center" richColors />
       </main>
       
       <Footer />
