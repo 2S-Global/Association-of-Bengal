@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_MAX_AGE, createAdminSession } from "@/lib/admin/admin-session";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 export async function POST(request: Request) {
@@ -16,11 +17,10 @@ export async function POST(request: Request) {
     await connectDB();
     const admin = await mongoose.connection.db?.collection("admins").findOne({
       name: username,
-      password,
       status: 1,
     });
 
-    if (!admin) {
+    if (!admin || typeof admin.password !== "string" || !await bcrypt.compare(password, admin.password)) {
       return NextResponse.json({ success: false, message: "Invalid username or password." }, { status: 401 });
     }
 
