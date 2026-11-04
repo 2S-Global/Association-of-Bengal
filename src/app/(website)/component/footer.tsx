@@ -103,10 +103,27 @@ export default function Footer() {
       </div>
 
       {/* Copyright Bar */}
-      <div className="border-t border-[#e0bfbf]/40 py-4 px-6 text-center">
-        <p className="text-[11.5px] text-[#584141]/80 uppercase tracking-widest">
-          © 2026 Association of Bengal. All Rights Reserved.
-        </p>
+      <div className="border-t border-[#e0bfbf]/40 py-4 px-6">
+        <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <p className="text-[11.5px] text-[#584141]/80 uppercase tracking-widest">
+            © 2026 Association of Bengal. All Rights Reserved.
+          </p>
+          <div className="flex items-center justify-center gap-4 text-xs font-medium text-[#584141]">
+            <Link
+              href="/terms"
+              className="hover:text-[#590916] transition-colors underline-offset-4 hover:underline"
+            >
+              Terms & Conditions
+            </Link>
+            <span className="text-[#e0bfbf]/80">•</span>
+            <Link
+              href="/privacy"
+              className="hover:text-[#590916] transition-colors underline-offset-4 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

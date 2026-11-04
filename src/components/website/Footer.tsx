@@ -30,7 +30,13 @@ export default function Footer() {
               Archives
             </Link>
             <Link
-              href="/privacy-policy"
+              href="/terms"
+              className="text-on-surface-variant text-sm hover:text-primary transition-colors w-fit"
+            >
+              Terms & Conditions
+            </Link>
+            <Link
+              href="/privacy"
               className="text-on-surface-variant text-sm hover:text-primary transition-colors w-fit"
             >
               Privacy Policy
@@ -82,11 +88,20 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-outline-variant/30 py-6 px-4 sm:px-6 max-w-container-max mx-auto text-center">
+      <div className="border-t border-outline-variant/30 py-6 px-4 sm:px-6 max-w-container-max mx-auto text-center flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-xs text-on-surface-variant opacity-70">
           © {currentYear} Bengal Association for Literature and Culture. All Rights
           Reserved.
         </p>
+        <div className="flex items-center gap-4 text-xs text-on-surface-variant">
+          <Link href="/terms" className="hover:text-primary transition-colors hover:underline">
+            Terms & Conditions
+          </Link>
+          <span>•</span>
+          <Link href="/privacy" className="hover:text-primary transition-colors hover:underline">
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </footer>
   );
